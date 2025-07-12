@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import { Menu, X, Phone } from 'lucide-react';
+import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, isAdmin, signOut } = useAuth();
 
   const navigation = [
     { name: 'Home', href: '/' },
@@ -37,10 +40,35 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Phone Number */}
-          <div className="hidden lg:flex items-center space-x-2 text-primary">
-            <Phone className="h-4 w-4" />
-            <span className="font-semibold">1-800-328-2358</span>
+          {/* Auth Section */}
+          <div className="hidden lg:flex items-center space-x-4">
+            <div className="flex items-center space-x-2 text-primary">
+              <Phone className="h-4 w-4" />
+              <span className="font-semibold">1-800-328-2358</span>
+            </div>
+            
+            {user ? (
+              <div className="flex items-center space-x-2">
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="outline" size="sm">
+                      Admin Panel
+                    </Button>
+                  </Link>
+                )}
+                <Button variant="ghost" size="sm" onClick={signOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4 mr-2" />
+                  Admin Login
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -70,7 +98,34 @@ const Header = () => {
                   {item.name}
                 </a>
               ))}
-              <div className="flex items-center space-x-2 px-3 py-2 text-primary">
+              
+              {/* Mobile Auth Section */}
+              {user ? (
+                <div className="space-y-2 px-3 py-2">
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Admin Panel
+                      </Button>
+                    </Link>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={() => { signOut(); setIsMenuOpen(false); }} className="w-full">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+                <div className="px-3 py-2">
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      Admin Login
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              
+              <div className="flex items-center space-x-2 px-3 py-2 text-primary border-t border-border">
                 <Phone className="h-4 w-4" />
                 <span className="font-semibold">1-800-328-2358</span>
               </div>
