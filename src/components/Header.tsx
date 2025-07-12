@@ -22,14 +22,11 @@ const Header = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex flex-col">
-              <div className="text-3xl font-bold text-primary italic tracking-wide" style={{ fontFamily: 'cursive' }}>
-                Phelan
-              </div>
-              <div className="text-sm font-semibold text-foreground -mt-1 tracking-wider">
-                Manufacturing Corporation
-              </div>
-            </div>
+            <img 
+              src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
+              alt="Phelan Manufacturing Corporation" 
+              className="h-12 w-auto"
+            />
           </div>
 
           {/* Desktop Navigation */}
