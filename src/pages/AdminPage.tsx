@@ -48,7 +48,9 @@ import {
   Package,
   FolderOpen,
   Settings,
-  Image as ImageIcon
+  Image as ImageIcon,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -124,7 +126,6 @@ const AdminPage = () => {
   const [newFeature, setNewFeature] = useState('');
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
-  const [newSpecSortOrder, setNewSpecSortOrder] = useState('');
 
   // State for variants
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -439,12 +440,24 @@ const AdminPage = () => {
     if (!selectedProduct || !newSpecKey.trim() || !newSpecValue.trim()) return;
 
     try {
+      // Get the highest sort_order for this product and add 1
+      const { data: existingSpecs } = await supabase
+        .from('product_specifications')
+        .select('sort_order')
+        .eq('product_id', selectedProduct.id)
+        .order('sort_order', { ascending: false })
+        .limit(1);
+
+      const nextSortOrder = existingSpecs && existingSpecs.length > 0 
+        ? (existingSpecs[0].sort_order || 0) + 1 
+        : 0;
+
       const specData = {
         product_id: selectedProduct.id,
         specification_key: newSpecKey,
         specification_value: newSpecValue,
         variant_id: selectedVariant?.id || null,
-        sort_order: newSpecSortOrder ? parseInt(newSpecSortOrder) : 0,
+        sort_order: nextSortOrder,
       };
 
       const { error } = await supabase
@@ -454,7 +467,6 @@ const AdminPage = () => {
       if (error) throw error;
       setNewSpecKey('');
       setNewSpecValue('');
-      setNewSpecSortOrder('');
       setSelectedVariant(null);
       fetchProductDetails(selectedProduct.id);
       toast({ title: "Success", description: "Specification added successfully" });
@@ -477,6 +489,69 @@ const AdminPage = () => {
       if (error) throw error;
       if (selectedProduct) fetchProductDetails(selectedProduct.id);
       toast({ title: "Success", description: "Specification deleted successfully" });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMoveSpecification = async (specId: string, direction: 'up' | 'down') => {
+    if (!selectedProduct) return;
+
+    try {
+      // Get current specifications ordered by sort_order
+      const { data: allSpecs, error: fetchError } = await supabase
+        .from('product_specifications')
+        .select('*')
+        .eq('product_id', selectedProduct.id)
+        .order('sort_order', { ascending: true });
+
+      if (fetchError) throw fetchError;
+      if (!allSpecs || allSpecs.length < 2) return;
+
+      const currentIndex = allSpecs.findIndex(spec => spec.id === specId);
+      if (currentIndex === -1) return;
+
+      let targetIndex: number;
+      if (direction === 'up' && currentIndex > 0) {
+        targetIndex = currentIndex - 1;
+      } else if (direction === 'down' && currentIndex < allSpecs.length - 1) {
+        targetIndex = currentIndex + 1;
+      } else {
+        return; // Can't move further
+      }
+
+      // Swap the sort_order values
+      const currentSpec = allSpecs[currentIndex];
+      const targetSpec = allSpecs[targetIndex];
+
+      const updates = [
+        {
+          id: currentSpec.id,
+          sort_order: targetSpec.sort_order
+        },
+        {
+          id: targetSpec.id,
+          sort_order: currentSpec.sort_order
+        }
+      ];
+
+      // Update both specifications
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('product_specifications')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id);
+        
+        if (error) throw error;
+      }
+
+      // Refresh the data
+      fetchProductDetails(selectedProduct.id);
+      toast({ title: "Success", description: "Specification order updated" });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1088,24 +1163,13 @@ const AdminPage = () => {
                             onChange={(e) => setNewSpecValue(e.target.value)}
                             placeholder="Specification value (e.g., 36 inches)"
                           />
-                          <Input
-                            value={newSpecSortOrder}
-                            onChange={(e) => setNewSpecSortOrder(e.target.value)}
-                            placeholder="Sort order (0 = first, higher numbers later)"
-                            type="number"
-                          />
                           <Button onClick={handleAddSpecification}>Add Specification</Button>
                         </div>
                         <div className="space-y-2">
-                          {specifications.map((spec) => (
+                          {specifications.map((spec, index) => (
                             <div key={spec.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                              <div>
-                                <div className="flex items-center space-x-2">
-                                  <div className="font-medium">{spec.specification_key}</div>
-                                  <div className="text-xs bg-secondary px-2 py-1 rounded">
-                                    Order: {spec.sort_order || 0}
-                                  </div>
-                                </div>
+                              <div className="flex-1">
+                                <div className="font-medium">{spec.specification_key}</div>
                                 <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
                                 {spec.variant_id && (
                                   <div className="text-xs text-muted-foreground">
@@ -1113,13 +1177,34 @@ const AdminPage = () => {
                                   </div>
                                 )}
                               </div>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteSpecification(spec.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex items-center space-x-1">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleMoveSpecification(spec.id, 'up')}
+                                  disabled={index === 0}
+                                  title="Move up"
+                                >
+                                  <ChevronUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleMoveSpecification(spec.id, 'down')}
+                                  disabled={index === specifications.length - 1}
+                                  title="Move down"
+                                >
+                                  <ChevronDown className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteSpecification(spec.id)}
+                                  title="Delete"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </div>
                           ))}
                         </div>
