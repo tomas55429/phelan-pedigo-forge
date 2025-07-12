@@ -62,7 +62,7 @@ const Footer = () => {
         <div className="border-t border-background/20 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-background/60 text-sm">
-              © 2024 Phelan Manufacturing Corporation. All rights reserved.
+              © {new Date().getFullYear()} Phelan Manufacturing Corporation. All rights reserved.
             </div>
             <div className="text-background/60 text-sm">
               Made in the USA since 1948
