@@ -188,7 +188,7 @@ const AuthPage = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@phelanmanufacturing.com"
+                      placeholder="Richard@PhelanMfgCorp.com"
                       required
                     />
                   </div>
@@ -229,7 +229,7 @@ const AuthPage = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@phelanmanufacturing.com"
+                      placeholder="Richard@PhelanMfgCorp.com"
                       required
                     />
                   </div>

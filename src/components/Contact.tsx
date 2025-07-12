@@ -23,7 +23,7 @@ const Contact = () => {
     {
       icon: <Mail className="h-6 w-6" />,
       title: "Email",
-      details: "info@phelanmfgcorp.com",
+      details: "Richard@PhelanMfgCorp.com",
       description: "Send us your questions anytime"
     },
     {
