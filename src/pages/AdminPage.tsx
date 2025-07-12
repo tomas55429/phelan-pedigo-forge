@@ -76,6 +76,7 @@ interface ProductFeature {
   id: string;
   product_id: string;
   feature: string;
+  is_optional?: boolean;
 }
 
 interface ProductSpecification {
@@ -123,6 +124,7 @@ const AdminPage = () => {
   const [features, setFeatures] = useState<ProductFeature[]>([]);
   const [specifications, setSpecifications] = useState<ProductSpecification[]>([]);
   const [newFeature, setNewFeature] = useState('');
+  const [newOptionalFeature, setNewOptionalFeature] = useState('');
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
   const [draggedSpecId, setDraggedSpecId] = useState<string | null>(null);
@@ -190,6 +192,7 @@ const AdminPage = () => {
           .from('product_features')
           .select('*')
           .eq('product_id', productId)
+          .order('is_optional', { ascending: true })
           .order('feature'),
         supabase
           .from('product_specifications')
@@ -394,21 +397,30 @@ const AdminPage = () => {
     }
   };
 
-  const handleAddFeature = async () => {
-    if (!selectedProduct || !newFeature.trim()) return;
+  const handleAddFeature = async (isOptional: boolean = false) => {
+    const featureText = isOptional ? newOptionalFeature : newFeature;
+    if (!selectedProduct || !featureText.trim()) return;
 
     try {
       const { error } = await supabase
         .from('product_features')
         .insert([{
           product_id: selectedProduct.id,
-          feature: newFeature,
+          feature: featureText,
+          is_optional: isOptional,
         }]);
       
       if (error) throw error;
-      setNewFeature('');
+      if (isOptional) {
+        setNewOptionalFeature('');
+      } else {
+        setNewFeature('');
+      }
       fetchProductDetails(selectedProduct.id);
-      toast({ title: "Success", description: "Feature added successfully" });
+      toast({ 
+        title: "Success", 
+        description: `${isOptional ? 'Optional feature' : 'Feature'} added successfully` 
+      });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1098,7 +1110,7 @@ const AdminPage = () => {
                     specifications={specifications}
                   />
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Features */}
                     <Card>
                       <CardHeader>
@@ -1111,10 +1123,41 @@ const AdminPage = () => {
                             onChange={(e) => setNewFeature(e.target.value)}
                             placeholder="Add new feature"
                           />
-                          <Button onClick={handleAddFeature}>Add</Button>
+                          <Button onClick={() => handleAddFeature(false)}>Add</Button>
                         </div>
                         <div className="space-y-2">
-                          {features.map((feature) => (
+                          {features.filter(f => !f.is_optional).map((feature) => (
+                            <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                              <span>{feature.feature}</span>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteFeature(feature.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Optional Features */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Optional Features</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex space-x-2">
+                          <Input
+                            value={newOptionalFeature}
+                            onChange={(e) => setNewOptionalFeature(e.target.value)}
+                            placeholder="Add new optional feature"
+                          />
+                          <Button onClick={() => handleAddFeature(true)}>Add</Button>
+                        </div>
+                        <div className="space-y-2">
+                          {features.filter(f => f.is_optional).map((feature) => (
                             <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
                               <span>{feature.feature}</span>
                               <Button
