@@ -67,6 +67,7 @@ interface Product {
   name: string;
   category_id: string | null;
   description: string | null;
+  special_notes: string | null;
   image_url: string | null;
   featured: boolean;
   categories?: { name: string };
@@ -114,6 +115,7 @@ const AdminPage = () => {
   const [productName, setProductName] = useState('');
   const [productCategoryId, setProductCategoryId] = useState('');
   const [productDescription, setProductDescription] = useState('');
+  const [productSpecialNotes, setProductSpecialNotes] = useState('');
   const [productFeatured, setProductFeatured] = useState(false);
   const [productImage, setProductImage] = useState<File | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -332,6 +334,7 @@ const AdminPage = () => {
         name: productName,
         category_id: productCategoryId === 'none' ? null : productCategoryId || null,
         description: productDescription || null,
+        special_notes: productSpecialNotes || null,
         image_url: imageUrl,
         featured: productFeatured,
       };
@@ -370,6 +373,7 @@ const AdminPage = () => {
     setProductName('');
     setProductCategoryId('');
     setProductDescription('');
+    setProductSpecialNotes('');
     setProductFeatured(false);
     setProductImage(null);
     setEditingProduct(null);
@@ -859,6 +863,16 @@ const AdminPage = () => {
                         />
                       </div>
                       <div>
+                        <Label htmlFor="productSpecialNotes">Special Notes / Disclaimer</Label>
+                        <Textarea
+                          id="productSpecialNotes"
+                          value={productSpecialNotes}
+                          onChange={(e) => setProductSpecialNotes(e.target.value)}
+                          placeholder="Enter special notes or disclaimers for this product"
+                          rows={3}
+                        />
+                      </div>
+                      <div>
                         <Label htmlFor="productImage">Product Image</Label>
                         <Input
                           id="productImage"
@@ -935,6 +949,7 @@ const AdminPage = () => {
                                   setProductName(product.name);
                                   setProductCategoryId(product.category_id || 'none');
                                   setProductDescription(product.description || '');
+                                  setProductSpecialNotes(product.special_notes || '');
                                   setProductFeatured(product.featured);
                                   setProductDialogOpen(true);
                                 }}
@@ -988,6 +1003,39 @@ const AdminPage = () => {
 
               {selectedProduct && (
                 <div className="space-y-6">
+                  {/* Product Information */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Product Information</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h3 className="font-semibold text-foreground">{selectedProduct.name}</h3>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Category: {selectedProduct.categories?.name || 'Uncategorized'}
+                          </p>
+                          {selectedProduct.description && (
+                            <div>
+                              <p className="text-sm font-medium mb-1">Description:</p>
+                              <p className="text-sm text-muted-foreground">{selectedProduct.description}</p>
+                            </div>
+                          )}
+                        </div>
+                        {selectedProduct.special_notes && (
+                          <div>
+                            <p className="text-sm font-medium mb-1 text-warning-foreground">Special Notes:</p>
+                            <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
+                              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                {selectedProduct.special_notes}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Product Variants */}
                   <Card>
                     <CardHeader>

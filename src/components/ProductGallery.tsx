@@ -179,6 +179,16 @@ const ProductGallery = () => {
             )}
           </div>
           
+          {/* Special Notes */}
+          {product.special_notes && (
+            <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-md">
+              <p className="text-xs font-medium text-warning-foreground mb-1">Special Notes:</p>
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                {product.special_notes}
+              </p>
+            </div>
+          )}
+          
           <div className="flex space-x-2 mt-4">
             <Button 
               size="sm" 
@@ -366,6 +376,19 @@ const ProductGallery = () => {
                   variants={selectedProduct.variants}
                   specifications={selectedProduct.specifications}
                 />
+              )}
+              
+              {/* Special Notes Section */}
+              {selectedProduct.product.special_notes && (
+                <div className="mt-6 p-4 bg-muted/50 border border-border rounded-lg">
+                  <h3 className="font-semibold text-foreground mb-2 flex items-center">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Special Notes
+                  </h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {selectedProduct.product.special_notes}
+                  </p>
+                </div>
               )}
             </div>
           </div>
