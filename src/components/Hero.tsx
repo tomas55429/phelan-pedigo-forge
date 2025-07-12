@@ -45,6 +45,7 @@ const Hero = () => {
                 variant="outline" 
                 size="lg"
                 className="border-white text-white hover:bg-white hover:text-primary shadow-medical font-semibold px-8 py-4 text-lg"
+                onClick={() => window.location.href = '/products'}
               >
                 View Products
                 <ArrowRight className="ml-2 h-5 w-5" />

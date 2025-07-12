@@ -6,8 +6,8 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Home', href: '#' },
-    { name: 'Products', href: '#products' },
+    { name: 'Home', href: '/' },
+    { name: 'Products', href: '/products' },
     { name: 'About', href: '#about' },
     { name: 'History', href: '#history' },
     { name: 'Contact', href: '#contact' },
