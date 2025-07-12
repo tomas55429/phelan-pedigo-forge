@@ -7,7 +7,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-primary-light">Phelan Manufacturing</h3>
+            <img 
+              src="/lovable-uploads/e88a7c69-d6d6-4e03-a1f7-c51b7f7d5fb9.png" 
+              alt="Phelan Manufacturing Corporation" 
+              className="h-16 w-auto"
+            />
             <p className="text-background/80 leading-relaxed">
               Medical equipment and hospital hardware manufacturer since 1948. 
               Made in the USA with quality, innovation, and tremendous work ethic.
