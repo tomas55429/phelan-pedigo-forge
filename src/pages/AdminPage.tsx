@@ -49,8 +49,7 @@ import {
   FolderOpen,
   Settings,
   Image as ImageIcon,
-  ChevronUp,
-  ChevronDown
+  GripVertical
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -126,6 +125,8 @@ const AdminPage = () => {
   const [newFeature, setNewFeature] = useState('');
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
+  const [draggedSpecId, setDraggedSpecId] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   // State for variants
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -498,8 +499,24 @@ const AdminPage = () => {
     }
   };
 
-  const handleMoveSpecification = async (specId: string, direction: 'up' | 'down') => {
-    if (!selectedProduct) return;
+  const handleDragStart = (e: React.DragEvent, specId: string) => {
+    setDraggedSpecId(specId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    if (!draggedSpecId || !selectedProduct) return;
 
     try {
       // Get current specifications ordered by sort_order
@@ -510,36 +527,23 @@ const AdminPage = () => {
         .order('sort_order', { ascending: true });
 
       if (fetchError) throw fetchError;
-      if (!allSpecs || allSpecs.length < 2) return;
+      if (!allSpecs) return;
 
-      const currentIndex = allSpecs.findIndex(spec => spec.id === specId);
-      if (currentIndex === -1) return;
+      const draggedIndex = allSpecs.findIndex(spec => spec.id === draggedSpecId);
+      if (draggedIndex === -1 || draggedIndex === dropIndex) return;
 
-      let targetIndex: number;
-      if (direction === 'up' && currentIndex > 0) {
-        targetIndex = currentIndex - 1;
-      } else if (direction === 'down' && currentIndex < allSpecs.length - 1) {
-        targetIndex = currentIndex + 1;
-      } else {
-        return; // Can't move further
-      }
+      // Create new order array
+      const reorderedSpecs = [...allSpecs];
+      const [draggedItem] = reorderedSpecs.splice(draggedIndex, 1);
+      reorderedSpecs.splice(dropIndex, 0, draggedItem);
 
-      // Swap the sort_order values
-      const currentSpec = allSpecs[currentIndex];
-      const targetSpec = allSpecs[targetIndex];
+      // Update sort_order values for all affected items
+      const updates = reorderedSpecs.map((spec, index) => ({
+        id: spec.id,
+        sort_order: index
+      }));
 
-      const updates = [
-        {
-          id: currentSpec.id,
-          sort_order: targetSpec.sort_order
-        },
-        {
-          id: targetSpec.id,
-          sort_order: currentSpec.sort_order
-        }
-      ];
-
-      // Update both specifications
+      // Execute updates
       for (const update of updates) {
         const { error } = await supabase
           .from('product_specifications')
@@ -558,6 +562,9 @@ const AdminPage = () => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setDraggedSpecId(null);
+      setDragOverIndex(null);
     }
   };
 
@@ -1167,44 +1174,39 @@ const AdminPage = () => {
                         </div>
                         <div className="space-y-2">
                           {specifications.map((spec, index) => (
-                            <div key={spec.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                              <div className="flex-1">
-                                <div className="font-medium">{spec.specification_key}</div>
-                                <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
-                                {spec.variant_id && (
-                                  <div className="text-xs text-muted-foreground">
-                                    Variant: {variants.find(v => v.id === spec.variant_id)?.variant_name}
-                                  </div>
-                                )}
+                            <div
+                              key={spec.id}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, spec.id)}
+                              onDragOver={(e) => handleDragOver(e, index)}
+                              onDragLeave={handleDragLeave}
+                              onDrop={(e) => handleDrop(e, index)}
+                              className={`flex items-center justify-between p-2 bg-muted rounded cursor-move transition-all duration-200 ${
+                                draggedSpecId === spec.id ? 'opacity-50 scale-95' : ''
+                              } ${
+                                dragOverIndex === index ? 'border-2 border-primary border-dashed' : ''
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2 flex-1">
+                                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                <div>
+                                  <div className="font-medium">{spec.specification_key}</div>
+                                  <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
+                                  {spec.variant_id && (
+                                    <div className="text-xs text-muted-foreground">
+                                      Variant: {variants.find(v => v.id === spec.variant_id)?.variant_name}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                              <div className="flex items-center space-x-1">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleMoveSpecification(spec.id, 'up')}
-                                  disabled={index === 0}
-                                  title="Move up"
-                                >
-                                  <ChevronUp className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleMoveSpecification(spec.id, 'down')}
-                                  disabled={index === specifications.length - 1}
-                                  title="Move down"
-                                >
-                                  <ChevronDown className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteSpecification(spec.id)}
-                                  title="Delete"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteSpecification(spec.id)}
+                                title="Delete"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
                           ))}
                         </div>
