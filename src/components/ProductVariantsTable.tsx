@@ -26,7 +26,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   variants,
   specifications
 }) => {
-  if (variants.length === 0) {
+  // Return null only if there are no specifications at all
+  if (specifications.length === 0) {
     return null;
   }
 
@@ -35,14 +36,18 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     if (!acc[spec.specification_key]) {
       acc[spec.specification_key] = {
         values: {},
-        sort_order: spec.sort_order || 0
+        sort_order: spec.sort_order || 0,
+        generalValue: null // For specifications without variant_id
       };
     }
     if (spec.variant_id) {
       acc[spec.specification_key].values[spec.variant_id] = spec.specification_value;
+    } else {
+      // General specification (not tied to a variant)
+      acc[spec.specification_key].generalValue = spec.specification_value;
     }
     return acc;
-  }, {} as Record<string, { values: Record<string, string>, sort_order: number }>);
+  }, {} as Record<string, { values: Record<string, string>, sort_order: number, generalValue: string | null }>);
 
   // Get all unique specification keys sorted by sort_order, then by name
   const specificationKeys = Object.keys(specsByKey).sort((a, b) => {
@@ -54,12 +59,10 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     return a.localeCompare(b);
   });
 
-  // Check if we have any variant-specific specifications
+  // Determine if we have variants to show or just general specs
+  const hasVariants = variants.length > 0;
   const hasVariantSpecs = specifications.some(spec => spec.variant_id);
-
-  if (!hasVariantSpecs || specificationKeys.length === 0) {
-    return null;
-  }
+  const hasGeneralSpecs = specifications.some(spec => !spec.variant_id);
 
   return (
     <Card>
@@ -71,23 +74,33 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="font-semibold">Product No.</TableHead>
-                {variants.map((variant) => (
-                  <TableHead key={variant.id} className="text-center font-semibold">
-                    {variant.variant_name}
-                  </TableHead>
-                ))}
+                <TableHead className="font-semibold">Specification</TableHead>
+                {hasVariants ? (
+                  variants.map((variant) => (
+                    <TableHead key={variant.id} className="text-center font-semibold">
+                      {variant.variant_name}
+                    </TableHead>
+                  ))
+                ) : (
+                  <TableHead className="text-center font-semibold">Value</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
               {specificationKeys.map((specKey) => (
                 <TableRow key={specKey}>
                   <TableCell className="font-medium">{specKey}</TableCell>
-                  {variants.map((variant) => (
-                    <TableCell key={variant.id} className="text-center">
-                      {specsByKey[specKey].values[variant.id] || '-'}
+                  {hasVariants ? (
+                    variants.map((variant) => (
+                      <TableCell key={variant.id} className="text-center">
+                        {specsByKey[specKey].values[variant.id] || '-'}
+                      </TableCell>
+                    ))
+                  ) : (
+                    <TableCell className="text-center">
+                      {specsByKey[specKey].generalValue || '-'}
                     </TableCell>
-                  ))}
+                  )}
                 </TableRow>
               ))}
             </TableBody>
