@@ -371,7 +371,7 @@ const ProductGallery = () => {
                 </div>
               </div>
               
-              {selectedProduct.variants.length > 0 && selectedProduct.specifications.length > 0 && (
+              {selectedProduct.specifications.length > 0 && (
                 <ProductVariantsTable
                   variants={selectedProduct.variants}
                   specifications={selectedProduct.specifications}
