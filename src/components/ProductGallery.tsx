@@ -315,7 +315,7 @@ const ProductGallery = () => {
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold mb-3">3D Product View</h3>
                     <Product3DViewer 
-                      imageUrl={selectedProduct.product.image_url || undefined}
+                      imageUrl={selectedProduct.product.model_3d_url || selectedProduct.product.image_url || undefined}
                       productName={selectedProduct.product.name}
                       className="w-full h-80"
                     />
