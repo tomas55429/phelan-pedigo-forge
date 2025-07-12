@@ -294,7 +294,7 @@ const AdminPage = () => {
 
       const productData = {
         name: productName,
-        category_id: productCategoryId || null,
+        category_id: productCategoryId === 'none' ? null : productCategoryId || null,
         description: productDescription || null,
         image_url: imageUrl,
         featured: productFeatured,
@@ -629,7 +629,7 @@ const AdminPage = () => {
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">No Category</SelectItem>
+                            <SelectItem value="none">No Category</SelectItem>
                             {categories.map((category) => (
                               <SelectItem key={category.id} value={category.id}>
                                 {category.name}
@@ -722,7 +722,7 @@ const AdminPage = () => {
                                 onClick={() => {
                                   setEditingProduct(product);
                                   setProductName(product.name);
-                                  setProductCategoryId(product.category_id || '');
+                                  setProductCategoryId(product.category_id || 'none');
                                   setProductDescription(product.description || '');
                                   setProductFeatured(product.featured);
                                   setProductDialogOpen(true);
