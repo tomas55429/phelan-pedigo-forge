@@ -1,6 +1,6 @@
 import React, { Suspense, useRef, useState } from 'react';
 import { Canvas, useFrame, ThreeElements } from '@react-three/fiber';
-import { OrbitControls, Environment, PerspectiveCamera, useTexture } from '@react-three/drei';
+import { OrbitControls, Environment, PerspectiveCamera, useTexture, RoundedBox } from '@react-three/drei';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
@@ -32,22 +32,22 @@ function ProductMesh({ imageUrl, productName }: { imageUrl?: string; productName
       onPointerOut={() => setHovered(false)}
       scale={hovered ? 1.1 : 1}
     >
-      {/* Main product geometry - using a rounded box to represent medical equipment */}
-      <roundedBoxGeometry args={[2, 1.5, 0.5, 4, 0.1]} />
-      
-      {texture ? (
-        <meshStandardMaterial 
-          map={texture} 
-          metalness={0.7}
-          roughness={0.3}
-        />
-      ) : (
-        <meshStandardMaterial 
-          color="#e0e0e0" 
-          metalness={0.7}
-          roughness={0.3}
-        />
-      )}
+      {/* Main product geometry - using RoundedBox from drei */}
+      <RoundedBox args={[2, 1.5, 0.5]} radius={0.1} smoothness={4}>
+        {texture ? (
+          <meshStandardMaterial 
+            map={texture} 
+            metalness={0.7}
+            roughness={0.3}
+          />
+        ) : (
+          <meshStandardMaterial 
+            color="#e0e0e0" 
+            metalness={0.7}
+            roughness={0.3}
+          />
+        )}
+      </RoundedBox>
       
       {/* Add some details to make it look more like medical equipment */}
       <mesh position={[0, 0, 0.3]}>
@@ -61,20 +61,6 @@ function ProductMesh({ imageUrl, productName }: { imageUrl?: string; productName
       </mesh>
     </mesh>
   );
-}
-
-// Custom rounded box geometry
-function RoundedBoxGeometry(props: any) {
-  return <boxGeometry {...props} />;
-}
-
-// Extend JSX elements to include our custom geometry
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      roundedBoxGeometry: ThreeElements['boxGeometry'];
-    }
-  }
 }
 
 const Product3DViewer: React.FC<Product3DViewerProps> = ({ 
