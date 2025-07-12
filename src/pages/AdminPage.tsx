@@ -53,6 +53,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ProductVariantsTable from '@/components/ProductVariantsTable';
 
 interface Category {
   id: string;
@@ -435,17 +436,21 @@ const AdminPage = () => {
     if (!selectedProduct || !newSpecKey.trim() || !newSpecValue.trim()) return;
 
     try {
+      const specData = {
+        product_id: selectedProduct.id,
+        specification_key: newSpecKey,
+        specification_value: newSpecValue,
+        variant_id: selectedVariant?.id || null,
+      };
+
       const { error } = await supabase
         .from('product_specifications')
-        .insert([{
-          product_id: selectedProduct.id,
-          specification_key: newSpecKey,
-          specification_value: newSpecValue,
-        }]);
+        .insert([specData]);
       
       if (error) throw error;
       setNewSpecKey('');
       setNewSpecValue('');
+      setSelectedVariant(null);
       fetchProductDetails(selectedProduct.id);
       toast({ title: "Success", description: "Specification added successfully" });
     } catch (error: any) {
@@ -1000,6 +1005,12 @@ const AdminPage = () => {
                     </CardContent>
                   </Card>
 
+                  {/* Specifications Table Display */}
+                  <ProductVariantsTable 
+                    variants={variants}
+                    specifications={specifications}
+                  />
+
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Features */}
                     <Card>
@@ -1039,15 +1050,38 @@ const AdminPage = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
+                          <Select 
+                            value={selectedVariant?.id || 'product'} 
+                            onValueChange={(value) => {
+                              if (value === 'product') {
+                                setSelectedVariant(null);
+                              } else {
+                                const variant = variants.find(v => v.id === value);
+                                setSelectedVariant(variant || null);
+                              }
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Assign to..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="product">Product (General)</SelectItem>
+                              {variants.map((variant) => (
+                                <SelectItem key={variant.id} value={variant.id}>
+                                  {variant.variant_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <Input
                             value={newSpecKey}
                             onChange={(e) => setNewSpecKey(e.target.value)}
-                            placeholder="Specification key (e.g., Weight)"
+                            placeholder="Specification key (e.g., Height)"
                           />
                           <Input
                             value={newSpecValue}
                             onChange={(e) => setNewSpecValue(e.target.value)}
-                            placeholder="Specification value (e.g., 50 lbs)"
+                            placeholder="Specification value (e.g., 36 inches)"
                           />
                           <Button onClick={handleAddSpecification}>Add Specification</Button>
                         </div>
