@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,298 +11,366 @@ import {
   Phone,
   FileText,
   Star,
-  Eye
+  Eye,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
+import { ProductVariantsTable } from './ProductVariantsTable';
 
-// Import product images
-import ivStand1 from '@/assets/products/iv-stand-1.jpg';
-import medicalCart1 from '@/assets/products/medical-cart-1.jpg';
-import sterilizationBasket1 from '@/assets/products/sterilization-basket-1.jpg';
-import stepStand1 from '@/assets/products/step-stand-1.jpg';
-import privacyScreen1 from '@/assets/products/privacy-screen-1.jpg';
-import backTable1 from '@/assets/products/back-table-1.jpg';
+type Product = Tables<'products'>;
+type ProductVariant = Tables<'product_variants'>;
+type ProductFeature = Tables<'product_features'>;
+type ProductSpecification = Tables<'product_specifications'>;
+type Category = Tables<'categories'>;
 
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  model: string;
-  description: string;
-  features: string[];
-  image: string;
-  featured: boolean;
-  specifications: {
-    height?: string;
-    width?: string;
-    depth?: string;
-    weight?: string;
-    material: string;
-    capacity?: string;
-  };
+interface ProductWithDetails {
+  product: Product;
+  category: Category | null;
+  variants: ProductVariant[];
+  features: ProductFeature[];
+  specifications: ProductSpecification[];
 }
 
-const products: Product[] = [
-  {
-    id: 'pmc-iv-001',
-    name: 'Adjustable IV Stand',
-    category: 'IV Stands and Carts',
-    model: 'PMC-IV-001',
-    description: 'Professional adjustable IV stand with smooth-rolling casters and durable stainless steel construction.',
-    features: ['Adjustable height 48"-84"', 'Four smooth-rolling casters', 'Stainless steel construction', 'Easy-grip adjustment mechanism'],
-    image: ivStand1,
-    featured: true,
-    specifications: {
-      height: '48" - 84" adjustable',
-      width: '18"',
-      material: 'Stainless Steel',
-      weight: '12 lbs'
-    }
-  },
-  {
-    id: 'pmc-cart-001',
-    name: 'Multi-Purpose Medical Cart',
-    category: 'IV Stands and Carts',
-    model: 'PMC-CART-001',
-    description: 'Versatile medical cart with multiple shelves for equipment organization and transport.',
-    features: ['Three adjustable shelves', 'Push-handle design', 'Corrosion-resistant finish', 'Hospital-grade casters'],
-    image: medicalCart1,
-    featured: true,
-    specifications: {
-      height: '36"',
-      width: '24"',
-      depth: '18"',
-      material: 'Stainless Steel',
-      capacity: '150 lbs per shelf'
-    }
-  },
-  {
-    id: 'pmc-basket-001',
-    name: 'Sterilization Instrument Basket',
-    category: 'Sterilization Baskets and Trays',
-    model: 'PMC-BASKET-001',
-    description: 'Perforated stainless steel basket designed for autoclave sterilization of medical instruments.',
-    features: ['Autoclave compatible', 'Perforated for drainage', 'Stackable design', 'Easy-grip handles'],
-    image: sterilizationBasket1,
-    featured: false,
-    specifications: {
-      height: '4"',
-      width: '12"',
-      depth: '8"',
-      material: 'Stainless Steel 316L',
-      weight: '2.5 lbs'
-    }
-  },
-  {
-    id: 'pmc-step-001',
-    name: 'Medical Step Stand',
-    category: 'Step Stands and Working Platforms',
-    model: 'PMC-STEP-001',
-    description: 'Stable step stand with non-slip surface for safe access to elevated work areas.',
-    features: ['Non-slip rubber surface', 'Welded construction', 'Rounded corners', 'Lightweight design'],
-    image: stepStand1,
-    featured: false,
-    specifications: {
-      height: '8"',
-      width: '14"',
-      depth: '10"',
-      material: 'Stainless Steel',
-      capacity: '300 lbs'
-    }
-  },
-  {
-    id: 'pmc-screen-001',
-    name: 'Privacy Screen',
-    category: 'Screens, Guards, Face Butlers',
-    model: 'PMC-SCREEN-001',
-    description: 'Adjustable privacy screen with rolling base for patient privacy and room division.',
-    features: ['Three-panel design', 'Easy folding mechanism', 'Washable fabric panels', 'Smooth-rolling base'],
-    image: privacyScreen1,
-    featured: true,
-    specifications: {
-      height: '72"',
-      width: '54" (extended)',
-      material: 'Aluminum frame with vinyl panels',
-      weight: '25 lbs'
-    }
-  },
-  {
-    id: 'pmc-table-001',
-    name: 'Surgical Back Table',
-    category: 'Neurosurgical, Thoracic Instrument and Back Tables',
-    model: 'PMC-TABLE-001',
-    description: 'Height-adjustable surgical table with smooth stainless steel surface for instrument organization.',
-    features: ['Height adjustable', 'Smooth stainless surface', 'Easy to sanitize', 'Stable base design'],
-    image: backTable1,
-    featured: true,
-    specifications: {
-      height: '30" - 42" adjustable',
-      width: '24"',
-      depth: '18"',
-      material: 'Stainless Steel',
-      capacity: '100 lbs'
-    }
-  }
-];
-
-const categories = [
-  'All Products',
-  'IV Stands and Carts',
-  'Screens, Guards, Face Butlers',
-  'Step Stands and Working Platforms',
-  'Sterilization Baskets and Trays',
-  'Neurosurgical, Thoracic Instrument and Back Tables'
-];
+// This will be replaced with data from Supabase
 
 const ProductGallery = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
+  const [productsWithDetails, setProductsWithDetails] = useState<ProductWithDetails[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
+
+  // Fetch products and related data from Supabase
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch all data in parallel
+        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes] = await Promise.all([
+          supabase.from('products').select('*').order('name'),
+          supabase.from('categories').select('*').order('name'),
+          supabase.from('product_variants').select('*'),
+          supabase.from('product_features').select('*'),
+          supabase.from('product_specifications').select('*')
+        ]);
+
+        if (productsRes.error) throw productsRes.error;
+        if (categoriesRes.error) throw categoriesRes.error;
+        if (variantsRes.error) throw variantsRes.error;
+        if (featuresRes.error) throw featuresRes.error;
+        if (specificationsRes.error) throw specificationsRes.error;
+
+        const products = productsRes.data || [];
+        const categoriesData = categoriesRes.data || [];
+        const variants = variantsRes.data || [];
+        const features = featuresRes.data || [];
+        const specifications = specificationsRes.data || [];
+
+        // Group data by product
+        const productsWithDetailsData: ProductWithDetails[] = products.map(product => ({
+          product,
+          category: categoriesData.find(cat => cat.id === product.category_id) || null,
+          variants: variants.filter(variant => variant.product_id === product.id),
+          features: features.filter(feature => feature.product_id === product.id),
+          specifications: specifications.filter(spec => spec.product_id === product.id)
+        }));
+
+        setProductsWithDetails(productsWithDetailsData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.model.toLowerCase().includes(searchTerm.toLowerCase());
+    return productsWithDetails.filter(({ product, category }) => {
+      const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           product.description?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesCategory = selectedCategory === 'All Products' || product.category === selectedCategory;
+      const matchesCategory = selectedCategory === 'All Products' || category?.name === selectedCategory;
       
       const matchesFeatured = !showFeaturedOnly || product.featured;
       
       return matchesSearch && matchesCategory && matchesFeatured;
     });
-  }, [searchTerm, selectedCategory, showFeaturedOnly]);
+  }, [searchTerm, selectedCategory, showFeaturedOnly, productsWithDetails]);
 
-  const ProductCard = ({ product }: { product: Product }) => (
-    <Card className="professional-hover bg-card shadow-card overflow-hidden">
-      <div className="relative">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-48 object-cover"
-        />
-        {product.featured && (
-          <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-            <Star className="h-3 w-3 mr-1" />
-            Featured
-          </Badge>
-        )}
-      </div>
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
-          <Badge variant="outline" className="text-xs">
-            {product.model}
-          </Badge>
-        </div>
-        <p className="text-sm text-muted-foreground">{product.category}</p>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-          {product.description}
-        </p>
-        
-        <div className="space-y-3">
-          <div>
-            <h5 className="text-sm font-semibold mb-2">Key Features:</h5>
-            <ul className="text-xs text-muted-foreground space-y-1">
-              {product.features.slice(0, 3).map((feature, index) => (
-                <li key={index} className="flex items-center space-x-1">
-                  <span className="w-1 h-1 bg-primary rounded-full flex-shrink-0"></span>
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <div>
-            <h5 className="text-sm font-semibold mb-2">Specifications:</h5>
-            <div className="text-xs text-muted-foreground space-y-1">
-              {product.specifications.height && (
-                <div><strong>Height:</strong> {product.specifications.height}</div>
-              )}
-              <div><strong>Material:</strong> {product.specifications.material}</div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="flex space-x-2 mt-4">
-          <Button size="sm" className="flex-1">
-            <Eye className="h-4 w-4 mr-1" />
-            View Details
-          </Button>
-          <Button size="sm" variant="outline">
-            <FileText className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-
-  const ProductListItem = ({ product }: { product: Product }) => (
-    <Card className="professional-hover bg-card shadow-card">
-      <CardContent className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-          <div className="relative">
+  const ProductCard = ({ productWithDetails }: { productWithDetails: ProductWithDetails }) => {
+    const { product, category, variants, features } = productWithDetails;
+    
+    return (
+      <Card className="professional-hover bg-card shadow-card overflow-hidden">
+        <div className="relative">
+          {product.image_url ? (
             <img
-              src={product.image}
+              src={product.image_url}
               alt={product.name}
-              className="w-full h-32 object-cover rounded"
+              className="w-full h-48 object-cover"
             />
-            {product.featured && (
-              <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
-                <Star className="h-3 w-3 mr-1" />
-                Featured
+          ) : (
+            <div className="w-full h-48 bg-muted flex items-center justify-center">
+              <FileText className="h-12 w-12 text-muted-foreground" />
+            </div>
+          )}
+          {product.featured && (
+            <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
+              <Star className="h-3 w-3 mr-1" />
+              Featured
+            </Badge>
+          )}
+        </div>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-start">
+            <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
+            {variants.length > 1 && (
+              <Badge variant="outline" className="text-xs">
+                {variants.length} variants
               </Badge>
             )}
           </div>
+          <p className="text-sm text-muted-foreground">{category?.name || 'Uncategorized'}</p>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+            {product.description || 'No description available'}
+          </p>
           
-          <div className="md:col-span-2">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-semibold">{product.name}</h3>
-              <Badge variant="outline" className="text-xs">
-                {product.model}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground mb-2">{product.category}</p>
-            <p className="text-sm text-muted-foreground mb-3">{product.description}</p>
-            
-            <div className="grid grid-cols-2 gap-4 text-xs">
+          <div className="space-y-3">
+            {features.length > 0 && (
               <div>
-                <strong>Features:</strong>
-                <ul className="mt-1 space-y-1 text-muted-foreground">
-                  {product.features.slice(0, 2).map((feature, index) => (
-                    <li key={index}>• {feature}</li>
+                <h5 className="text-sm font-semibold mb-2">Key Features:</h5>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  {features.slice(0, 3).map((feature) => (
+                    <li key={feature.id} className="flex items-center space-x-1">
+                      <span className="w-1 h-1 bg-primary rounded-full flex-shrink-0"></span>
+                      <span>{feature.feature}</span>
+                    </li>
                   ))}
                 </ul>
               </div>
+            )}
+            
+            {variants.length > 0 && (
               <div>
-                <strong>Material:</strong> {product.specifications.material}
-                {product.specifications.height && (
-                  <div><strong>Height:</strong> {product.specifications.height}</div>
-                )}
+                <h5 className="text-sm font-semibold mb-2">Available Variants:</h5>
+                <div className="flex flex-wrap gap-1">
+                  {variants.slice(0, 3).map((variant) => (
+                    <Badge key={variant.id} variant="secondary" className="text-xs">
+                      {variant.variant_name}
+                    </Badge>
+                  ))}
+                  {variants.length > 3 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{variants.length - 3} more
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
           
-          <div className="flex flex-col space-y-2">
-            <Button size="sm">
+          <div className="flex space-x-2 mt-4">
+            <Button 
+              size="sm" 
+              className="flex-1"
+              onClick={() => setSelectedProduct(productWithDetails)}
+            >
               <Eye className="h-4 w-4 mr-1" />
               View Details
             </Button>
             <Button size="sm" variant="outline">
-              <FileText className="h-4 w-4 mr-1" />
-              Specs
+              <FileText className="h-4 w-4" />
             </Button>
           </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const ProductListItem = ({ productWithDetails }: { productWithDetails: ProductWithDetails }) => {
+    const { product, category, variants, features } = productWithDetails;
+    
+    return (
+      <Card className="professional-hover bg-card shadow-card">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
+            <div className="relative">
+              {product.image_url ? (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="w-full h-32 object-cover rounded"
+                />
+              ) : (
+                <div className="w-full h-32 bg-muted flex items-center justify-center rounded">
+                  <FileText className="h-8 w-8 text-muted-foreground" />
+                </div>
+              )}
+              {product.featured && (
+                <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
+                  <Star className="h-3 w-3 mr-1" />
+                  Featured
+                </Badge>
+              )}
+            </div>
+            
+            <div className="md:col-span-2">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                {variants.length > 1 && (
+                  <Badge variant="outline" className="text-xs">
+                    {variants.length} variants
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground mb-2">{category?.name || 'Uncategorized'}</p>
+              <p className="text-sm text-muted-foreground mb-3">{product.description || 'No description available'}</p>
+              
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                {features.length > 0 && (
+                  <div>
+                    <strong>Features:</strong>
+                    <ul className="mt-1 space-y-1 text-muted-foreground">
+                      {features.slice(0, 2).map((feature) => (
+                        <li key={feature.id}>• {feature.feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {variants.length > 0 && (
+                  <div>
+                    <strong>Variants:</strong>
+                    <div className="mt-1 space-y-1 text-muted-foreground">
+                      {variants.slice(0, 2).map((variant) => (
+                        <div key={variant.id}>• {variant.variant_name}</div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex flex-col space-y-2">
+              <Button 
+                size="sm"
+                onClick={() => setSelectedProduct(productWithDetails)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                View Details
+              </Button>
+              <Button size="sm" variant="outline">
+                <FileText className="h-4 w-4 mr-1" />
+                Specs
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className="py-20 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center min-h-64">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading products...</span>
+          </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
+  }
 
   return (
     <div className="py-20 bg-background">
       <div className="container mx-auto px-4">
+        {/* Product Details Modal */}
+        {selectedProduct && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-background rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold">{selectedProduct.product.name}</h2>
+                  <p className="text-muted-foreground">{selectedProduct.category?.name || 'Uncategorized'}</p>
+                </div>
+                <Button variant="outline" onClick={() => setSelectedProduct(null)}>
+                  ×
+                </Button>
+              </div>
+              
+              <div className="grid md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  {selectedProduct.product.image_url ? (
+                    <img
+                      src={selectedProduct.product.image_url}
+                      alt={selectedProduct.product.name}
+                      className="w-full h-64 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-full h-64 bg-muted flex items-center justify-center rounded">
+                      <FileText className="h-16 w-16 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                
+                <div>
+                  <p className="text-muted-foreground mb-4">
+                    {selectedProduct.product.description || 'No description available'}
+                  </p>
+                  
+                  {selectedProduct.features.length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="font-semibold mb-2">Features:</h3>
+                      <ul className="space-y-1 text-sm text-muted-foreground">
+                        {selectedProduct.features.map((feature) => (
+                          <li key={feature.id} className="flex items-center space-x-2">
+                            <span className="w-1 h-1 bg-primary rounded-full"></span>
+                            <span>{feature.feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {selectedProduct.variants.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Available Variants:</h3>
+                      <div className="space-y-2">
+                        {selectedProduct.variants.map((variant) => (
+                          <div key={variant.id} className="p-2 border border-border rounded">
+                            <div className="font-medium">{variant.variant_name}</div>
+                            {variant.variant_description && (
+                              <div className="text-sm text-muted-foreground">{variant.variant_description}</div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {selectedProduct.variants.length > 0 && selectedProduct.specifications.length > 0 && (
+                <ProductVariantsTable
+                  variants={selectedProduct.variants}
+                  specifications={selectedProduct.specifications}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
@@ -338,8 +406,9 @@ const ProductGallery = () => {
                     onChange={(e) => setSelectedCategory(e.target.value)}
                     className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   >
+                    <option value="All Products">All Products</option>
                     {categories.map(category => (
-                      <option key={category} value={category}>{category}</option>
+                      <option key={category.id} value={category.name}>{category.name}</option>
                     ))}
                   </select>
                 </div>
@@ -379,7 +448,7 @@ const ProductGallery = () => {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-muted-foreground">
-            Showing {filteredProducts.length} of {products.length} products
+            Showing {filteredProducts.length} of {productsWithDetails.length} products
             {selectedCategory !== 'All Products' && ` in "${selectedCategory}"`}
           </p>
         </div>
@@ -387,14 +456,14 @@ const ProductGallery = () => {
         {/* Products Grid/List */}
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+            {filteredProducts.map(productWithDetails => (
+              <ProductCard key={productWithDetails.product.id} productWithDetails={productWithDetails} />
             ))}
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredProducts.map(product => (
-              <ProductListItem key={product.id} product={product} />
+            {filteredProducts.map(productWithDetails => (
+              <ProductListItem key={productWithDetails.product.id} productWithDetails={productWithDetails} />
             ))}
           </div>
         )}
