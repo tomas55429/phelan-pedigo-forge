@@ -44,18 +44,21 @@ export type Database = {
           feature: string
           id: string
           product_id: string
+          variant_id: string | null
         }
         Insert: {
           created_at?: string
           feature: string
           id?: string
           product_id: string
+          variant_id?: string | null
         }
         Update: {
           created_at?: string
           feature?: string
           id?: string
           product_id?: string
+          variant_id?: string | null
         }
         Relationships: [
           {
@@ -63,6 +66,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_features_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_features"
             referencedColumns: ["id"]
           },
         ]
@@ -74,6 +84,7 @@ export type Database = {
           product_id: string
           specification_key: string
           specification_value: string
+          variant_id: string | null
         }
         Insert: {
           created_at?: string
@@ -81,6 +92,7 @@ export type Database = {
           product_id: string
           specification_key: string
           specification_value: string
+          variant_id?: string | null
         }
         Update: {
           created_at?: string
@@ -88,10 +100,56 @@ export type Database = {
           product_id?: string
           specification_key?: string
           specification_value?: string
+          variant_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "product_specifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_specifications_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "product_variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_variants: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          product_id: string
+          updated_at: string
+          variant_description: string | null
+          variant_name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_id: string
+          updated_at?: string
+          variant_description?: string | null
+          variant_name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          product_id?: string
+          updated_at?: string
+          variant_description?: string | null
+          variant_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"

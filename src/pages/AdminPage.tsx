@@ -79,8 +79,19 @@ interface ProductFeature {
 interface ProductSpecification {
   id: string;
   product_id: string;
+  variant_id?: string;
   specification_key: string;
   specification_value: string;
+}
+
+interface ProductVariant {
+  id: string;
+  product_id: string;
+  variant_name: string;
+  variant_description?: string;
+  image_url?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 const AdminPage = () => {
@@ -111,6 +122,15 @@ const AdminPage = () => {
   const [newFeature, setNewFeature] = useState('');
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
+
+  // State for variants
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
+  const [variantName, setVariantName] = useState('');
+  const [variantDescription, setVariantDescription] = useState('');
+  const [variantImage, setVariantImage] = useState<File | null>(null);
+  const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
+  const [variantDialogOpen, setVariantDialogOpen] = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -160,7 +180,7 @@ const AdminPage = () => {
 
   const fetchProductDetails = async (productId: string) => {
     try {
-      const [featuresRes, specsRes] = await Promise.all([
+      const [featuresRes, specsRes, variantsRes] = await Promise.all([
         supabase
           .from('product_features')
           .select('*')
@@ -170,14 +190,21 @@ const AdminPage = () => {
           .from('product_specifications')
           .select('*')
           .eq('product_id', productId)
-          .order('specification_key')
+          .order('specification_key'),
+        supabase
+          .from('product_variants')
+          .select('*')
+          .eq('product_id', productId)
+          .order('variant_name')
       ]);
 
       if (featuresRes.error) throw featuresRes.error;
       if (specsRes.error) throw specsRes.error;
+      if (variantsRes.error) throw variantsRes.error;
 
       setFeatures(featuresRes.data || []);
       setSpecifications(specsRes.data || []);
+      setVariants(variantsRes.data || []);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -440,6 +467,86 @@ const AdminPage = () => {
       if (error) throw error;
       if (selectedProduct) fetchProductDetails(selectedProduct.id);
       toast({ title: "Success", description: "Specification deleted successfully" });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Variant management functions
+  const handleVariantSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProduct || !variantName.trim()) return;
+
+    setLoading(true);
+    try {
+      let imageUrl = editingVariant?.image_url || null;
+      
+      if (variantImage) {
+        const uploadedUrl = await uploadProductImage(variantImage);
+        if (uploadedUrl) imageUrl = uploadedUrl;
+      }
+
+      const variantData = {
+        product_id: selectedProduct.id,
+        variant_name: variantName,
+        variant_description: variantDescription || null,
+        image_url: imageUrl,
+      };
+
+      if (editingVariant) {
+        const { error } = await supabase
+          .from('product_variants')
+          .update(variantData)
+          .eq('id', editingVariant.id);
+        
+        if (error) throw error;
+        toast({ title: "Success", description: "Variant updated successfully" });
+      } else {
+        const { error } = await supabase
+          .from('product_variants')
+          .insert([variantData]);
+        
+        if (error) throw error;
+        toast({ title: "Success", description: "Variant created successfully" });
+      }
+
+      resetVariantForm();
+      fetchProductDetails(selectedProduct.id);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetVariantForm = () => {
+    setVariantName('');
+    setVariantDescription('');
+    setVariantImage(null);
+    setEditingVariant(null);
+    setVariantDialogOpen(false);
+  };
+
+  const handleDeleteVariant = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this variant?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('product_variants')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      if (selectedProduct) fetchProductDetails(selectedProduct.id);
+      toast({ title: "Success", description: "Variant deleted successfully" });
     } catch (error: any) {
       toast({
         title: "Error",
@@ -776,76 +883,194 @@ const AdminPage = () => {
               </div>
 
               {selectedProduct && (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {/* Features */}
+                <div className="space-y-6">
+                  {/* Product Variants */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Features</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex space-x-2">
-                        <Input
-                          value={newFeature}
-                          onChange={(e) => setNewFeature(e.target.value)}
-                          placeholder="Add new feature"
-                        />
-                        <Button onClick={handleAddFeature}>Add</Button>
-                      </div>
-                      <div className="space-y-2">
-                        {features.map((feature) => (
-                          <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                            <span>{feature.feature}</span>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteFeature(feature.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
+                      <div className="flex justify-between items-center">
+                        <CardTitle>Product Variants</CardTitle>
+                        <Dialog open={variantDialogOpen} onOpenChange={setVariantDialogOpen}>
+                          <DialogTrigger asChild>
+                            <Button size="sm">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add Variant
                             </Button>
-                          </div>
-                        ))}
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>
+                                {editingVariant ? 'Edit Variant' : 'Add New Variant'}
+                              </DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleVariantSubmit} className="space-y-4">
+                              <div>
+                                <Label htmlFor="variantName">Variant Name</Label>
+                                <Input
+                                  id="variantName"
+                                  value={variantName}
+                                  onChange={(e) => setVariantName(e.target.value)}
+                                  placeholder="e.g., 5058-11A"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="variantDescription">Description</Label>
+                                <Textarea
+                                  id="variantDescription"
+                                  value={variantDescription}
+                                  onChange={(e) => setVariantDescription(e.target.value)}
+                                  placeholder="Variant description"
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="variantImage">Variant Image</Label>
+                                <Input
+                                  id="variantImage"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => setVariantImage(e.target.files?.[0] || null)}
+                                />
+                              </div>
+                              <div className="flex justify-end space-x-2">
+                                <Button type="button" variant="outline" onClick={resetVariantForm}>
+                                  Cancel
+                                </Button>
+                                <Button type="submit" disabled={loading}>
+                                  {loading ? 'Saving...' : editingVariant ? 'Update' : 'Create'}
+                                </Button>
+                              </div>
+                            </form>
+                          </DialogContent>
+                        </Dialog>
                       </div>
+                    </CardHeader>
+                    <CardContent>
+                      {variants.length > 0 ? (
+                        <div className="space-y-2">
+                          {variants.map((variant) => (
+                            <div key={variant.id} className="flex items-center justify-between p-3 bg-muted rounded">
+                              <div className="flex items-center space-x-3">
+                                {variant.image_url ? (
+                                  <img 
+                                    src={variant.image_url} 
+                                    alt={variant.variant_name}
+                                    className="w-12 h-12 object-cover rounded"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 bg-background rounded flex items-center justify-center">
+                                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                                  </div>
+                                )}
+                                <div>
+                                  <div className="font-medium">{variant.variant_name}</div>
+                                  {variant.variant_description && (
+                                    <div className="text-sm text-muted-foreground">{variant.variant_description}</div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setEditingVariant(variant);
+                                    setVariantName(variant.variant_name);
+                                    setVariantDescription(variant.variant_description || '');
+                                    setVariantDialogOpen(true);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDeleteVariant(variant.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-muted-foreground text-center py-4">
+                          No variants created yet. Add a variant to get started.
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
 
-                  {/* Specifications */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Specifications</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Input
-                          value={newSpecKey}
-                          onChange={(e) => setNewSpecKey(e.target.value)}
-                          placeholder="Specification key (e.g., Weight)"
-                        />
-                        <Input
-                          value={newSpecValue}
-                          onChange={(e) => setNewSpecValue(e.target.value)}
-                          placeholder="Specification value (e.g., 50 lbs)"
-                        />
-                        <Button onClick={handleAddSpecification}>Add Specification</Button>
-                      </div>
-                      <div className="space-y-2">
-                        {specifications.map((spec) => (
-                          <div key={spec.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                            <div>
-                              <div className="font-medium">{spec.specification_key}</div>
-                              <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Features */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Features</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex space-x-2">
+                          <Input
+                            value={newFeature}
+                            onChange={(e) => setNewFeature(e.target.value)}
+                            placeholder="Add new feature"
+                          />
+                          <Button onClick={handleAddFeature}>Add</Button>
+                        </div>
+                        <div className="space-y-2">
+                          {features.map((feature) => (
+                            <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                              <span>{feature.feature}</span>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteFeature(feature.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteSpecification(spec.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Specifications */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Specifications</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Input
+                            value={newSpecKey}
+                            onChange={(e) => setNewSpecKey(e.target.value)}
+                            placeholder="Specification key (e.g., Weight)"
+                          />
+                          <Input
+                            value={newSpecValue}
+                            onChange={(e) => setNewSpecValue(e.target.value)}
+                            placeholder="Specification value (e.g., 50 lbs)"
+                          />
+                          <Button onClick={handleAddSpecification}>Add Specification</Button>
+                        </div>
+                        <div className="space-y-2">
+                          {specifications.map((spec) => (
+                            <div key={spec.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                              <div>
+                                <div className="font-medium">{spec.specification_key}</div>
+                                <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteSpecification(spec.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               )}
             </TabsContent>
