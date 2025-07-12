@@ -82,6 +82,7 @@ export type Database = {
           created_at: string
           id: string
           product_id: string
+          sort_order: number | null
           specification_key: string
           specification_value: string
           variant_id: string | null
@@ -90,6 +91,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id: string
+          sort_order?: number | null
           specification_key: string
           specification_value: string
           variant_id?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           created_at?: string
           id?: string
           product_id?: string
+          sort_order?: number | null
           specification_key?: string
           specification_value?: string
           variant_id?: string | null

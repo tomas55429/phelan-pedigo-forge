@@ -83,6 +83,7 @@ interface ProductSpecification {
   variant_id?: string;
   specification_key: string;
   specification_value: string;
+  sort_order?: number;
 }
 
 interface ProductVariant {
@@ -123,6 +124,7 @@ const AdminPage = () => {
   const [newFeature, setNewFeature] = useState('');
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
+  const [newSpecSortOrder, setNewSpecSortOrder] = useState('');
 
   // State for variants
   const [variants, setVariants] = useState<ProductVariant[]>([]);
@@ -191,7 +193,8 @@ const AdminPage = () => {
           .from('product_specifications')
           .select('*')
           .eq('product_id', productId)
-          .order('specification_key'),
+          .order('sort_order', { ascending: true })
+          .order('specification_key', { ascending: true }),
         supabase
           .from('product_variants')
           .select('*')
@@ -441,6 +444,7 @@ const AdminPage = () => {
         specification_key: newSpecKey,
         specification_value: newSpecValue,
         variant_id: selectedVariant?.id || null,
+        sort_order: newSpecSortOrder ? parseInt(newSpecSortOrder) : 0,
       };
 
       const { error } = await supabase
@@ -450,6 +454,7 @@ const AdminPage = () => {
       if (error) throw error;
       setNewSpecKey('');
       setNewSpecValue('');
+      setNewSpecSortOrder('');
       setSelectedVariant(null);
       fetchProductDetails(selectedProduct.id);
       toast({ title: "Success", description: "Specification added successfully" });
@@ -1083,14 +1088,30 @@ const AdminPage = () => {
                             onChange={(e) => setNewSpecValue(e.target.value)}
                             placeholder="Specification value (e.g., 36 inches)"
                           />
+                          <Input
+                            value={newSpecSortOrder}
+                            onChange={(e) => setNewSpecSortOrder(e.target.value)}
+                            placeholder="Sort order (0 = first, higher numbers later)"
+                            type="number"
+                          />
                           <Button onClick={handleAddSpecification}>Add Specification</Button>
                         </div>
                         <div className="space-y-2">
                           {specifications.map((spec) => (
                             <div key={spec.id} className="flex items-center justify-between p-2 bg-muted rounded">
                               <div>
-                                <div className="font-medium">{spec.specification_key}</div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="font-medium">{spec.specification_key}</div>
+                                  <div className="text-xs bg-secondary px-2 py-1 rounded">
+                                    Order: {spec.sort_order || 0}
+                                  </div>
+                                </div>
                                 <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
+                                {spec.variant_id && (
+                                  <div className="text-xs text-muted-foreground">
+                                    Variant: {variants.find(v => v.id === spec.variant_id)?.variant_name}
+                                  </div>
+                                )}
                               </div>
                               <Button
                                 size="sm"

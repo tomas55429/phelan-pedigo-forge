@@ -14,6 +14,7 @@ interface ProductSpecification {
   variant_id?: string;
   specification_key: string;
   specification_value: string;
+  sort_order?: number;
 }
 
 interface ProductVariantsTableProps {
@@ -32,16 +33,26 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   // Group specifications by key and variant
   const specsByKey = specifications.reduce((acc, spec) => {
     if (!acc[spec.specification_key]) {
-      acc[spec.specification_key] = {};
+      acc[spec.specification_key] = {
+        values: {},
+        sort_order: spec.sort_order || 0
+      };
     }
     if (spec.variant_id) {
-      acc[spec.specification_key][spec.variant_id] = spec.specification_value;
+      acc[spec.specification_key].values[spec.variant_id] = spec.specification_value;
     }
     return acc;
-  }, {} as Record<string, Record<string, string>>);
+  }, {} as Record<string, { values: Record<string, string>, sort_order: number }>);
 
-  // Get all unique specification keys
-  const specificationKeys = Object.keys(specsByKey).sort();
+  // Get all unique specification keys sorted by sort_order, then by name
+  const specificationKeys = Object.keys(specsByKey).sort((a, b) => {
+    const orderA = specsByKey[a].sort_order;
+    const orderB = specsByKey[b].sort_order;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    return a.localeCompare(b);
+  });
 
   // Check if we have any variant-specific specifications
   const hasVariantSpecs = specifications.some(spec => spec.variant_id);
@@ -74,7 +85,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                   <TableCell className="font-medium">{specKey}</TableCell>
                   {variants.map((variant) => (
                     <TableCell key={variant.id} className="text-center">
-                      {specsByKey[specKey][variant.id] || '-'}
+                      {specsByKey[specKey].values[variant.id] || '-'}
                     </TableCell>
                   ))}
                 </TableRow>
