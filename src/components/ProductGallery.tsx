@@ -1,22 +1,13 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Search, 
-  Filter, 
-  Grid3X3, 
-  List, 
-  Phone,
-  FileText,
-  Star,
-  Eye,
-  Loader2
-} from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
-import { ProductVariantsTable } from './ProductVariantsTable';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2 } from 'lucide-react';
+import ProductVariantsTable from './ProductVariantsTable';
+import Product3DViewer from './Product3DViewer';
 
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
@@ -31,8 +22,6 @@ interface ProductWithDetails {
   features: ProductFeature[];
   specifications: ProductSpecification[];
 }
-
-// This will be replaced with data from Supabase
 
 const ProductGallery = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -308,32 +297,48 @@ const ProductGallery = () => {
         {/* Product Details Modal */}
         {selectedProduct && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-background rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-start mb-4">
+            <div className="bg-background rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold">{selectedProduct.product.name}</h2>
-                  <p className="text-muted-foreground">{selectedProduct.category?.name || 'Uncategorized'}</p>
+                  <h2 className="text-3xl font-bold">{selectedProduct.product.name}</h2>
+                  <p className="text-muted-foreground text-lg">{selectedProduct.category?.name || 'Uncategorized'}</p>
                 </div>
                 <Button variant="outline" onClick={() => setSelectedProduct(null)}>
-                  ×
+                  ✕
                 </Button>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <div>
-                  {selectedProduct.product.image_url ? (
-                    <img
-                      src={selectedProduct.product.image_url}
-                      alt={selectedProduct.product.name}
-                      className="w-full h-64 object-cover rounded"
+              <div className="grid lg:grid-cols-2 gap-8 mb-6">
+                {/* Left Column - 3D Viewer and Traditional Image */}
+                <div className="space-y-4">
+                  {/* 3D Product Viewer */}
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-3">3D Product View</h3>
+                    <Product3DViewer 
+                      imageUrl={selectedProduct.product.image_url || undefined}
+                      productName={selectedProduct.product.name}
+                      className="w-full h-80"
                     />
-                  ) : (
-                    <div className="w-full h-64 bg-muted flex items-center justify-center rounded">
-                      <FileText className="h-16 w-16 text-muted-foreground" />
-                    </div>
-                  )}
+                  </div>
+                  
+                  {/* Traditional Product Image */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Product Image</h3>
+                    {selectedProduct.product.image_url ? (
+                      <img
+                        src={selectedProduct.product.image_url}
+                        alt={selectedProduct.product.name}
+                        className="w-full h-64 object-cover rounded-lg border border-border"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-muted flex items-center justify-center rounded-lg border border-border">
+                        <FileText className="h-16 w-16 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
+                {/* Right Column - Product Information */}
                 <div>
                   <p className="text-muted-foreground mb-4">
                     {selectedProduct.product.description || 'No description available'}
