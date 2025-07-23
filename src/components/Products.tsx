@@ -1,53 +1,32 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  Stethoscope, 
-  Activity, 
-  Shield, 
-  Settings,
-  ArrowRight,
-  CheckCircle,
-  Phone
-} from 'lucide-react';
+import { Phone } from 'lucide-react';
 import medicalEquipmentImage from '@/assets/medical-equipment.jpg';
 
 const Products = () => {
   const productCategories = [
     {
-      icon: <Stethoscope className="h-8 w-8" />,
       title: "IV Stands and Carts",
-      image: "/src/assets/products/iv-stand-1.jpg",
-      features: ["Adjustable height", "Smooth-rolling casters", "Durable stainless steel construction"]
+      image: "/src/assets/products/iv-stand-1.jpg"
     },
     {
-      icon: <Activity className="h-8 w-8" />,
-      title: "Screens, Guards, Face Butlers",
-      image: "/src/assets/products/privacy-screen-1.jpg",
-      features: ["Easy to clean surfaces", "Lightweight yet sturdy", "Multiple configuration options"]
+      title: "Privacy Screens",
+      image: "/src/assets/products/privacy-screen-1.jpg"
     },
     {
-      icon: <Shield className="h-8 w-8" />,
-      title: "Sterilization Baskets and Trays",
-      image: "/src/assets/products/sterilization-basket-1.jpg",
-      features: ["Autoclave compatible", "Perforated for proper drainage", "Custom sizing available"]
+      title: "Sterilization Baskets",
+      image: "/src/assets/products/sterilization-basket-1.jpg"
     },
     {
-      icon: <Settings className="h-8 w-8" />,
-      title: "Step Stands and Working Platforms",
-      image: "/src/assets/products/step-stand-1.jpg",
-      features: ["Non-slip surfaces", "Ergonomic design", "Easy storage"]
+      title: "Step Stands",
+      image: "/src/assets/products/step-stand-1.jpg"
     },
     {
-      icon: <Activity className="h-8 w-8" />,
-      title: "Medical Carts and Tables",
-      image: "/src/assets/products/medical-cart-1.jpg",
-      features: ["Modular design", "Easy installation", "Corrosion resistant"]
+      title: "Medical Carts",
+      image: "/src/assets/products/medical-cart-1.jpg"
     },
     {
-      icon: <Stethoscope className="h-8 w-8" />,
-      title: "Neurosurgical & Thoracic Tables",
-      image: "/src/assets/products/back-table-1.jpg",
-      features: ["Height adjustable", "Stable platform", "Easy to sanitize"]
+      title: "Back Tables",
+      image: "/src/assets/products/back-table-1.jpg"
     }
   ];
 
@@ -90,42 +69,23 @@ const Products = () => {
         </div>
 
         {/* Product Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
           {productCategories.map((product, index) => (
-            <Card key={index} className="professional-hover bg-card shadow-card">
-              <CardHeader className="pb-4">
-                <div className="flex items-center space-x-3 mb-4">
-                  <div className="p-3 bg-primary/10 rounded-lg text-primary">
-                    {product.icon}
-                  </div>
-                  <CardTitle className="text-xl">{product.title}</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-0">
-                {/* Product Image */}
-                <div className="mb-6 bg-white rounded-lg p-6 flex items-center justify-center min-h-[200px]">
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    className="max-w-full max-h-[160px] object-contain"
-                  />
-                </div>
-                
-                {/* Features List */}
-                <ul className="space-y-2 mb-6">
-                  {product.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center space-x-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-primary flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button variant="outline" className="w-full group">
-                  Learn More
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-              </CardContent>
-            </Card>
+            <div key={index} className="text-center group cursor-pointer">
+              {/* Product Image */}
+              <div className="mb-4 bg-white rounded-lg p-6 flex items-center justify-center min-h-[180px] shadow-sm hover:shadow-md transition-shadow">
+                <img
+                  src={product.image}
+                  alt={product.title}
+                  className="max-w-full max-h-[140px] object-contain"
+                />
+              </div>
+              
+              {/* Product Title */}
+              <h3 className="text-sm md:text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                {product.title}
+              </h3>
+            </div>
           ))}
         </div>
 
