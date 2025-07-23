@@ -10,7 +10,7 @@ const Products = () => {
     },
     {
       title: "Privacy Screens",
-      image: "/src/assets/products/privacy-screen-1.jpg"
+      image: "/lovable-uploads/fa54b758-3661-4f96-bbbd-9d16bf1bbac4.png"
     },
     {
       title: "Sterilization Baskets",
