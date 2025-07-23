@@ -6,7 +6,7 @@ const Products = () => {
   const productCategories = [
     {
       title: "IV Stands and Carts",
-      image: "/src/assets/products/iv-stand-1.jpg"
+      image: "/lovable-uploads/e91d0b4b-d901-495d-b347-f86ef3cec174.png"
     },
     {
       title: "Privacy Screens",
