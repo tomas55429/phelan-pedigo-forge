@@ -12,7 +12,7 @@ const Hero = () => {
           alt="Phelan Manufacturing facility"
           className="w-full h-full object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-hero opacity-70"></div>
+        <div className="absolute inset-0 bg-gradient-hero opacity-50"></div>
       </div>
 
       {/* Content */}
