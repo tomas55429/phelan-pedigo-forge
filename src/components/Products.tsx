@@ -52,8 +52,17 @@ const Products = () => {
   ];
 
   return (
-    <section id="products" className="py-20 bg-secondary">
-      <div className="container mx-auto px-4">
+    <section id="products" className="py-20 bg-secondary relative">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={medicalEquipmentImage}
+          alt="Medical equipment background"
+          className="w-full h-full object-cover opacity-5"
+        />
+        <div className="absolute inset-0 bg-secondary/95"></div>
+      </div>
+      <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Our Medical Equipment

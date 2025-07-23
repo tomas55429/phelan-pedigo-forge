@@ -30,8 +30,13 @@ const History = () => {
   ];
 
   return (
-    <section id="history" className="py-20 bg-secondary">
-      <div className="container mx-auto px-4">
+    <section id="history" className="py-20 bg-secondary relative">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <div className="w-full h-full bg-gradient-to-br from-primary/5 to-secondary opacity-50"></div>
+        <div className="absolute inset-0 bg-secondary/95"></div>
+      </div>
+      <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             Our Rich History
