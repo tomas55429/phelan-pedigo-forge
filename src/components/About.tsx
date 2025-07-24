@@ -20,7 +20,11 @@ const About = () => {
     {
       icon: <Globe className="h-8 w-8" />,
       number: "100%",
-      label: "Made in USA",
+      label: (
+        <span>
+          Made in <span className="text-red-500">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
+        </span>
+      ),
       description: "American Quality"
     },
     {
