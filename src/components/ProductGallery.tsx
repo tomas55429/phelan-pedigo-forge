@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2 } from 'lucide-react';
+import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductVariantsTable from './ProductVariantsTable';
 import Product3DViewer from './Product3DViewer';
 
@@ -148,48 +149,60 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
             {product.description || 'No description available'}
           </p>
           
-          <div className="space-y-3">
-            {features.length > 0 && (
-              <div>
-                <h5 className="text-sm font-semibold mb-2">Key Features:</h5>
-                <ul className="text-xs text-muted-foreground space-y-1">
-                  {features.slice(0, 3).map((feature) => (
-                    <li key={feature.id} className="flex items-center space-x-1">
-                      <span className="w-1 h-1 bg-primary rounded-full flex-shrink-0"></span>
-                      <span>{feature.feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            
-            {variants.length > 0 && (
-              <div>
-                <h5 className="text-sm font-semibold mb-2">Available Variants:</h5>
-                <div className="flex flex-wrap gap-1">
-                  {variants.slice(0, 3).map((variant) => (
-                    <Badge key={variant.id} variant="secondary" className="text-xs">
-                      {variant.variant_name}
-                    </Badge>
-                  ))}
-                  {variants.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{variants.length - 3} more
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Special Notes */}
-          {product.special_notes && (
-            <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-md">
-              <p className="text-xs font-medium text-warning-foreground mb-1">Special Notes:</p>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {product.special_notes}
-              </p>
-            </div>
+          {/* Product Details Accordion */}
+          {(features.length > 0 || variants.length > 0 || product.special_notes) && (
+            <Accordion type="single" collapsible className="mb-4">
+              <AccordionItem value="product-details" className="border-none">
+                <AccordionTrigger className="text-sm font-medium py-2 hover:no-underline">
+                  Product Details
+                </AccordionTrigger>
+                <AccordionContent className="pb-2 pt-0">
+                  <div className="space-y-3">
+                    {features.length > 0 && (
+                      <div>
+                        <h5 className="text-sm font-semibold mb-2">Key Features:</h5>
+                        <ul className="text-xs text-muted-foreground space-y-1">
+                          {features.slice(0, 3).map((feature) => (
+                            <li key={feature.id} className="flex items-center space-x-1">
+                              <span className="w-1 h-1 bg-primary rounded-full flex-shrink-0"></span>
+                              <span>{feature.feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {variants.length > 0 && (
+                      <div>
+                        <h5 className="text-sm font-semibold mb-2">Available Variants:</h5>
+                        <div className="flex flex-wrap gap-1">
+                          {variants.slice(0, 3).map((variant) => (
+                            <Badge key={variant.id} variant="secondary" className="text-xs">
+                              {variant.variant_name}
+                            </Badge>
+                          ))}
+                          {variants.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{variants.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Special Notes */}
+                    {product.special_notes && (
+                      <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
+                        <p className="text-xs font-medium text-warning-foreground mb-1">Special Notes:</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {product.special_notes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           )}
           
           <div className="flex space-x-2 mt-4">
