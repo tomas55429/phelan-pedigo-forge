@@ -12,33 +12,28 @@ interface Product3DViewerProps {
   className?: string;
 }
 
-// GLB Model Component
+// GLB Model Component  
 function GLBModel({ modelUrl, productName }: { modelUrl: string; productName: string }) {
   const meshRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
   
-  try {
-    const { scene } = useGLTF(modelUrl);
-    
-    useFrame((state, delta) => {
-      // Rotation disabled - no automatic rotation
-    });
+  const { scene } = useGLTF(modelUrl);
+  
+  useFrame((state, delta) => {
+    // Rotation disabled - no automatic rotation
+  });
 
-     return (
-       <group
-         ref={meshRef}
-         position={[0, 0, 0]}
-         onPointerOver={() => setHovered(true)}
-         onPointerOut={() => setHovered(false)}
-         scale={hovered ? 1.1 : 1}
-       >
-         <primitive object={scene} />
-       </group>
-     );
-  } catch (error) {
-    console.error('Error loading GLB model:', error);
-    return <FallbackMesh productName={productName} />;
-  }
+   return (
+     <group
+       ref={meshRef}
+       position={[0, 0, 0]}
+       onPointerOver={() => setHovered(true)}
+       onPointerOut={() => setHovered(false)}
+       scale={hovered ? 1.1 : 1}
+     >
+       <primitive object={scene} />
+     </group>
+   );
 }
 
 // Fallback 3D Product Mesh Component
@@ -147,7 +142,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
         <Environment preset="studio" />
         
         {/* 3D Product */}
-        <Suspense fallback={null}>
+        <Suspense fallback={<FallbackMesh productName={productName} />}>
           <ProductMesh modelUrl={modelUrl} productName={productName} />
         </Suspense>
         
