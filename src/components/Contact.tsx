@@ -74,10 +74,10 @@ const Contact = () => {
                       <div className="p-3 bg-primary/10 rounded-lg text-primary flex-shrink-0">
                         {info.icon}
                       </div>
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <h4 className="font-semibold text-foreground mb-1">{info.title}</h4>
-                        <p className="text-primary font-medium mb-1">{info.details}</p>
-                        <p className="text-sm text-muted-foreground">{info.description}</p>
+                        <p className="text-primary font-medium mb-1 break-words">{info.details}</p>
+                        <p className="text-sm text-muted-foreground break-words">{info.description}</p>
                       </div>
                     </div>
                   </CardContent>
