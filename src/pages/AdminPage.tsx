@@ -60,6 +60,7 @@ interface Category {
   id: string;
   name: string;
   description: string | null;
+  image_url: string | null;
 }
 
 interface Product {
@@ -108,6 +109,7 @@ const AdminPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryName, setCategoryName] = useState('');
   const [categoryDescription, setCategoryDescription] = useState('');
+  const [categoryImage, setCategoryImage] = useState<File | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
@@ -233,13 +235,25 @@ const AdminPage = () => {
 
     setLoading(true);
     try {
+      let imageUrl = null;
+      if (categoryImage) {
+        imageUrl = await uploadCategoryImage(categoryImage);
+        if (!imageUrl) return;
+      }
+
       if (editingCategory) {
+        const updateData: any = {
+          name: categoryName,
+          description: categoryDescription || null,
+        };
+        
+        if (imageUrl) {
+          updateData.image_url = imageUrl;
+        }
+
         const { error } = await supabase
           .from('categories')
-          .update({
-            name: categoryName,
-            description: categoryDescription || null,
-          })
+          .update(updateData)
           .eq('id', editingCategory.id);
         
         if (error) throw error;
@@ -250,6 +264,7 @@ const AdminPage = () => {
           .insert([{
             name: categoryName,
             description: categoryDescription || null,
+            image_url: imageUrl,
           }]);
         
         if (error) throw error;
@@ -258,6 +273,7 @@ const AdminPage = () => {
 
       setCategoryName('');
       setCategoryDescription('');
+      setCategoryImage(null);
       setEditingCategory(null);
       setCategoryDialogOpen(false);
       fetchCategories();
@@ -290,6 +306,32 @@ const AdminPage = () => {
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const uploadCategoryImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      return data.publicUrl;
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to upload category image",
+        variant: "destructive",
+      });
+      return null;
     }
   };
 
@@ -777,6 +819,20 @@ const AdminPage = () => {
                           placeholder="Enter category description"
                         />
                       </div>
+                      <div>
+                        <Label htmlFor="categoryImage">Category Image</Label>
+                        <Input
+                          id="categoryImage"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setCategoryImage(e.target.files?.[0] || null)}
+                        />
+                        {categoryImage && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Selected: {categoryImage.name}
+                          </p>
+                        )}
+                      </div>
                       <div className="flex justify-end space-x-2">
                         <Button 
                           type="button" 
@@ -786,6 +842,7 @@ const AdminPage = () => {
                             setEditingCategory(null);
                             setCategoryName('');
                             setCategoryDescription('');
+                            setCategoryImage(null);
                           }}
                         >
                           Cancel
@@ -806,6 +863,7 @@ const AdminPage = () => {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Description</TableHead>
+                        <TableHead>Image</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -814,6 +872,15 @@ const AdminPage = () => {
                         <TableRow key={category.id}>
                           <TableCell className="font-medium">{category.name}</TableCell>
                           <TableCell>{category.description || '-'}</TableCell>
+                          <TableCell>
+                            {category.image_url ? (
+                              <img 
+                                src={category.image_url} 
+                                alt={category.name}
+                                className="w-12 h-12 object-cover rounded"
+                              />
+                            ) : '-'}
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
                               <Button
