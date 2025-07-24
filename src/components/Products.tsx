@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Phone } from 'lucide-react';
 import medicalEquipmentImage from '@/assets/medical-equipment.jpg';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 
@@ -10,6 +11,11 @@ type Category = Tables<'categories'>;
 const Products = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/products?category=${categoryId}`);
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -83,7 +89,11 @@ const Products = () => {
             ))
           ) : (
             categories.map((category) => (
-              <div key={category.id} className="text-center group cursor-pointer">
+              <div 
+                key={category.id} 
+                className="text-center group cursor-pointer"
+                onClick={() => handleCategoryClick(category.id)}
+              >
                 {/* Category Image */}
                 <div className="mb-4 flex items-center justify-center min-h-[180px]">
                   {category.image_url ? (
