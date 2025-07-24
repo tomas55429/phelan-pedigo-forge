@@ -20,6 +20,11 @@ function GLBModel({ modelUrl, productName }: { modelUrl: string; productName: st
   try {
     const { scene } = useGLTF(modelUrl);
     
+    // Center the model by calculating its bounding box
+    const box = new THREE.Box3().setFromObject(scene);
+    const center = box.getCenter(new THREE.Vector3());
+    scene.position.sub(center); // Move the scene so its center is at origin
+    
     useFrame((state, delta) => {
       // Rotation disabled - no automatic rotation
     });
