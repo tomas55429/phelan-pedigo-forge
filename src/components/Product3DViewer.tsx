@@ -132,7 +132,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
     <div className={`relative bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg overflow-hidden border border-border ${containerClass}`}>
       {/* 3D Canvas */}
       <Canvas shadows>
-        <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+        <PerspectiveCamera makeDefault position={[0, 0, 8]} fov={45} />
         
         {/* Lighting Setup */}
         <ambientLight intensity={0.4} />
@@ -166,8 +166,8 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
           enableZoom={true}
           enableRotate={true}
           autoRotate={false}
-          minDistance={2}
-          maxDistance={10}
+          minDistance={4}
+          maxDistance={15}
           maxPolarAngle={Math.PI / 2}
         />
       </Canvas>
