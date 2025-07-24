@@ -119,10 +119,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
             <img
               src={product.image_url}
               alt={product.name}
-              className="w-full h-48 object-cover"
+              className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover"
             />
           ) : (
-            <div className="w-full h-48 bg-muted flex items-center justify-center">
+            <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
@@ -235,10 +235,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-32 object-cover rounded"
+                  className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded"
                 />
               ) : (
-                <div className="w-full h-32 bg-muted flex items-center justify-center rounded">
+                <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
                   <FileText className="h-8 w-8 text-muted-foreground" />
                 </div>
               )}
@@ -345,7 +345,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                       modelUrl={selectedProduct.product.model_3d_url || undefined}
                       imageUrl={selectedProduct.product.image_url || undefined}
                       productName={selectedProduct.product.name}
-                      className="w-full h-80"
+                      className="w-full h-96 sm:h-80 md:h-96 lg:h-[28rem]"
                     />
                   </div>
                   
@@ -356,10 +356,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                       <img
                         src={selectedProduct.product.image_url}
                         alt={selectedProduct.product.name}
-                        className="w-full h-64 object-cover rounded-lg border border-border"
+                        className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border"
                       />
                     ) : (
-                      <div className="w-full h-64 bg-muted flex items-center justify-center rounded-lg border border-border">
+                      <div className="w-full h-80 sm:h-72 md:h-80 lg:h-96 bg-muted flex items-center justify-center rounded-lg border border-border">
                         <FileText className="h-16 w-16 text-muted-foreground" />
                       </div>
                     )}
