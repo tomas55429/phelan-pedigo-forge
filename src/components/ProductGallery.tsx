@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2 } from 'lucide-react';
 import ProductVariantsTable from './ProductVariantsTable';
 import Product3DViewer from './Product3DViewer';
@@ -326,42 +325,32 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
               <div className="grid lg:grid-cols-2 gap-8 mb-6">
                 {/* Left Column - 3D Viewer and Traditional Image */}
                 <div className="space-y-4">
-                  <Accordion type="multiple" defaultValue={["3d-view", "product-image"]} className="w-full">
-                    {/* 3D Product Viewer */}
-                    <AccordionItem value="3d-view">
-                      <AccordionTrigger className="text-lg font-semibold">
-                        3D Product View
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <Product3DViewer 
-                          modelUrl={selectedProduct.product.model_3d_url || undefined}
-                          imageUrl={selectedProduct.product.image_url || undefined}
-                          productName={selectedProduct.product.name}
-                          className="w-full h-80"
-                        />
-                      </AccordionContent>
-                    </AccordionItem>
-                    
-                    {/* Traditional Product Image */}
-                    <AccordionItem value="product-image">
-                      <AccordionTrigger className="text-lg font-semibold">
-                        Product Image
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        {selectedProduct.product.image_url ? (
-                          <img
-                            src={selectedProduct.product.image_url}
-                            alt={selectedProduct.product.name}
-                            className="w-full h-64 object-cover rounded-lg border border-border"
-                          />
-                        ) : (
-                          <div className="w-full h-64 bg-muted flex items-center justify-center rounded-lg border border-border">
-                            <FileText className="h-16 w-16 text-muted-foreground" />
-                          </div>
-                        )}
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                  {/* 3D Product Viewer */}
+                  <div className="mb-4">
+                    <h3 className="text-lg font-semibold mb-3">3D Product View</h3>
+                    <Product3DViewer 
+                      modelUrl={selectedProduct.product.model_3d_url || undefined}
+                      imageUrl={selectedProduct.product.image_url || undefined}
+                      productName={selectedProduct.product.name}
+                      className="w-full h-80"
+                    />
+                  </div>
+                  
+                  {/* Traditional Product Image */}
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Product Image</h3>
+                    {selectedProduct.product.image_url ? (
+                      <img
+                        src={selectedProduct.product.image_url}
+                        alt={selectedProduct.product.name}
+                        className="w-full h-64 object-cover rounded-lg border border-border"
+                      />
+                    ) : (
+                      <div className="w-full h-64 bg-muted flex items-center justify-center rounded-lg border border-border">
+                        <FileText className="h-16 w-16 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 {/* Right Column - Product Information */}
@@ -370,80 +359,57 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                     {selectedProduct.product.description || 'No description available'}
                   </p>
                   
-                  <Accordion type="multiple" defaultValue={["features", "variants"]} className="w-full">
-                    {selectedProduct.features.length > 0 && (
-                      <AccordionItem value="features">
-                        <AccordionTrigger className="font-semibold">
-                          Features ({selectedProduct.features.length})
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="space-y-1 text-sm text-muted-foreground">
-                            {selectedProduct.features.map((feature) => (
-                              <li key={feature.id} className="flex items-center space-x-2">
-                                <span className="w-1 h-1 bg-primary rounded-full"></span>
-                                <span>{feature.feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
-                    
-                    {selectedProduct.variants.length > 0 && (
-                      <AccordionItem value="variants">
-                        <AccordionTrigger className="font-semibold">
-                          Available Variants ({selectedProduct.variants.length})
-                        </AccordionTrigger>
-                        <AccordionContent>
-                          <div className="space-y-2">
-                            {selectedProduct.variants.map((variant) => (
-                              <div key={variant.id} className="p-2 border border-border rounded">
-                                <div className="font-medium">{variant.variant_name}</div>
-                                {variant.variant_description && (
-                                  <div className="text-sm text-muted-foreground">{variant.variant_description}</div>
-                                )}
-                              </div>
-                            ))}
+                  {selectedProduct.features.length > 0 && (
+                    <div className="mb-4">
+                      <h3 className="font-semibold mb-2">Features:</h3>
+                      <ul className="space-y-1 text-sm text-muted-foreground">
+                        {selectedProduct.features.map((feature) => (
+                          <li key={feature.id} className="flex items-center space-x-2">
+                            <span className="w-1 h-1 bg-primary rounded-full"></span>
+                            <span>{feature.feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {selectedProduct.variants.length > 0 && (
+                    <div>
+                      <h3 className="font-semibold mb-2">Available Variants:</h3>
+                      <div className="space-y-2">
+                        {selectedProduct.variants.map((variant) => (
+                          <div key={variant.id} className="p-2 border border-border rounded">
+                            <div className="font-medium">{variant.variant_name}</div>
+                            {variant.variant_description && (
+                              <div className="text-sm text-muted-foreground">{variant.variant_description}</div>
+                            )}
                           </div>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
-                  </Accordion>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
-              <Accordion type="multiple" defaultValue={["specifications"]} className="w-full">
-                {selectedProduct.specifications.length > 0 && (
-                  <AccordionItem value="specifications">
-                    <AccordionTrigger className="text-lg font-semibold">
-                      Specifications ({selectedProduct.specifications.length})
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <ProductVariantsTable
-                        variants={selectedProduct.variants}
-                        specifications={selectedProduct.specifications}
-                      />
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
-                
-                {/* Special Notes Section */}
-                {selectedProduct.product.special_notes && (
-                  <AccordionItem value="special-notes">
-                    <AccordionTrigger className="font-semibold flex items-center">
-                      <FileText className="h-4 w-4 mr-2" />
-                      Special Notes
-                    </AccordionTrigger>
-                    <AccordionContent>
-                      <div className="p-4 bg-muted/50 border border-border rounded-lg">
-                        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                          {selectedProduct.product.special_notes}
-                        </p>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
-              </Accordion>
+              {selectedProduct.specifications.length > 0 && (
+                <ProductVariantsTable
+                  variants={selectedProduct.variants}
+                  specifications={selectedProduct.specifications}
+                />
+              )}
+              
+              {/* Special Notes Section */}
+              {selectedProduct.product.special_notes && (
+                <div className="mt-6 p-4 bg-muted/50 border border-border rounded-lg">
+                  <h3 className="font-semibold text-foreground mb-2 flex items-center">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Special Notes
+                  </h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {selectedProduct.product.special_notes}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
