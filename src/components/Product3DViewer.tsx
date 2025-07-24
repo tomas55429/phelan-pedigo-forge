@@ -1,23 +1,51 @@
 import React, { Suspense, useRef, useState } from 'react';
 import { Canvas, useFrame, ThreeElements } from '@react-three/fiber';
-import { OrbitControls, Environment, PerspectiveCamera, useTexture, RoundedBox } from '@react-three/drei';
+import { OrbitControls, Environment, PerspectiveCamera, useTexture, RoundedBox, useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 
 interface Product3DViewerProps {
   imageUrl?: string;
+  modelUrl?: string;
   productName: string;
   className?: string;
 }
 
-// 3D Product Mesh Component
-function ProductMesh({ imageUrl, productName }: { imageUrl?: string; productName: string }) {
-  const meshRef = useRef<THREE.Mesh>(null!);
+// GLB Model Component
+function GLBModel({ modelUrl, productName }: { modelUrl: string; productName: string }) {
+  const meshRef = useRef<THREE.Group>(null!);
   const [hovered, setHovered] = useState(false);
   
-  // Load texture if image URL is provided
-  const texture = imageUrl ? useTexture(imageUrl) : null;
+  try {
+    const { scene } = useGLTF(modelUrl);
+    
+    useFrame((state, delta) => {
+      if (meshRef.current && !hovered) {
+        meshRef.current.rotation.y += delta * 0.2;
+      }
+    });
+
+    return (
+      <group
+        ref={meshRef}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+        scale={hovered ? 1.1 : 1}
+      >
+        <primitive object={scene.clone()} />
+      </group>
+    );
+  } catch (error) {
+    console.error('Error loading GLB model:', error);
+    return <FallbackMesh productName={productName} />;
+  }
+}
+
+// Fallback 3D Product Mesh Component
+function FallbackMesh({ productName }: { productName: string }) {
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const [hovered, setHovered] = useState(false);
   
   useFrame((state, delta) => {
     if (meshRef.current && !hovered) {
@@ -34,19 +62,11 @@ function ProductMesh({ imageUrl, productName }: { imageUrl?: string; productName
     >
       {/* Main product geometry - using RoundedBox from drei */}
       <RoundedBox args={[2, 1.5, 0.5]} radius={0.1} smoothness={4}>
-        {texture ? (
-          <meshStandardMaterial 
-            map={texture} 
-            metalness={0.7}
-            roughness={0.3}
-          />
-        ) : (
-          <meshStandardMaterial 
-            color="#e0e0e0" 
-            metalness={0.7}
-            roughness={0.3}
-          />
-        )}
+        <meshStandardMaterial 
+          color="#e0e0e0" 
+          metalness={0.7}
+          roughness={0.3}
+        />
       </RoundedBox>
       
       {/* Add some details to make it look more like medical equipment */}
@@ -63,8 +83,17 @@ function ProductMesh({ imageUrl, productName }: { imageUrl?: string; productName
   );
 }
 
+// 3D Product Component that chooses between GLB and fallback
+function ProductMesh({ modelUrl, productName }: { modelUrl?: string; productName: string }) {
+  if (modelUrl) {
+    return <GLBModel modelUrl={modelUrl} productName={productName} />;
+  }
+  return <FallbackMesh productName={productName} />;
+}
+
 const Product3DViewer: React.FC<Product3DViewerProps> = ({ 
   imageUrl, 
+  modelUrl,
   productName, 
   className = "w-full h-96" 
 }) => {
@@ -121,7 +150,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
         
         {/* 3D Product */}
         <Suspense fallback={null}>
-          <ProductMesh imageUrl={imageUrl} productName={productName} />
+          <ProductMesh modelUrl={modelUrl} productName={productName} />
         </Suspense>
         
         {/* Ground plane for shadows */}
