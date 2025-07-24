@@ -37,6 +37,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
+  const [userSelectedCategory, setUserSelectedCategory] = useState(false); // Track if user manually changed category
 
   // Fetch products and related data from Supabase
   useEffect(() => {
@@ -94,7 +95,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
       // Determine which category filter to use
       let matchesCategory = true;
       
-      if (selectedCategoryId !== undefined && selectedCategoryId !== null) {
+      if (userSelectedCategory) {
+        // If user manually selected a category via dropdown, use that
+        matchesCategory = selectedCategory === 'All Products' || category?.name === selectedCategory;
+      } else if (selectedCategoryId !== undefined && selectedCategoryId !== null) {
         // If a category is selected from the categories section, filter by category ID
         matchesCategory = product.category_id === selectedCategoryId;
       } else if (selectedCategory !== 'All Products') {
@@ -107,7 +111,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
       
       return matchesSearch && matchesCategory && matchesFeatured;
     });
-  }, [searchTerm, selectedCategory, selectedCategoryId, showFeaturedOnly, productsWithDetails]);
+  }, [searchTerm, selectedCategory, selectedCategoryId, showFeaturedOnly, productsWithDetails, userSelectedCategory]);
 
   const ProductCard = ({ productWithDetails }: { productWithDetails: ProductWithDetails }) => {
     const { product, category, variants, features } = productWithDetails;
@@ -459,7 +463,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                   <Filter className="h-4 w-4 text-muted-foreground" />
                   <select
                     value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setUserSelectedCategory(true); // Mark that user manually changed category
+                    }}
                     className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
                   >
                     <option value="All Products">All Products</option>
