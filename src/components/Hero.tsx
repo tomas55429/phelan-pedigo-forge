@@ -23,7 +23,7 @@ const Hero = () => {
               Phelan Manufacturing
             </h1>
             <div className="text-2xl md:text-3xl font-semibold mb-8 text-primary-light">
-              Made in the USA
+              Made in the <span className="text-red-500">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
             </div>
             <p className="text-xl md:text-2xl mb-12 text-gray-100 leading-relaxed">
               Medical equipment and hospital hardware manufacturer since 1948. 
