@@ -1,17 +1,15 @@
 import Header from '@/components/Header';
-import Hero from '@/components/Hero';
-import Products from '@/components/Products';
 import Footer from '@/components/Footer';
+import Contact from '@/components/Contact';
 
-const Index = () => {
+const ContactPage = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <Hero />
-      <Products />
+      <Contact />
       <Footer />
     </div>
   );
 };
 
-export default Index;
+export default ContactPage;
