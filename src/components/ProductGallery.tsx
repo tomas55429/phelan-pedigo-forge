@@ -90,13 +90,17 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
       const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.description?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // Use selectedCategoryId prop if provided, otherwise fall back to internal state
-      const categoryToCheck = selectedCategoryId !== undefined ? selectedCategoryId : 
-                              (selectedCategory === 'All Products' ? null : selectedCategory);
+      // Determine which category filter to use
+      let matchesCategory = true;
       
-      const matchesCategory = categoryToCheck === null || 
-                              (typeof categoryToCheck === 'string' && category?.name === categoryToCheck) ||
-                              category?.id === categoryToCheck;
+      if (selectedCategoryId !== undefined && selectedCategoryId !== null) {
+        // If a category is selected from the categories section, filter by category ID
+        matchesCategory = product.category_id === selectedCategoryId;
+      } else if (selectedCategory !== 'All Products') {
+        // If using internal category dropdown, filter by category name
+        matchesCategory = category?.name === selectedCategory;
+      }
+      // If selectedCategoryId is null or selectedCategory is 'All Products', show all products
       
       const matchesFeatured = !showFeaturedOnly || product.featured;
       
