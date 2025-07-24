@@ -26,16 +26,17 @@ function GLBModel({ modelUrl, productName }: { modelUrl: string; productName: st
       }
     });
 
-    return (
-      <group
-        ref={meshRef}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-        scale={hovered ? 1.1 : 1}
-      >
-        <primitive object={scene.clone()} />
-      </group>
-    );
+     return (
+       <group
+         ref={meshRef}
+         position={[0, 0, 0]}
+         onPointerOver={() => setHovered(true)}
+         onPointerOut={() => setHovered(false)}
+         scale={hovered ? 1.1 : 1}
+       >
+         <primitive object={scene.clone()} />
+       </group>
+     );
   } catch (error) {
     console.error('Error loading GLB model:', error);
     return <FallbackMesh productName={productName} />;
@@ -56,6 +57,7 @@ function FallbackMesh({ productName }: { productName: string }) {
   return (
     <mesh
       ref={meshRef}
+      position={[0, 0, 0]}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
       scale={hovered ? 1.1 : 1}
@@ -132,7 +134,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
     <div className={`relative bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg overflow-hidden border border-border ${containerClass}`}>
       {/* 3D Canvas */}
       <Canvas shadows>
-        <PerspectiveCamera makeDefault position={[0, 0, 80]} fov={45} />
+        <PerspectiveCamera makeDefault position={[0, 0, 100]} fov={45} />
         
         {/* Lighting Setup */}
         <ambientLight intensity={0.4} />
@@ -166,8 +168,8 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
           enableZoom={true}
           enableRotate={true}
           autoRotate={false}
-          minDistance={50}
-          maxDistance={120}
+          minDistance={70}
+          maxDistance={150}
           maxPolarAngle={Math.PI / 2}
         />
       </Canvas>
