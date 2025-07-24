@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductGallery from '@/components/ProductGallery';
-import CategoriesSection from '@/components/CategoriesSection';
 
 const ProductsPage = () => {
   const [searchParams] = useSearchParams();
@@ -20,10 +19,6 @@ const ProductsPage = () => {
   return (
     <div className="min-h-screen">
       <Header />
-      <CategoriesSection 
-        onCategorySelect={setSelectedCategoryId}
-        selectedCategoryId={selectedCategoryId}
-      />
       <ProductGallery selectedCategoryId={selectedCategoryId} />
       <Footer />
     </div>
