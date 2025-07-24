@@ -73,11 +73,11 @@ const Products = () => {
           {productCategories.map((product, index) => (
             <div key={index} className="text-center group cursor-pointer">
               {/* Product Image */}
-              <div className="mb-4 bg-white rounded-lg p-6 flex items-center justify-center min-h-[180px] shadow-sm hover:shadow-md transition-shadow">
+              <div className="mb-4 flex items-center justify-center min-h-[180px]">
                 <img
                   src={product.image}
                   alt={product.title}
-                  className="max-w-full max-h-[140px] object-contain"
+                  className="max-w-full max-h-[140px] object-contain hover:scale-105 transition-transform"
                 />
               </div>
               
