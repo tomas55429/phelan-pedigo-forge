@@ -6,27 +6,27 @@ const Products = () => {
   const productCategories = [
     {
       title: "IV Stands and Carts",
-      image: "/lovable-uploads/bee7aa89-8d50-49af-867f-7cbdd9c2792f.png"
+      image: "/lovable-uploads/a656a3c8-5c9a-4566-8b89-6f62b96847dd.png"
     },
     {
       title: "Privacy Screens",
-      image: "/lovable-uploads/cd28c6a2-9f50-475f-9208-389d15ccadd8.png"
+      image: "/lovable-uploads/69adad60-90f6-402c-9c68-90066747dfcd.png"
     },
     {
       title: "Sterilization Baskets",
-      image: "/lovable-uploads/72be7c9a-2668-4d3c-ac69-7ab9f8696a50.png"
+      image: "/lovable-uploads/af835e0e-a991-47e8-8038-f99766ebc510.png"
     },
     {
       title: "Step Stands",
-      image: "/lovable-uploads/aa47f9a4-8429-46f0-a4f8-5faca2f08cc9.png"
+      image: "/lovable-uploads/faadd25f-6d69-4809-8f13-c5c3acfaf63a.png"
     },
     {
       title: "Medical Carts",
-      image: "/lovable-uploads/df0b7c5a-6081-4dd8-93f1-bfad03e1543c.png"
+      image: "/lovable-uploads/721bb900-7bb1-43e0-84d0-4e0b00306d8f.png"
     },
     {
       title: "Back Tables",
-      image: "/lovable-uploads/7c3b22d1-fad7-488b-85b5-20d47a7c10bd.png"
+      image: "/lovable-uploads/40a8d9af-0ece-4e00-bd8e-cbe4ae09ace0.png"
     }
   ];
 
