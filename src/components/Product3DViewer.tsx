@@ -20,7 +20,9 @@ function GLBModel({ modelUrl, productName }: { modelUrl: string; productName: st
   try {
     const { scene } = useGLTF(modelUrl);
     
-    // Removed automatic rotation
+    useFrame((state, delta) => {
+      // Rotation disabled - no automatic rotation
+    });
 
      return (
        <group
@@ -44,7 +46,9 @@ function FallbackMesh({ productName }: { productName: string }) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const [hovered, setHovered] = useState(false);
   
-  // Removed automatic rotation
+  useFrame((state, delta) => {
+    // Rotation disabled - no automatic rotation
+  });
 
   return (
     <mesh
