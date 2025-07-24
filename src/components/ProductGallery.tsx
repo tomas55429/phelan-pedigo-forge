@@ -23,7 +23,11 @@ interface ProductWithDetails {
   specifications: ProductSpecification[];
 }
 
-const ProductGallery = () => {
+interface ProductGalleryProps {
+  selectedCategoryId?: string | null;
+}
+
+const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -86,13 +90,19 @@ const ProductGallery = () => {
       const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            product.description?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const matchesCategory = selectedCategory === 'All Products' || category?.name === selectedCategory;
+      // Use selectedCategoryId prop if provided, otherwise fall back to internal state
+      const categoryToCheck = selectedCategoryId !== undefined ? selectedCategoryId : 
+                              (selectedCategory === 'All Products' ? null : selectedCategory);
+      
+      const matchesCategory = categoryToCheck === null || 
+                              (typeof categoryToCheck === 'string' && category?.name === categoryToCheck) ||
+                              category?.id === categoryToCheck;
       
       const matchesFeatured = !showFeaturedOnly || product.featured;
       
       return matchesSearch && matchesCategory && matchesFeatured;
     });
-  }, [searchTerm, selectedCategory, showFeaturedOnly, productsWithDetails]);
+  }, [searchTerm, selectedCategory, selectedCategoryId, showFeaturedOnly, productsWithDetails]);
 
   const ProductCard = ({ productWithDetails }: { productWithDetails: ProductWithDetails }) => {
     const { product, category, variants, features } = productWithDetails;
