@@ -44,7 +44,7 @@ const Hero = () => {
               <Button 
                 variant="outline" 
                 size="lg"
-                className="border-white text-white hover:bg-white hover:text-primary shadow-medical font-semibold px-8 py-4 text-lg"
+                className="border-white bg-white/10 text-white hover:bg-white hover:text-primary shadow-medical font-semibold px-8 py-4 text-lg backdrop-blur-sm"
                 onClick={() => window.location.href = '/products'}
               >
                 View Products
