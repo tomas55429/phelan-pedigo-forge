@@ -51,17 +51,8 @@ const About = () => {
   ];
 
   return (
-    <section id="about" className="py-20 bg-background relative">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={operatingRoomImage}
-          alt="Operating room background"
-          className="w-full h-full object-cover opacity-3"
-        />
-        <div className="absolute inset-0 bg-background/98"></div>
-      </div>
-      <div className="container mx-auto px-4 relative z-10">
+    <section id="about" className="py-20 bg-background">
+      <div className="container mx-auto px-4">
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
           <div className="space-y-6">
