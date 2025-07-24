@@ -41,32 +41,32 @@ const Contact = () => {
   ];
 
   return (
-    <section id="contact" className="py-20 bg-background">
+    <section id="contact" className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+        <div className="text-center mb-8 md:mb-16">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 md:mb-6">
             Contact Our Specialists
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto px-4">
             Ready to discuss your medical equipment needs? Our team of specialists 
             is here to help you find the perfect solution.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
           {/* Contact Information */}
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             <div>
-              <h3 className="text-2xl font-bold text-foreground mb-6">
+              <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">
                 Get in Touch
               </h3>
-              <p className="text-lg text-muted-foreground mb-8">
+              <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8">
                 We're here to answer your questions and help you find the right medical equipment 
                 for your facility. Contact us today to speak with one of our specialists.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4 md:gap-6">
               {contactInfo.map((info, index) => (
                 <Card key={index} className="professional-hover bg-card shadow-card">
                   <CardContent className="p-6">
@@ -87,17 +87,17 @@ const Contact = () => {
 
             {/* Call to Action */}
             <Card className="bg-primary/5 border border-primary/20">
-              <CardContent className="p-8 text-center">
-                <MessageSquare className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h4 className="text-xl font-bold text-foreground mb-4">
+              <CardContent className="p-6 md:p-8 text-center">
+                <MessageSquare className="h-10 w-10 md:h-12 md:w-12 text-primary mx-auto mb-3 md:mb-4" />
+                <h4 className="text-lg md:text-xl font-bold text-foreground mb-3 md:mb-4">
                   Prefer to Call?
                 </h4>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-sm md:text-base text-muted-foreground mb-4 md:mb-6">
                   Call us toll-free and speak directly to an equipment specialist at our plant. 
                   Our team is ready to discuss your specific needs and provide expert guidance.
                 </p>
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
-                  <Phone className="mr-2 h-5 w-5" />
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark w-full sm:w-auto">
+                  <Phone className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                   Call 1-800-328-2358
                 </Button>
               </CardContent>
@@ -106,11 +106,11 @@ const Contact = () => {
 
           {/* Contact Form */}
           <Card className="bg-card shadow-card">
-            <CardHeader>
-              <CardTitle className="text-2xl text-foreground">Send Us a Message</CardTitle>
+            <CardHeader className="pb-4 md:pb-6">
+              <CardTitle className="text-xl md:text-2xl text-foreground">Send Us a Message</CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              <form className="space-y-6">
+            <CardContent className="p-4 md:p-6">
+              <form className="space-y-4 md:space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
