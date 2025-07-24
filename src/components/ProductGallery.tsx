@@ -123,10 +123,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
             <img
               src={product.image_url}
               alt={product.name}
-              className="w-full h-48 sm:h-40 md:h-48 lg:h-52 object-cover"
+              className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover"
             />
           ) : (
-            <div className="w-full h-48 sm:h-40 md:h-48 lg:h-52 bg-muted flex items-center justify-center">
+            <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
@@ -239,10 +239,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                 <img
                   src={product.image_url}
                   alt={product.name}
-                  className="w-full h-32 sm:h-28 md:h-32 lg:h-36 object-cover rounded"
+                  className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded"
                 />
               ) : (
-                <div className="w-full h-32 sm:h-28 md:h-32 lg:h-36 bg-muted flex items-center justify-center rounded">
+                <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
                   <FileText className="h-8 w-8 text-muted-foreground" />
                 </div>
               )}
