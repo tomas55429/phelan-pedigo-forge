@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductVariantsTable from './ProductVariantsTable';
 import Product3DViewer from './Product3DViewer';
@@ -37,6 +38,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [userSelectedCategory, setUserSelectedCategory] = useState(false); // Track if user manually changed category
 
   // Fetch products and related data from Supabase
@@ -360,7 +362,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                       <img
                         src={selectedProduct.product.image_url}
                         alt={selectedProduct.product.name}
-                        className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border"
+                        className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setEnlargedImage(selectedProduct.product.image_url!)}
                       />
                     ) : (
                       <div className="w-full h-80 sm:h-72 md:h-80 lg:h-96 bg-muted flex items-center justify-center rounded-lg border border-border">
@@ -430,6 +433,24 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
             </div>
           </div>
         )}
+
+        {/* Enlarged Image Dialog */}
+        <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+            <DialogHeader className="sr-only">
+              <DialogTitle>Enlarged Product Image</DialogTitle>
+            </DialogHeader>
+            {enlargedImage && (
+              <div className="flex items-center justify-center">
+                <img
+                  src={enlargedImage}
+                  alt="Enlarged product view"
+                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
+                />
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
         {/* Header */}
         <div className="text-center mb-12">
