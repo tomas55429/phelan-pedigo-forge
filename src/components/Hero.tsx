@@ -19,7 +19,7 @@ const Hero = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl text-center mx-auto text-white">
           <div className="animate-fade-in">
-            <h1 className="text-8xl md:text-9xl lg:text-9xl font-bold mb-6">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
               Phelan Manufacturing
             </h1>
             <div className="text-2xl md:text-3xl font-semibold mb-8 text-primary-light">
