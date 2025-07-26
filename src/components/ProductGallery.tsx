@@ -10,13 +10,11 @@ import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, Che
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductVariantsTable from './ProductVariantsTable';
 import Product3DViewer from './Product3DViewer';
-
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
 type ProductFeature = Tables<'product_features'>;
 type ProductSpecification = Tables<'product_specifications'>;
 type Category = Tables<'categories'>;
-
 interface ProductWithDetails {
   product: Product;
   category: Category | null;
@@ -24,12 +22,12 @@ interface ProductWithDetails {
   features: ProductFeature[];
   specifications: ProductSpecification[];
 }
-
 interface ProductGalleryProps {
   selectedCategoryId?: string | null;
 }
-
-const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) => {
+const ProductGallery: React.FC<ProductGalleryProps> = ({
+  selectedCategoryId
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -46,22 +44,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        // Fetch all data in parallel
-        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes] = await Promise.all([
-          supabase.from('products').select('*').order('name'),
-          supabase.from('categories').select('*').order('name'),
-          supabase.from('product_variants').select('*'),
-          supabase.from('product_features').select('*'),
-          supabase.from('product_specifications').select('*')
-        ]);
 
+        // Fetch all data in parallel
+        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes] = await Promise.all([supabase.from('products').select('*').order('name'), supabase.from('categories').select('*').order('name'), supabase.from('product_variants').select('*'), supabase.from('product_features').select('*'), supabase.from('product_specifications').select('*')]);
         if (productsRes.error) throw productsRes.error;
         if (categoriesRes.error) throw categoriesRes.error;
         if (variantsRes.error) throw variantsRes.error;
         if (featuresRes.error) throw featuresRes.error;
         if (specificationsRes.error) throw specificationsRes.error;
-
         const products = productsRes.data || [];
         const categoriesData = categoriesRes.data || [];
         const variants = variantsRes.data || [];
@@ -76,7 +66,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
           features: features.filter(feature => feature.product_id === product.id),
           specifications: specifications.filter(spec => spec.product_id === product.id)
         }));
-
         setProductsWithDetails(productsWithDetailsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -85,18 +74,17 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
-
   const filteredProducts = useMemo(() => {
-    return productsWithDetails.filter(({ product, category }) => {
-      const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      
+    return productsWithDetails.filter(({
+      product,
+      category
+    }) => {
+      const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) || product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
       // Determine which category filter to use
       let matchesCategory = true;
-      
       if (userSelectedCategory) {
         // If user manually selected a category via dropdown, use that
         matchesCategory = selectedCategory === 'All Products' || category?.name === selectedCategory;
@@ -108,45 +96,38 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
         matchesCategory = category?.name === selectedCategory;
       }
       // If selectedCategoryId is null or selectedCategory is 'All Products', show all products
-      
+
       const matchesFeatured = !showFeaturedOnly || product.featured;
-      
       return matchesSearch && matchesCategory && matchesFeatured;
     });
   }, [searchTerm, selectedCategory, selectedCategoryId, showFeaturedOnly, productsWithDetails, userSelectedCategory]);
-
-  const ProductCard = ({ productWithDetails }: { productWithDetails: ProductWithDetails }) => {
-    const { product, category, variants, features } = productWithDetails;
-    
-    return (
-      <Card className="professional-hover bg-card shadow-card overflow-hidden">
+  const ProductCard = ({
+    productWithDetails
+  }: {
+    productWithDetails: ProductWithDetails;
+  }) => {
+    const {
+      product,
+      category,
+      variants,
+      features
+    } = productWithDetails;
+    return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
-          {product.image_url ? (
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover"
-            />
-          ) : (
-            <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
+          {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
-            </div>
-          )}
-          {product.featured && (
-            <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
+            </div>}
+          {product.featured && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
               <Star className="h-3 w-3 mr-1" />
               Featured
-            </Badge>
-          )}
+            </Badge>}
         </div>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
             <CardTitle className="text-lg font-semibold">{product.name}</CardTitle>
-            {variants.length > 1 && (
-              <Badge variant="outline" className="text-xs">
+            {variants.length > 1 && <Badge variant="outline" className="text-xs">
                 {variants.length} variants
-              </Badge>
-            )}
+              </Badge>}
           </div>
           <p className="text-sm text-muted-foreground">{category?.name || 'Uncategorized'}</p>
         </CardHeader>
@@ -156,67 +137,49 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
           </p>
           
           {/* Product Details Accordion */}
-          {(features.length > 0 || variants.length > 0 || product.special_notes) && (
-            <Accordion type="single" collapsible className="mb-4">
+          {(features.length > 0 || variants.length > 0 || product.special_notes) && <Accordion type="single" collapsible className="mb-4">
               <AccordionItem value="product-details" className="border-none">
                 <AccordionTrigger className="text-sm font-medium py-2 hover:no-underline">
                   Product Details
                 </AccordionTrigger>
                 <AccordionContent className="pb-2 pt-0">
                   <div className="space-y-3">
-                    {features.length > 0 && (
-                      <div>
+                    {features.length > 0 && <div>
                         <h5 className="text-sm font-semibold mb-2">Key Features:</h5>
                         <ul className="text-xs text-muted-foreground space-y-1">
-                          {features.slice(0, 3).map((feature) => (
-                            <li key={feature.id} className="flex items-center space-x-1">
+                          {features.slice(0, 3).map(feature => <li key={feature.id} className="flex items-center space-x-1">
                               <span className="w-1 h-1 bg-primary rounded-full flex-shrink-0"></span>
                               <span>{feature.feature}</span>
-                            </li>
-                          ))}
+                            </li>)}
                         </ul>
-                      </div>
-                    )}
+                      </div>}
                     
-                    {variants.length > 0 && (
-                      <div>
+                    {variants.length > 0 && <div>
                         <h5 className="text-sm font-semibold mb-2">Available Variants:</h5>
                         <div className="flex flex-wrap gap-1">
-                          {variants.slice(0, 3).map((variant) => (
-                            <Badge key={variant.id} variant="secondary" className="text-xs">
+                          {variants.slice(0, 3).map(variant => <Badge key={variant.id} variant="secondary" className="text-xs">
                               {variant.variant_name}
-                            </Badge>
-                          ))}
-                          {variants.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
+                            </Badge>)}
+                          {variants.length > 3 && <Badge variant="outline" className="text-xs">
                               +{variants.length - 3} more
-                            </Badge>
-                          )}
+                            </Badge>}
                         </div>
-                      </div>
-                    )}
+                      </div>}
                     
                     {/* Special Notes */}
-                    {product.special_notes && (
-                      <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
+                    {product.special_notes && <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
                         <p className="text-xs font-medium text-warning-foreground mb-1">Special Notes:</p>
                         <p className="text-xs text-muted-foreground line-clamp-2">
                           {product.special_notes}
                         </p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </AccordionContent>
               </AccordionItem>
-            </Accordion>
-          )}
+            </Accordion>}
           
           <div className="flex space-x-2 mt-4">
-            <Button 
-              size="sm" 
-              className="flex-1"
-              onClick={() => setSelectedProduct(productWithDetails)}
-            >
+            <Button size="sm" className="flex-1" onClick={() => setSelectedProduct(productWithDetails)}>
               <Eye className="h-4 w-4 mr-1" />
               View Details
             </Button>
@@ -225,78 +188,60 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
             </Button>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   };
-
-  const ProductListItem = ({ productWithDetails }: { productWithDetails: ProductWithDetails }) => {
-    const { product, category, variants, features } = productWithDetails;
-    
-    return (
-      <Card className="professional-hover bg-card shadow-card">
+  const ProductListItem = ({
+    productWithDetails
+  }: {
+    productWithDetails: ProductWithDetails;
+  }) => {
+    const {
+      product,
+      category,
+      variants,
+      features
+    } = productWithDetails;
+    return <Card className="professional-hover bg-card shadow-card">
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
             <div className="relative">
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded"
-                />
-              ) : (
-                <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
+              {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" /> : <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
                   <FileText className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
-              {product.featured && (
-                <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
+                </div>}
+              {product.featured && <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
                   <Star className="h-3 w-3 mr-1" />
                   Featured
-                </Badge>
-              )}
+                </Badge>}
             </div>
             
             <div className="md:col-span-2">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="text-lg font-semibold">{product.name}</h3>
-                {variants.length > 1 && (
-                  <Badge variant="outline" className="text-xs">
+                {variants.length > 1 && <Badge variant="outline" className="text-xs">
                     {variants.length} variants
-                  </Badge>
-                )}
+                  </Badge>}
               </div>
               <p className="text-sm text-muted-foreground mb-2">{category?.name || 'Uncategorized'}</p>
               <p className="text-sm text-muted-foreground mb-3">{product.description || 'No description available'}</p>
               
               <div className="grid grid-cols-2 gap-4 text-xs">
-                {features.length > 0 && (
-                  <div>
+                {features.length > 0 && <div>
                     <strong>Features:</strong>
                     <ul className="mt-1 space-y-1 text-muted-foreground">
-                      {features.slice(0, 2).map((feature) => (
-                        <li key={feature.id}>• {feature.feature}</li>
-                      ))}
+                      {features.slice(0, 2).map(feature => <li key={feature.id}>• {feature.feature}</li>)}
                     </ul>
-                  </div>
-                )}
-                {variants.length > 0 && (
-                  <div>
+                  </div>}
+                {variants.length > 0 && <div>
                     <strong>Variants:</strong>
                     <div className="mt-1 space-y-1 text-muted-foreground">
-                      {variants.slice(0, 2).map((variant) => (
-                        <div key={variant.id}>• {variant.variant_name}</div>
-                      ))}
+                      {variants.slice(0, 2).map(variant => <div key={variant.id}>• {variant.variant_name}</div>)}
                     </div>
-                  </div>
-                )}
+                  </div>}
               </div>
             </div>
             
             <div className="flex flex-col space-y-2">
-              <Button 
-                size="sm"
-                onClick={() => setSelectedProduct(productWithDetails)}
-              >
+              <Button size="sm" onClick={() => setSelectedProduct(productWithDetails)}>
                 <Eye className="h-4 w-4 mr-1" />
                 View Details
               </Button>
@@ -307,37 +252,25 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
             </div>
           </div>
         </CardContent>
-      </Card>
-    );
+      </Card>;
   };
-
   if (loading) {
-    return (
-      <div className="py-20 bg-background">
+    return <div className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center min-h-64">
             <Loader2 className="h-8 w-8 animate-spin" />
             <span className="ml-2">Loading products...</span>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="py-20 bg-background">
+  return <div className="py-20 bg-background">
       <div className="container mx-auto px-4">
         {/* Product Details Modal */}
-        {selectedProduct && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        {selectedProduct && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-background rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
               {/* Floating Close Button */}
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setSelectedProduct(null)}
-                className="fixed top-[116px] right-[116px] z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
-              >
+              <Button variant="outline" size="sm" onClick={() => setSelectedProduct(null)} className="fixed top-[50px] right-[40px] z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2">
                 <X className="h-4 w-4" />
               </Button>
               
@@ -354,29 +287,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                   {/* 3D Product Viewer */}
                   <div className="mb-4">
                     <h3 className="text-lg font-semibold mb-3">3D Product View</h3>
-                    <Product3DViewer 
-                      modelUrl={selectedProduct.product.model_3d_url || undefined}
-                      imageUrl={selectedProduct.product.image_url || undefined}
-                      productName={selectedProduct.product.name}
-                      className="w-full h-96 sm:h-80 md:h-96 lg:h-[28rem]"
-                    />
+                    <Product3DViewer modelUrl={selectedProduct.product.model_3d_url || undefined} imageUrl={selectedProduct.product.image_url || undefined} productName={selectedProduct.product.name} className="w-full h-96 sm:h-80 md:h-96 lg:h-[28rem]" />
                   </div>
                   
                   {/* Traditional Product Image */}
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Product Image</h3>
-                    {selectedProduct.product.image_url ? (
-                      <img
-                        src={selectedProduct.product.image_url}
-                        alt={selectedProduct.product.name}
-                        className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => setEnlargedImage(selectedProduct.product.image_url!)}
-                      />
-                    ) : (
-                      <div className="w-full h-80 sm:h-72 md:h-80 lg:h-96 bg-muted flex items-center justify-center rounded-lg border border-border">
+                    {selectedProduct.product.image_url ? <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} /> : <div className="w-full h-80 sm:h-72 md:h-80 lg:h-96 bg-muted flex items-center justify-center rounded-lg border border-border">
                         <FileText className="h-16 w-16 text-muted-foreground" />
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </div>
                 
@@ -386,48 +305,32 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                     {selectedProduct.product.description || 'No description available'}
                   </p>
                   
-                  {selectedProduct.features.length > 0 && (
-                    <div className="mb-4">
+                  {selectedProduct.features.length > 0 && <div className="mb-4">
                       <h3 className="font-semibold mb-2">Features:</h3>
                       <ul className="space-y-1 text-sm text-muted-foreground">
-                        {selectedProduct.features.map((feature) => (
-                          <li key={feature.id} className="flex items-center space-x-2">
+                        {selectedProduct.features.map(feature => <li key={feature.id} className="flex items-center space-x-2">
                             <span className="w-1 h-1 bg-primary rounded-full"></span>
                             <span>{feature.feature}</span>
-                          </li>
-                        ))}
+                          </li>)}
                       </ul>
-                    </div>
-                  )}
+                    </div>}
                   
-                  {selectedProduct.variants.length > 0 && (
-                    <div>
+                  {selectedProduct.variants.length > 0 && <div>
                       <h3 className="font-semibold mb-2">Available Variants:</h3>
                       <div className="space-y-2">
-                        {selectedProduct.variants.map((variant) => (
-                          <div key={variant.id} className="p-2 border border-border rounded">
+                        {selectedProduct.variants.map(variant => <div key={variant.id} className="p-2 border border-border rounded">
                             <div className="font-medium">{variant.variant_name}</div>
-                            {variant.variant_description && (
-                              <div className="text-sm text-muted-foreground">{variant.variant_description}</div>
-                            )}
-                          </div>
-                        ))}
+                            {variant.variant_description && <div className="text-sm text-muted-foreground">{variant.variant_description}</div>}
+                          </div>)}
                       </div>
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </div>
               
-              {selectedProduct.specifications.length > 0 && (
-                <ProductVariantsTable
-                  variants={selectedProduct.variants}
-                  specifications={selectedProduct.specifications}
-                />
-              )}
+              {selectedProduct.specifications.length > 0 && <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />}
               
               {/* Special Notes Section */}
-              {selectedProduct.product.special_notes && (
-                <div className="mt-6 p-4 bg-muted/50 border border-border rounded-lg">
+              {selectedProduct.product.special_notes && <div className="mt-6 p-4 bg-muted/50 border border-border rounded-lg">
                   <h3 className="font-semibold text-foreground mb-2 flex items-center">
                     <FileText className="h-4 w-4 mr-2" />
                     Special Notes
@@ -435,11 +338,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {selectedProduct.product.special_notes}
                   </p>
-                </div>
-              )}
+                </div>}
             </div>
-          </div>
-        )}
+          </div>}
 
         {/* Enlarged Image Dialog */}
         <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
@@ -447,15 +348,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
             <DialogHeader className="sr-only">
               <DialogTitle>Enlarged Product Image</DialogTitle>
             </DialogHeader>
-            {enlargedImage && (
-              <div className="flex items-center justify-center">
-                <img
-                  src={enlargedImage}
-                  alt="Enlarged product view"
-                  className="max-w-full max-h-[85vh] object-contain rounded-lg"
-                />
-              </div>
-            )}
+            {enlargedImage && <div className="flex items-center justify-center">
+                <img src={enlargedImage} alt="Enlarged product view" className="max-w-full max-h-[85vh] object-contain rounded-lg" />
+              </div>}
           </DialogContent>
         </Dialog>
 
@@ -478,56 +373,33 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                 {/* Search */}
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search products, models, or features..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
+                  <Input placeholder="Search products, models, or features..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
                 </div>
 
                 {/* Category Filter */}
                 <div className="flex items-center space-x-2">
                   <Filter className="h-4 w-4 text-muted-foreground" />
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => {
-                      setSelectedCategory(e.target.value);
-                      setUserSelectedCategory(true); // Mark that user manually changed category
-                    }}
-                    className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
-                  >
+                  <select value={selectedCategory} onChange={e => {
+                  setSelectedCategory(e.target.value);
+                  setUserSelectedCategory(true); // Mark that user manually changed category
+                }} className="px-3 py-2 border border-border rounded-md bg-background text-foreground">
                     <option value="All Products">All Products</option>
-                    {categories.map(category => (
-                      <option key={category.id} value={category.name}>{category.name}</option>
-                    ))}
+                    {categories.map(category => <option key={category.id} value={category.name}>{category.name}</option>)}
                   </select>
                 </div>
 
                 {/* Featured Toggle */}
-                <Button
-                  variant={showFeaturedOnly ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}
-                >
+                <Button variant={showFeaturedOnly ? "default" : "outline"} size="sm" onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}>
                   <Star className="h-4 w-4 mr-1" />
                   Featured Only
                 </Button>
 
                 {/* View Mode */}
                 <div className="flex items-center space-x-1 border border-border rounded-md p-1">
-                  <Button
-                    variant={viewMode === 'grid' ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                  >
+                  <Button variant={viewMode === 'grid' ? "default" : "ghost"} size="sm" onClick={() => setViewMode('grid')}>
                     <Grid3X3 className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant={viewMode === 'list' ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                  >
+                  <Button variant={viewMode === 'list' ? "default" : "ghost"} size="sm" onClick={() => setViewMode('list')}>
                     <List className="h-4 w-4" />
                   </Button>
                 </div>
@@ -545,40 +417,27 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
         </div>
 
         {/* Products Grid/List */}
-        {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProducts.map(productWithDetails => (
-              <ProductCard key={productWithDetails.product.id} productWithDetails={productWithDetails} />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredProducts.map(productWithDetails => (
-              <ProductListItem key={productWithDetails.product.id} productWithDetails={productWithDetails} />
-            ))}
-          </div>
-        )}
+        {viewMode === 'grid' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map(productWithDetails => <ProductCard key={productWithDetails.product.id} productWithDetails={productWithDetails} />)}
+          </div> : <div className="space-y-4">
+            {filteredProducts.map(productWithDetails => <ProductListItem key={productWithDetails.product.id} productWithDetails={productWithDetails} />)}
+          </div>}
 
         {/* No Results */}
-        {filteredProducts.length === 0 && (
-          <div className="text-center py-12">
+        {filteredProducts.length === 0 && <div className="text-center py-12">
             <div className="text-muted-foreground mb-4">
               <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-semibold mb-2">No products found</h3>
               <p>Try adjusting your search terms or filters</p>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedCategory('All Products');
-                setShowFeaturedOnly(false);
-              }}
-            >
+            <Button variant="outline" onClick={() => {
+          setSearchTerm('');
+          setSelectedCategory('All Products');
+          setShowFeaturedOnly(false);
+        }}>
               Clear Filters
             </Button>
-          </div>
-        )}
+          </div>}
 
         {/* Call to Action */}
         <div className="mt-16">
@@ -599,8 +458,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ProductGallery;
