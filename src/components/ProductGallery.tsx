@@ -336,7 +336,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
                 variant="outline" 
                 size="sm"
                 onClick={() => setSelectedProduct(null)}
-                className="fixed top-[-16px] right-[-16px] z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+                className="fixed top-[116px] right-[116px] z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
               >
                 <X className="h-4 w-4" />
               </Button>
