@@ -25,7 +25,7 @@ const Header = () => {
             <img 
               src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
               alt="Phelan Manufacturing Corporation" 
-              className="h-24 w-auto"
+              className="h-24 w-auto py-2"
             />
           </div>
 
