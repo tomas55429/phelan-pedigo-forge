@@ -330,15 +330,22 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedCategoryId }) =
         {/* Product Details Modal */}
         {selectedProduct && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-background rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-background rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
+              {/* Floating Close Button */}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setSelectedProduct(null)}
+                className="fixed top-4 right-4 z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h2 className="text-3xl font-bold">{selectedProduct.product.name}</h2>
                   <p className="text-muted-foreground text-lg">{selectedProduct.category?.name || 'Uncategorized'}</p>
                 </div>
-                <Button variant="outline" onClick={() => setSelectedProduct(null)}>
-                  ✕
-                </Button>
               </div>
               
               <div className="grid lg:grid-cols-2 gap-8 mb-6">
