@@ -122,9 +122,18 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
     : className;
 
   return (
-    <div className={`relative bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg overflow-hidden border border-border ${containerClass}`}>
+    <div className={`relative bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg overflow-hidden border border-border ${containerClass} ${!isFullscreen ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}>
+      {/* Click overlay for enlarging when not in fullscreen */}
+      {!isFullscreen && (
+        <div 
+          className="absolute inset-0 z-10" 
+          onClick={toggleFullscreen}
+          title="Click to enlarge 3D view"
+        />
+      )}
+      
       {/* 3D Canvas */}
-      <Canvas shadows>
+      <Canvas shadows className={isFullscreen ? 'cursor-default' : 'pointer-events-none'}>
         <PerspectiveCamera makeDefault position={[0, 0, 120]} fov={45} />
         
         {/* Lighting Setup */}
@@ -162,11 +171,12 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
           minDistance={80}
           maxDistance={200}
           maxPolarAngle={Math.PI / 2}
+          enabled={isFullscreen}
         />
       </Canvas>
       
       {/* Control Panel */}
-      <div className="absolute top-4 right-4 flex flex-col space-y-2">
+      <div className={`absolute top-4 right-4 flex flex-col space-y-2 ${!isFullscreen ? 'z-20' : ''}`}>
         <Button
           size="sm"
           variant="secondary"
@@ -202,10 +212,10 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
       </div>
       
       {/* Product Info Overlay */}
-      <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm rounded-md p-3">
+      <div className={`absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm rounded-md p-3 ${!isFullscreen ? 'z-20' : ''}`}>
         <h3 className="font-semibold text-sm text-foreground">{productName}</h3>
         <p className="text-xs text-muted-foreground">
-          Drag to rotate • Scroll to zoom • Click controls for actions
+          {isFullscreen ? 'Drag to rotate • Scroll to zoom • Click controls for actions' : 'Click to enlarge and interact with 3D view'}
         </p>
       </div>
       
