@@ -22,11 +22,13 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <img 
-              src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
-              alt="Phelan Manufacturing Corporation" 
-              className="h-24 w-auto py-2"
-            />
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
+                alt="Phelan Manufacturing Corporation" 
+                className="h-24 w-auto py-2 cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
