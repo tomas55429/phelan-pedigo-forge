@@ -69,7 +69,7 @@ const Header = () => {
           </nav>
 
           {/* Search Bar */}
-          <div className="flex-1 max-w-md ml-8">
+          <div className="flex-1 max-w-md ml-16">
             <GlobalSearch />
           </div>
 
