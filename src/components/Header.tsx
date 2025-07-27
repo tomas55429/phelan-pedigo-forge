@@ -69,7 +69,7 @@ const Header = () => {
               <span className="font-semibold">1-800-328-2358</span>
             </div>
             
-            {user ? (
+            {user && (
               <div className="flex items-center space-x-2">
                 {isAdmin && (
                   <Link to="/admin">
@@ -83,13 +83,6 @@ const Header = () => {
                   Sign Out
                 </Button>
               </div>
-            ) : (
-              <Link to="/auth">
-                <Button variant="outline" size="sm">
-                  <User className="h-4 w-4 mr-2" />
-                  Admin Login
-                </Button>
-              </Link>
             )}
           </div>
 
@@ -133,7 +126,7 @@ const Header = () => {
               ))}
               
               {/* Mobile Auth Section */}
-              {user ? (
+              {user && (
                 <div className="space-y-2 px-3 py-2">
                   {isAdmin && (
                     <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
@@ -146,15 +139,6 @@ const Header = () => {
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out
                   </Button>
-                </div>
-              ) : (
-                <div className="px-3 py-2">
-                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" size="sm" className="w-full">
-                      <User className="h-4 w-4 mr-2" />
-                      Admin Login
-                    </Button>
-                  </Link>
                 </div>
               )}
               
