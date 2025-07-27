@@ -34,7 +34,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
-              <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity" />
+              <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className="h-24 w-auto cursor-pointer hover:opacity-80 transition-opacity" />
             </Link>
           </div>
         </div>
