@@ -293,9 +293,20 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {/* Traditional Product Image */}
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Product Image</h3>
-                    {selectedProduct.product.image_url ? <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} /> : <div className="w-full h-80 sm:h-72 md:h-80 lg:h-96 bg-muted flex items-center justify-center rounded-lg border border-border">
+                    {selectedProduct.product.image_url ? (
+                      <div className="relative group">
+                        <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} />
+                        <div className="text-center mt-2">
+                          <span className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)}>
+                            click to enlarge
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-80 sm:h-72 md:h-80 lg:h-96 bg-muted flex items-center justify-center rounded-lg border border-border">
                         <FileText className="h-16 w-16 text-muted-foreground" />
-                      </div>}
+                      </div>
+                    )}
                   </div>
                 </div>
                 
