@@ -114,7 +114,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     } = productWithDetails;
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
-          {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
+          {product.image_url ? <div className="relative group cursor-pointer" onClick={() => setEnlargedImage(product.image_url!)}>
+              <img src={product.image_url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" />
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs py-1 px-2 text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                Click to enlarge
+              </div>
+            </div> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
             </div>}
           {product.featured && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
@@ -205,7 +210,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
             <div className="relative">
-              {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" /> : <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
+              {product.image_url ? <div className="relative group cursor-pointer" onClick={() => setEnlargedImage(product.image_url!)}>
+                  <img src={product.image_url} alt={product.name} className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs py-1 px-2 text-center opacity-0 group-hover:opacity-100 transition-opacity rounded-b">
+                    Click to enlarge
+                  </div>
+                </div> : <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
                   <FileText className="h-8 w-8 text-muted-foreground" />
                 </div>}
               {product.featured && <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
