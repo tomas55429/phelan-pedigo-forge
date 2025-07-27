@@ -37,6 +37,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [specsProduct, setSpecsProduct] = useState<ProductWithDetails | null>(null);
   const [userSelectedCategory, setUserSelectedCategory] = useState(false); // Track if user manually changed category
 
   // Fetch products and related data from Supabase
@@ -183,7 +184,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               <Eye className="h-4 w-4 mr-1" />
               View Details
             </Button>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)}>
               <FileText className="h-4 w-4" />
             </Button>
           </div>
@@ -245,7 +246,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <Eye className="h-4 w-4 mr-1" />
                 View Details
               </Button>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)}>
                 <FileText className="h-4 w-4 mr-1" />
                 Specs
               </Button>
@@ -362,6 +363,110 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             {enlargedImage && <div className="flex items-center justify-center">
                 <img src={enlargedImage} alt="Enlarged product view" className="max-w-full max-h-[85vh] object-contain rounded-lg" />
               </div>}
+          </DialogContent>
+        </Dialog>
+
+        {/* Product Specifications Modal */}
+        <Dialog open={!!specsProduct} onOpenChange={() => setSpecsProduct(null)}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center text-xl">
+                <FileText className="h-5 w-5 mr-2" />
+                {specsProduct?.product.name} - Specifications
+              </DialogTitle>
+            </DialogHeader>
+            
+            {specsProduct && (
+              <div className="space-y-6">
+                {/* Product Basic Info */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">Product Information</h3>
+                    <div className="space-y-2 text-sm">
+                      <div><span className="font-medium">Category:</span> {specsProduct.category?.name || 'Uncategorized'}</div>
+                      <div><span className="font-medium">Description:</span> {specsProduct.product.description || 'No description available'}</div>
+                    </div>
+                  </div>
+                  
+                  {specsProduct.product.image_url && (
+                    <div className="flex justify-center">
+                      <img 
+                        src={specsProduct.product.image_url} 
+                        alt={specsProduct.product.name} 
+                        className="w-48 h-48 object-cover rounded-lg border"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Features Section */}
+                {specsProduct.features.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Features</h3>
+                    <div className="grid md:grid-cols-2 gap-2">
+                      {specsProduct.features.map(feature => (
+                        <div key={feature.id} className="flex items-center space-x-2 text-sm">
+                          <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
+                          <span>{feature.feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Variants Section */}
+                {specsProduct.variants.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Available Variants</h3>
+                    <div className="space-y-3">
+                      {specsProduct.variants.map(variant => (
+                        <div key={variant.id} className="p-3 border border-border rounded-lg">
+                          <h4 className="font-medium">{variant.variant_name}</h4>
+                          {variant.variant_description && (
+                            <p className="text-sm text-muted-foreground mt-1">{variant.variant_description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Specifications Table */}
+                {specsProduct.specifications.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold mb-3">Technical Specifications</h3>
+                    <ProductVariantsTable 
+                      variants={specsProduct.variants} 
+                      specifications={specsProduct.specifications} 
+                    />
+                  </div>
+                )}
+
+                {/* Special Notes */}
+                {specsProduct.product.special_notes && (
+                  <div className="p-4 bg-muted/50 border border-border rounded-lg">
+                    <h3 className="font-semibold text-foreground mb-2 flex items-center">
+                      <FileText className="h-4 w-4 mr-2" />
+                      Special Notes
+                    </h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                      {specsProduct.product.special_notes}
+                    </p>
+                  </div>
+                )}
+
+                {/* No Data Message */}
+                {specsProduct.features.length === 0 && 
+                 specsProduct.variants.length === 0 && 
+                 specsProduct.specifications.length === 0 && 
+                 !specsProduct.product.special_notes && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No detailed specifications available for this product.</p>
+                  </div>
+                )}
+              </div>
+            )}
           </DialogContent>
         </Dialog>
 
