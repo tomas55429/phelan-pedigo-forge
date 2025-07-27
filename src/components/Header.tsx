@@ -29,30 +29,19 @@ const Header = () => {
   }];
   return <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
-        {/* Top Bar with Logo, Search, and Phone */}
-        <div className="flex items-center justify-between py-3 border-b border-border/50">
+        {/* Top Bar with Logo */}
+        <div className="flex items-center justify-center py-3 border-b border-border/50">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
               <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity" />
             </Link>
           </div>
-          
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-8">
-            <GlobalSearch />
-          </div>
-          
-          {/* Phone Number */}
-          <div className="hidden lg:flex items-center space-x-2 text-primary">
-            <Phone className="h-4 w-4" />
-            <span className="font-semibold">1-800-328-2358</span>
-          </div>
         </div>
         
         <div className="flex items-center justify-between h-16">
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8 mx-auto">
+          <nav className="hidden md:flex items-center space-x-8">
             {navigation.map(item => item.href.startsWith('#') ? <a key={item.name} href={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
                   {item.name}
                 </a> : <Link key={item.name} to={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
@@ -60,8 +49,18 @@ const Header = () => {
                 </Link>)}
           </nav>
 
-          {/* Auth Section */}
-          <div className="hidden lg:flex items-center space-x-4">
+          {/* Search Bar */}
+          <div className="flex-1 max-w-md mx-8">
+            <GlobalSearch />
+          </div>
+
+          {/* Phone Number and Auth Section */}
+          <div className="hidden lg:flex items-center space-x-6">
+            <div className="flex items-center space-x-2 text-primary">
+              <Phone className="h-4 w-4" />
+              <span className="font-semibold">1-800-328-2358</span>
+            </div>
+            
             {user ? <div className="flex items-center space-x-2">
                 {isAdmin && <Link to="/admin">
                     <Button variant="outline" size="sm">
