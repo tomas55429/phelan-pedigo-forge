@@ -22,7 +22,7 @@ const Header = () => {
       {/* Logo Section */}
       <div className="border-b border-border/50 bg-background/30">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/">
@@ -32,6 +32,12 @@ const Header = () => {
                   className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity"
                 />
               </Link>
+            </div>
+            
+            {/* Phone Number */}
+            <div className="flex items-center space-x-2 text-primary">
+              <Phone className="h-4 w-4" />
+              <span className="font-semibold">1-800-328-2358</span>
             </div>
           </div>
         </div>
@@ -69,10 +75,6 @@ const Header = () => {
 
           {/* Auth Section */}
           <div className="hidden lg:flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-primary">
-              <Phone className="h-4 w-4" />
-              <span className="font-semibold">1-800-328-2358</span>
-            </div>
             
             {user && (
               <div className="flex items-center space-x-2">
@@ -146,11 +148,6 @@ const Header = () => {
                   </Button>
                 </div>
               )}
-              
-              <div className="flex items-center space-x-2 px-3 py-2 text-primary border-t border-border">
-                <Phone className="h-4 w-4" />
-                <span className="font-semibold">1-800-328-2358</span>
-              </div>
             </div>
           </div>
         )}
