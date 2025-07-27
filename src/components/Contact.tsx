@@ -9,7 +9,8 @@ import {
   MapPin, 
   Clock, 
   MessageSquare,
-  Send
+  Send,
+  FileText
 } from 'lucide-react';
 
 const Contact = () => {
@@ -84,6 +85,20 @@ const Contact = () => {
                 </Card>
               ))}
             </div>
+
+            {/* Purchase Orders Notice */}
+            <Card className="bg-green-50 border border-green-200 dark:bg-green-950/20 dark:border-green-800">
+              <CardContent className="p-6 md:p-8 text-center">
+                <FileText className="h-10 w-10 md:h-12 md:w-12 text-green-600 mx-auto mb-3 md:mb-4" />
+                <h4 className="text-lg md:text-xl font-bold text-foreground mb-3 md:mb-4">
+                  Purchase Orders Accepted
+                </h4>
+                <p className="text-sm md:text-base text-muted-foreground">
+                  We accept Purchase Orders (P.O.) for institutional and healthcare facility orders. 
+                  Contact us to discuss your procurement needs and payment terms.
+                </p>
+              </CardContent>
+            </Card>
 
             {/* Call to Action */}
             <Card className="bg-primary/5 border border-primary/20">
