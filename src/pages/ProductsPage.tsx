@@ -8,25 +8,18 @@ const ProductsPage = () => {
   const [searchParams] = useSearchParams();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
 
-  // Handle URL parameters for category filtering and search
+  // Handle URL parameter for category filtering
   useEffect(() => {
     const categoryParam = searchParams.get('category');
-    const searchParam = searchParams.get('search');
-    
     if (categoryParam) {
       setSelectedCategoryId(categoryParam);
-    } else {
-      setSelectedCategoryId(null);
     }
   }, [searchParams]);
 
   return (
     <div className="min-h-screen">
       <Header />
-      <ProductGallery 
-        selectedCategoryId={selectedCategoryId} 
-        searchQuery={searchParams.get('search')} 
-      />
+      <ProductGallery selectedCategoryId={selectedCategoryId} />
       <Footer />
     </div>
   );

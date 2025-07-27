@@ -24,11 +24,9 @@ interface ProductWithDetails {
 }
 interface ProductGalleryProps {
   selectedCategoryId?: string | null;
-  searchQuery?: string | null;
 }
 const ProductGallery: React.FC<ProductGalleryProps> = ({
-  selectedCategoryId,
-  searchQuery
+  selectedCategoryId
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
@@ -78,13 +76,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     };
     fetchData();
   }, []);
-
-  // Update search term when searchQuery prop changes
-  useEffect(() => {
-    if (searchQuery) {
-      setSearchTerm(searchQuery);
-    }
-  }, [searchQuery]);
   const filteredProducts = useMemo(() => {
     return productsWithDetails.filter(({
       product,
