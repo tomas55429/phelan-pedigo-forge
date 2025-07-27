@@ -3,6 +3,7 @@ import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import GlobalSearch from '@/components/GlobalSearch';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,6 +20,11 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
+        {/* Search Bar */}
+        <div className="flex justify-center py-3 border-b border-border/50">
+          <GlobalSearch />
+        </div>
+        
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex items-center">
