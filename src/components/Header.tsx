@@ -3,6 +3,7 @@ import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import GlobalSearch from './GlobalSearch';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +19,13 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+      {/* Search Bar Section */}
+      <div className="border-b border-border/50 bg-background/30">
+        <div className="container mx-auto px-4 py-3">
+          <GlobalSearch />
+        </div>
+      </div>
+      
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
