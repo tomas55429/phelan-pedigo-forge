@@ -22,23 +22,24 @@ const Header = () => {
       {/* Search Bar Section */}
       <div className="border-b border-border/50 bg-background/30">
         <div className="container mx-auto px-4 py-3">
-          <GlobalSearch />
+          <div className="flex items-center justify-between gap-4">
+            {/* Logo */}
+            <div className="flex items-center">
+              <Link to="/">
+                <img 
+                  src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
+                  alt="Phelan Manufacturing Corporation" 
+                  className="h-16 w-auto cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </Link>
+            </div>
+            <GlobalSearch />
+          </div>
         </div>
       </div>
       
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/">
-              <img 
-                src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
-                alt="Phelan Manufacturing Corporation" 
-                className="h-24 w-auto py-2 cursor-pointer hover:opacity-80 transition-opacity"
-              />
-            </Link>
-          </div>
-
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
