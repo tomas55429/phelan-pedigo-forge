@@ -3,6 +3,7 @@ import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import GlobalSearch from '@/components/GlobalSearch';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -20,8 +21,8 @@ const Header = () => {
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <div className="flex items-center">
+          {/* Logo and Search */}
+          <div className="flex items-center space-x-6">
             <Link to="/">
               <img 
                 src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
@@ -29,6 +30,9 @@ const Header = () => {
                 className="h-24 w-auto py-2 cursor-pointer hover:opacity-80 transition-opacity"
               />
             </Link>
+            <div className="hidden md:block">
+              <GlobalSearch />
+            </div>
           </div>
 
           {/* Desktop Navigation */}
@@ -123,6 +127,11 @@ const Header = () => {
                   </Link>
                 )
               ))}
+              
+              {/* Mobile Search */}
+              <div className="px-3 py-2">
+                <GlobalSearch />
+              </div>
               
               {/* Mobile Auth Section */}
               {user ? (
