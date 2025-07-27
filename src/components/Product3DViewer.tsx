@@ -88,7 +88,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
   imageUrl, 
   modelUrl,
   productName, 
-  className = "w-full h-[500px]" 
+  className = "w-full h-[800px]" 
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const controlsRef = useRef<any>(null);
