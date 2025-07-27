@@ -40,7 +40,7 @@ const Header = () => {
   return <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
         {/* Top Bar with Logo */}
-        <div className="flex items-center justify-center py-3 border-b border-border/50">
+        <div className="flex items-center justify-center py-3">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
