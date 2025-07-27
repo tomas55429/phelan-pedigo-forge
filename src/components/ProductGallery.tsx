@@ -24,9 +24,11 @@ interface ProductWithDetails {
 }
 interface ProductGalleryProps {
   selectedCategoryId?: string | null;
+  initialSearchTerm?: string;
 }
 const ProductGallery: React.FC<ProductGalleryProps> = ({
-  selectedCategoryId
+  selectedCategoryId,
+  initialSearchTerm
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
@@ -83,6 +85,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     fetchData();
   }, []);
 
+  // Set initial search term from props
+  useEffect(() => {
+    if (initialSearchTerm) {
+      setSearchTerm(initialSearchTerm);
+    }
+  }, [initialSearchTerm]);
+
   // Reset zoom and pan when image changes
   useEffect(() => {
     if (enlargedImage) {
@@ -132,9 +141,29 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const filteredProducts = useMemo(() => {
     return productsWithDetails.filter(({
       product,
-      category
+      category,
+      features,
+      specifications
     }) => {
-      const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase()) || product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      // Enhanced search that includes product name, description, features, and specifications
+      const searchLower = searchTerm.toLowerCase();
+      
+      const nameMatch = product.name?.toLowerCase().includes(searchLower);
+      const descriptionMatch = product.description?.toLowerCase().includes(searchLower);
+      const specialNotesMatch = product.special_notes?.toLowerCase().includes(searchLower);
+      
+      // Search through features
+      const featuresMatch = features.some(feature => 
+        feature.feature?.toLowerCase().includes(searchLower)
+      );
+      
+      // Search through specifications
+      const specificationsMatch = specifications.some(spec => 
+        spec.specification_key?.toLowerCase().includes(searchLower) ||
+        spec.specification_value?.toLowerCase().includes(searchLower)
+      );
+      
+      const matchesSearch = !searchTerm || nameMatch || descriptionMatch || specialNotesMatch || featuresMatch || specificationsMatch;
 
       // Determine which category filter to use
       let matchesCategory = true;

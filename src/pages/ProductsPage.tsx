@@ -7,19 +7,29 @@ import ProductGallery from '@/components/ProductGallery';
 const ProductsPage = () => {
   const [searchParams] = useSearchParams();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Handle URL parameter for category filtering
+  // Handle URL parameters for category filtering and search
   useEffect(() => {
     const categoryParam = searchParams.get('category');
+    const searchParam = searchParams.get('search');
+    
     if (categoryParam) {
       setSelectedCategoryId(categoryParam);
+    }
+    
+    if (searchParam) {
+      setSearchTerm(searchParam);
     }
   }, [searchParams]);
 
   return (
     <div className="min-h-screen">
       <Header />
-      <ProductGallery selectedCategoryId={selectedCategoryId} />
+      <ProductGallery 
+        selectedCategoryId={selectedCategoryId} 
+        initialSearchTerm={searchTerm}
+      />
       <Footer />
     </div>
   );
