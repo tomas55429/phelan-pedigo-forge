@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X } from 'lucide-react';
+import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductVariantsTable from './ProductVariantsTable';
 import Product3DViewer from './Product3DViewer';
@@ -37,6 +37,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [imageZoom, setImageZoom] = useState(1);
+  const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [specsProduct, setSpecsProduct] = useState<ProductWithDetails | null>(null);
   const [userSelectedCategory, setUserSelectedCategory] = useState(false); // Track if user manually changed category
 
@@ -77,6 +81,53 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     };
     fetchData();
   }, []);
+
+  // Reset zoom and pan when image changes
+  useEffect(() => {
+    if (enlargedImage) {
+      setImageZoom(1);
+      setImagePan({ x: 0, y: 0 });
+    }
+  }, [enlargedImage]);
+
+  const handleZoomIn = () => {
+    setImageZoom(prev => Math.min(prev * 1.5, 5));
+  };
+
+  const handleZoomOut = () => {
+    setImageZoom(prev => Math.max(prev / 1.5, 0.5));
+  };
+
+  const resetZoom = () => {
+    setImageZoom(1);
+    setImagePan({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (imageZoom > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - imagePan.x, y: e.clientY - imagePan.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && imageZoom > 1) {
+      setImagePan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setImageZoom(prev => Math.min(Math.max(prev * delta, 0.5), 5));
+  };
   const filteredProducts = useMemo(() => {
     return productsWithDetails.filter(({
       product,
@@ -354,15 +405,86 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             </div>
           </div>}
 
-        {/* Enlarged Image Dialog */}
+        {/* Enlarged Image Dialog with Zoom */}
         <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
-          <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden">
             <DialogHeader className="sr-only">
               <DialogTitle>Enlarged Product Image</DialogTitle>
             </DialogHeader>
-            {enlargedImage && <div className="flex items-center justify-center">
-                <img src={enlargedImage} alt="Enlarged product view" className="max-w-full max-h-[85vh] object-contain rounded-lg" />
-              </div>}
+            {enlargedImage && (
+              <div className="relative w-full h-[90vh] bg-black/90 flex items-center justify-center overflow-hidden">
+                {/* Zoom Controls */}
+                <div className="absolute top-4 right-4 z-10 flex space-x-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleZoomIn}
+                    disabled={imageZoom >= 5}
+                    className="bg-background/80 backdrop-blur-sm"
+                  >
+                    <ZoomIn className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleZoomOut}
+                    disabled={imageZoom <= 0.5}
+                    className="bg-background/80 backdrop-blur-sm"
+                  >
+                    <ZoomOut className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={resetZoom}
+                    className="bg-background/80 backdrop-blur-sm"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Zoom Level Indicator */}
+                <div className="absolute top-4 left-4 z-10 bg-background/80 backdrop-blur-sm px-3 py-1 rounded text-sm">
+                  {Math.round(imageZoom * 100)}%
+                </div>
+
+                {/* Pan Instructions */}
+                {imageZoom > 1 && (
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-background/80 backdrop-blur-sm px-3 py-1 rounded text-sm">
+                    Drag to pan • Scroll to zoom
+                  </div>
+                )}
+
+                {/* Zoomable Image */}
+                <div 
+                  className="w-full h-full flex items-center justify-center"
+                  onWheel={handleWheel}
+                  onMouseDown={handleMouseDown}
+                  onMouseMove={handleMouseMove}
+                  onMouseUp={handleMouseUp}
+                  onMouseLeave={handleMouseUp}
+                  style={{
+                    cursor: imageZoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'
+                  }}
+                >
+                  <img 
+                    src={enlargedImage} 
+                    alt="Enlarged product view" 
+                    className="max-w-none select-none"
+                    style={{
+                      transform: `scale(${imageZoom}) translate(${imagePan.x / imageZoom}px, ${imagePan.y / imageZoom}px)`,
+                      transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                      maxWidth: imageZoom === 1 ? '100%' : 'none',
+                      maxHeight: imageZoom === 1 ? '100%' : 'none',
+                      width: imageZoom === 1 ? 'auto' : '100%',
+                      height: imageZoom === 1 ? 'auto' : '100%',
+                      objectFit: imageZoom === 1 ? 'contain' : 'cover'
+                    }}
+                    draggable={false}
+                  />
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
 
