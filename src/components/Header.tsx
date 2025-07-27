@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,11 +6,21 @@ import { Link } from 'react-router-dom';
 import GlobalSearch from '@/components/GlobalSearch';
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const {
     user,
     isAdmin,
     signOut
   } = useAuth();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const navigation = [{
     name: 'Home',
     href: '/'
@@ -34,7 +44,7 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/">
-              <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className="h-24 w-auto cursor-pointer hover:opacity-80 transition-opacity" />
+              <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-12' : 'h-24'}`} />
             </Link>
           </div>
         </div>
