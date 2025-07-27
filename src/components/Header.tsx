@@ -3,7 +3,7 @@ import { Menu, X, Phone, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
-import GlobalSearch from './GlobalSearch';
+import GlobalSearch from '@/components/GlobalSearch';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,32 +19,24 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      {/* Logo Section */}
-      <div className="bg-background/30">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link to="/">
-                <img 
-                  src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
-                  alt="Phelan Manufacturing Corporation" 
-                  className="h-24 w-auto cursor-pointer hover:opacity-80 transition-opacity"
-                />
-              </Link>
-            </div>
-            
-            {/* Phone Number */}
-            <div className="flex items-center space-x-2 text-primary">
-              <Phone className="h-4 w-4" />
-              <span className="font-semibold">1-800-328-2358</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between space-x-8">
+        {/* Search Bar */}
+        <div className="flex justify-end py-3 border-b border-border/50">
+          <GlobalSearch />
+        </div>
+        
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Link to="/">
+              <img 
+                src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" 
+                alt="Phelan Manufacturing Corporation" 
+                className="h-24 w-auto py-2 cursor-pointer hover:opacity-80 transition-opacity"
+              />
+            </Link>
+          </div>
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
@@ -68,14 +60,14 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md ml-16 mt-2">
-            <GlobalSearch />
-          </div>
-
           {/* Auth Section */}
           <div className="hidden lg:flex items-center space-x-4">
-            {user && (
+            <div className="flex items-center space-x-2 text-primary">
+              <Phone className="h-4 w-4" />
+              <span className="font-semibold">1-800-328-2358</span>
+            </div>
+            
+            {user ? (
               <div className="flex items-center space-x-2">
                 {isAdmin && (
                   <Link to="/admin">
@@ -89,6 +81,13 @@ const Header = () => {
                   Sign Out
                 </Button>
               </div>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4 mr-2" />
+                  Admin Login
+                </Button>
+              </Link>
             )}
           </div>
 
@@ -132,7 +131,7 @@ const Header = () => {
               ))}
               
               {/* Mobile Auth Section */}
-              {user && (
+              {user ? (
                 <div className="space-y-2 px-3 py-2">
                   {isAdmin && (
                     <Link to="/admin" onClick={() => setIsMenuOpen(false)}>
@@ -146,7 +145,21 @@ const Header = () => {
                     Sign Out
                   </Button>
                 </div>
+              ) : (
+                <div className="px-3 py-2">
+                  <Link to="/auth" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" size="sm" className="w-full">
+                      <User className="h-4 w-4 mr-2" />
+                      Admin Login
+                    </Button>
+                  </Link>
+                </div>
               )}
+              
+              <div className="flex items-center space-x-2 px-3 py-2 text-primary border-t border-border">
+                <Phone className="h-4 w-4" />
+                <span className="font-semibold">1-800-328-2358</span>
+              </div>
             </div>
           </div>
         )}
