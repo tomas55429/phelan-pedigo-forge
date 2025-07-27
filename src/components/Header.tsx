@@ -19,10 +19,10 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      {/* Search Bar Section */}
+      {/* Logo Section */}
       <div className="border-b border-border/50 bg-background/30">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-center">
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/">
@@ -33,13 +33,17 @@ const Header = () => {
                 />
               </Link>
             </div>
-            <GlobalSearch />
           </div>
         </div>
       </div>
       
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
+          {/* Search Bar */}
+          <div className="flex-1 max-w-md">
+            <GlobalSearch />
+          </div>
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
