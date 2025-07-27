@@ -23,7 +23,7 @@ const GlobalSearch = () => {
         placeholder="Search products..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="pl-10 h-8 pb-2 bg-background/50 border-border/50 focus:bg-background"
+        className="pl-10 h-8 pb-2 mb-2 bg-background/50 border-border/50 focus:bg-background"
       />
     </form>
   );
