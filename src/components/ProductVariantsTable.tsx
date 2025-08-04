@@ -94,7 +94,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                   {hasVariants ? (
                     variants.map((variant) => (
                       <TableCell key={variant.id} className="text-center">
-                        {specsByKey[specKey].values[variant.id] || '-'}
+                        {specsByKey[specKey].values[variant.id] || specsByKey[specKey].generalValue || '-'}
                       </TableCell>
                     ))
                   ) : (
