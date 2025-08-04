@@ -1084,26 +1084,46 @@ const AdminPage = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-4">Manage Product Features & Specifications</h2>
                 <div className="mb-6">
-                  <Label htmlFor="productSelect">Select Product</Label>
-                  <Select 
-                    value={selectedProduct?.id || ''} 
-                    onValueChange={(value) => {
-                      const product = products.find(p => p.id === value);
-                      setSelectedProduct(product || null);
-                      if (product) fetchProductDetails(product.id);
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a product" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <h3 className="text-lg font-medium mb-4">Select a Product</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {products.map((product) => (
+                      <Card 
+                        key={product.id} 
+                        className={`cursor-pointer border-2 transition-all hover:border-primary/50 ${
+                          selectedProduct?.id === product.id 
+                            ? 'border-primary bg-primary/5' 
+                            : 'border-border'
+                        }`}
+                        onClick={() => {
+                          setSelectedProduct(product);
+                          fetchProductDetails(product.id);
+                        }}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3">
+                            {product.image_url && (
+                              <img 
+                                src={product.image_url} 
+                                alt={product.name}
+                                className="w-12 h-12 object-cover rounded-md border"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm truncate">{product.name}</h4>
+                              <p className="text-xs text-muted-foreground">
+                                {product.categories?.name || 'Uncategorized'}
+                              </p>
+                              {product.featured && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 mt-1">
+                                  Featured
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </div>
 
