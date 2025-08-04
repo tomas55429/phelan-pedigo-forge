@@ -460,7 +460,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               
               {/* Specifications Section */}
               <div className="mt-12">
-                <h2 className="text-2xl font-semibold mb-6">Specifications</h2>
+                
                 <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
                   {selectedProduct.specifications.length > 0 ? <div className="w-full">
                       <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
