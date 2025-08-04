@@ -154,8 +154,16 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
               <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[300px] flex items-center justify-center">
                 {variant.image_url ? <div className="relative group w-full">
                     <img src={variant.image_url} alt={`${productName} - ${formatVariantName(variant.variant_name)}`} className="w-full h-auto object-contain max-h-80 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => onImageEnlarge?.(variant.image_url!)} />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded">
-                      <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm">
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="bg-background/90 backdrop-blur-sm pointer-events-auto"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onImageEnlarge?.(variant.image_url!);
+                        }}
+                      >
                         <ZoomIn className="h-4 w-4 mr-2" />
                         Enlarge
                       </Button>
