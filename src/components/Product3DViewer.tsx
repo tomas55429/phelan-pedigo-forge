@@ -29,7 +29,7 @@ function GLBModel({ modelUrl, productName }: { modelUrl: string; productName: st
        position={[0, 0, 0]}
        onPointerOver={() => setHovered(true)}
        onPointerOut={() => setHovered(false)}
-       scale={hovered ? 2.2 : 2.0}
+        scale={hovered ? 1.1 : 1.0}
      >
        <primitive object={scene} />
      </group>
@@ -51,7 +51,7 @@ function FallbackMesh({ productName }: { productName: string }) {
       position={[0, 0, 0]}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
-      scale={hovered ? 2.2 : 2.0}
+      scale={hovered ? 1.1 : 1.0}
     >
       {/* Main product geometry - using RoundedBox from drei */}
       <RoundedBox args={[2, 1.5, 0.5]} radius={0.1} smoothness={4}>
@@ -134,7 +134,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
       
       {/* 3D Canvas */}
       <Canvas shadows className={isFullscreen ? 'cursor-default' : 'pointer-events-none'}>
-        <PerspectiveCamera makeDefault position={[0, 0, 80]} fov={45} />
+        <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={45} />
         
         {/* Lighting Setup */}
         <ambientLight intensity={0.4} />
@@ -168,8 +168,8 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
           enableZoom={true}
           enableRotate={true}
           autoRotate={false}
-          minDistance={80}
-          maxDistance={200}
+          minDistance={8}
+          maxDistance={25}
           maxPolarAngle={Math.PI / 2}
           enabled={isFullscreen}
         />
