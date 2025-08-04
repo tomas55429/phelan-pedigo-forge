@@ -45,6 +45,23 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
   onClose,
   onImageEnlarge
 }) => {
+  // Helper function to format variant name to show only name and number
+  const formatVariantName = (variantName: string) => {
+    // Extract just the name and model number, removing extra descriptive text
+    const name = variantName || '';
+    // Look for pattern like "Name Number-Letter" or just return the first part if it follows that pattern
+    const match = name.match(/^([^,]+?)(?:\s*[,-]\s*(.+))?$/);
+    if (match) {
+      const mainPart = match[1].trim();
+      // If there's a model number pattern, include it
+      const modelMatch = mainPart.match(/^(.+?)\s+([A-Z0-9-]+[A-Z])$/);
+      if (modelMatch) {
+        return `${modelMatch[1]} ${modelMatch[2]}`;
+      }
+      return mainPart;
+    }
+    return name;
+  };
   const variantFeatures = features.filter(f => f.variant_id === variant.id);
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
   const sizeSpecs = variantSpecs.filter(spec => 
@@ -70,7 +87,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
         
         {/* Variant Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{variant.variant_description || 'Standard'} - {variant.variant_name}</h1>
+          <h1 className="text-4xl font-bold mb-2">{formatVariantName(variant.variant_name)}</h1>
         </div>
         
         <div className="grid lg:grid-cols-2 gap-12">
@@ -119,7 +136,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                 {sizeSpecs.length > 0 ? (
                   <div className="w-full">
                     <div className="text-center mb-4 text-lg font-medium">
-                      Size Chart for {variant.variant_name}
+                      Size Chart for {formatVariantName(variant.variant_name)}
                     </div>
                     <div className="text-center mb-4 text-sm text-muted-foreground">
                       (a cropped version of the general specs table that only includes size info for this variant)
@@ -137,7 +154,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                   </div>
                 ) : (
                   <div className="text-center text-muted-foreground">
-                    <div className="text-lg mb-2">Size Chart for {variant.variant_name}</div>
+                    <div className="text-lg mb-2">Size Chart for {formatVariantName(variant.variant_name)}</div>
                     <div className="text-sm mb-4">
                       (a cropped version of the general specs table that only includes size info for this variant)
                     </div>
@@ -161,12 +178,12 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                   <Product3DViewer 
                     modelUrl={variant.model_3d_url} 
                     imageUrl={variant.image_url} 
-                    productName={`${productName} - ${variant.variant_name}`} 
+                    productName={`${productName} - ${formatVariantName(variant.variant_name)}`} 
                     className="w-full h-80" 
                   />
                 ) : (
                   <div className="text-center text-muted-foreground">
-                    <div className="text-lg mb-2">3D model of {variant.variant_name}</div>
+                    <div className="text-lg mb-2">3D model of {formatVariantName(variant.variant_name)}</div>
                     <p className="text-sm">No 3D model available</p>
                   </div>
                 )}
@@ -181,7 +198,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                   <div className="relative group w-full">
                     <img 
                       src={variant.image_url} 
-                      alt={`${productName} - ${variant.variant_name}`} 
+                      alt={`${productName} - ${formatVariantName(variant.variant_name)}`} 
                       className="w-full h-auto object-contain max-h-80 rounded cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => onImageEnlarge?.(variant.image_url!)}
                     />
@@ -194,7 +211,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                   </div>
                 ) : (
                   <div className="text-center text-muted-foreground">
-                    <div className="text-lg mb-2">Image of {variant.variant_name}</div>
+                    <div className="text-lg mb-2">Image of {formatVariantName(variant.variant_name)}</div>
                     <p className="text-sm">No variant image available</p>
                   </div>
                 )}
