@@ -1,6 +1,36 @@
 import { Phone, Mail, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Tables } from '@/integrations/supabase/types';
+
+type Category = Tables<'categories'>;
 
 const Footer = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .order('name');
+
+        if (error) throw error;
+        setCategories(data || []);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleCategoryClick = (categoryId: string) => {
+    navigate(`/products?category=${categoryId}`);
+  };
   return (
     <footer className="bg-foreground text-background py-16">
       <div className="container mx-auto px-4">
@@ -48,12 +78,15 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-primary-light">Our Products</h4>
             <nav className="flex flex-col space-y-2 text-sm">
-              <span className="text-background/80">IV Stands and Carts</span>
-              <span className="text-background/80">Screens, Guards, Face Butlers</span>
-              <span className="text-background/80">Step Stands and Working Platforms</span>
-              <span className="text-background/80">Instrument Racks and Tubing Holders</span>
-              <span className="text-background/80">Sterilization Baskets and Trays</span>
-              <span className="text-background/80">Neurosurgical & Thoracic Tables</span>
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategoryClick(category.id)}
+                  className="text-background/80 hover:text-primary-light transition-colors text-left"
+                >
+                  {category.name}
+                </button>
+              ))}
             </nav>
           </div>
         </div>
