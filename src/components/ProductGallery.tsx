@@ -400,7 +400,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {/* Features */}
                   <div>
                     <h2 className="text-xl font-semibold mb-4">Features</h2>
-                    <div className="text-muted-foreground mb-3">[Feature list]</div>
+                    
                     {selectedProduct.features.length > 0 ? <ul className="space-y-2">
                         {selectedProduct.features.filter(feature => !feature.is_optional).map(feature => <li key={feature.id} className="flex items-start space-x-2">
                               <span className="text-lg leading-none mt-1">-</span>
