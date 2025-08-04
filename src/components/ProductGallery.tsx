@@ -504,6 +504,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             {enlargedImage && <div className="relative w-full h-[90vh] bg-black/90 flex items-center justify-center overflow-hidden">
                 {/* Zoom Controls */}
                 <div className="absolute top-4 right-4 z-10 flex space-x-2">
+                  <Button variant="secondary" size="sm" onClick={() => setEnlargedImage(null)} className="bg-background/80 backdrop-blur-sm hover:bg-background/90">
+                    <X className="h-4 w-4" />
+                  </Button>
                   <Button variant="secondary" size="sm" onClick={handleZoomIn} disabled={imageZoom >= 5} className="bg-background/80 backdrop-blur-sm">
                     <ZoomIn className="h-4 w-4" />
                   </Button>

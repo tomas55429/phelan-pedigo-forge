@@ -71,7 +71,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
   return <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
         {/* Floating Close Button */}
-        <Button variant="outline" size="sm" onClick={onClose} className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2">
+        <Button variant="outline" size="sm" onClick={onClose} className="fixed top-4 right-4 z-50 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2">
           <X className="h-4 w-4" />
         </Button>
         
