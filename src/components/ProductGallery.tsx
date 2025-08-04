@@ -54,6 +54,24 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedVariantProduct, setSelectedVariantProduct] = useState<ProductWithDetails | null>(null);
 
+  // Helper function to format variant name to show only name and number
+  const formatVariantName = (variant: ProductVariant) => {
+    // Extract just the name and model number, removing extra descriptive text
+    const name = variant.variant_name || '';
+    // Look for pattern like "Name Number-Letter" or just return the first part if it follows that pattern
+    const match = name.match(/^([^,]+?)(?:\s*[,-]\s*(.+))?$/);
+    if (match) {
+      const mainPart = match[1].trim();
+      // If there's a model number pattern, include it
+      const modelMatch = mainPart.match(/^(.+?)\s+([A-Z0-9-]+[A-Z])$/);
+      if (modelMatch) {
+        return `${modelMatch[1]} ${modelMatch[2]}`;
+      }
+      return mainPart;
+    }
+    return name;
+  };
+
   // Fetch products and related data from Supabase
   useEffect(() => {
     const fetchData = async () => {
@@ -242,7 +260,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                         <h5 className="text-sm font-semibold mb-2">Available Variants:</h5>
                         <div className="flex flex-wrap gap-1">
                           {variants.slice(0, 3).map(variant => <Badge key={variant.id} variant="secondary" className="text-xs">
-                              {variant.variant_name}
+                              {formatVariantName(variant)}
                             </Badge>)}
                           {variants.length > 3 && <Badge variant="outline" className="text-xs">
                               +{variants.length - 3} more
@@ -318,7 +336,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 {variants.length > 0 && <div>
                     <strong>Variants:</strong>
                     <div className="mt-1 space-y-1 text-muted-foreground">
-                      {variants.slice(0, 2).map(variant => <div key={variant.id}>• {variant.variant_name}</div>)}
+                      {variants.slice(0, 2).map(variant => <div key={variant.id}>• {formatVariantName(variant)}</div>)}
                     </div>
                   </div>}
               </div>
@@ -384,7 +402,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                         <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
                         <p>No image available</p>
                         <p className="text-sm mt-2">
-                          {selectedProduct.variants.length > 0 ? `${selectedProduct.variants[0].variant_name} will be considered the default, so display its image here` : 'Please add a product image'}
+                          {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
                         </p>
                       </div>}
                   </div>
@@ -430,7 +448,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     setSelectedVariantProduct(selectedProduct);
                   }}>
                             <div className="font-medium text-lg">
-                              {variant.variant_name}
+                              {formatVariantName(variant)}
                             </div>
                           </button>) : <div className="p-4 border-2 border-muted rounded-lg text-muted-foreground">
                           No variants available
@@ -567,7 +585,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     <h3 className="font-semibold mb-3">Available Variants</h3>
                     <div className="space-y-3">
                       {specsProduct.variants.map(variant => <div key={variant.id} className="p-3 border border-border rounded-lg">
-                          <h4 className="font-medium">{variant.variant_name}</h4>
+                          <h4 className="font-medium">{formatVariantName(variant)}</h4>
                           {variant.variant_description && <p className="text-sm text-muted-foreground mt-1">{variant.variant_description}</p>}
                         </div>)}
                     </div>
