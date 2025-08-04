@@ -22,7 +22,7 @@ const Hero = () => {
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6">
               Phelan Manufacturing
             </h1>
-            <div className="text-2xl md:text-3xl font-semibold mb-8 text-primary-light">
+            <div className="text-2xl md:text-3xl font-bold mb-8 text-white drop-shadow-lg">
               Made in the <span className="text-red-500">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
             </div>
             <p className="text-xl md:text-2xl mb-12 text-gray-100 leading-relaxed">
