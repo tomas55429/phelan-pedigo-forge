@@ -126,8 +126,12 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
       {/* Click overlay for enlarging when not in fullscreen */}
       {!isFullscreen && (
         <div 
-          className="absolute inset-0 z-10" 
-          onClick={toggleFullscreen}
+          className="absolute inset-0 z-20 cursor-pointer" 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleFullscreen();
+          }}
           title="Click to enlarge 3D view"
         />
       )}
