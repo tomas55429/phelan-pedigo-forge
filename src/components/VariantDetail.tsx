@@ -57,7 +57,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
     }
     return name;
   };
-  const variantFeatures = features.filter(f => f.variant_id === variant.id);
+  const variantFeatures = features.filter(f => f.variant_id === variant.id || f.variant_id === null);
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
   const sizeSpecs = specifications.filter(spec => 
     (spec.variant_id === variant.id || spec.variant_id === null) && 
