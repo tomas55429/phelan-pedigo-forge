@@ -122,7 +122,7 @@ const AdminPage = () => {
   const [productSpecialNotes, setProductSpecialNotes] = useState('');
   const [productFeatured, setProductFeatured] = useState(false);
   const [productImage, setProductImage] = useState<File | null>(null);
-  const [product3DModel, setProduct3DModel] = useState<File | null>(null);
+  
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
 
@@ -396,16 +396,10 @@ const AdminPage = () => {
     setLoading(true);
     try {
       let imageUrl = editingProduct?.image_url || null;
-      let model3DUrl = editingProduct?.model_3d_url || null;
       
       if (productImage) {
         const uploadedUrl = await uploadProductImage(productImage);
         if (uploadedUrl) imageUrl = uploadedUrl;
-      }
-
-      if (product3DModel) {
-        const uploaded3DUrl = await upload3DModel(product3DModel);
-        if (uploaded3DUrl) model3DUrl = uploaded3DUrl;
       }
 
       const productData = {
@@ -414,7 +408,6 @@ const AdminPage = () => {
         description: productDescription || null,
         special_notes: productSpecialNotes || null,
         image_url: imageUrl,
-        model_3d_url: model3DUrl,
         featured: productFeatured,
       };
 
@@ -455,7 +448,7 @@ const AdminPage = () => {
     setProductSpecialNotes('');
     setProductFeatured(false);
     setProductImage(null);
-    setProduct3DModel(null);
+    
     setEditingProduct(null);
     setProductDialogOpen(false);
   };
@@ -993,18 +986,6 @@ const AdminPage = () => {
                           accept="image/*"
                           onChange={(e) => setProductImage(e.target.files?.[0] || null)}
                         />
-                      </div>
-                      <div>
-                        <Label htmlFor="product3DModel">3D Model (.gltf, .glb)</Label>
-                        <Input
-                          id="product3DModel"
-                          type="file"
-                          accept=".gltf,.glb,.obj,.fbx,.dae,.stl"
-                          onChange={(e) => setProduct3DModel(e.target.files?.[0] || null)}
-                        />
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Upload 3D model files (recommended: .gltf or .glb for best performance)
-                        </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <input
