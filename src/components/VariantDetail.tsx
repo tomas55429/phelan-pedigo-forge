@@ -59,7 +59,14 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
   };
   const variantFeatures = features.filter(f => f.variant_id === variant.id);
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
-  const sizeSpecs = variantSpecs.filter(spec => spec.specification_key.toLowerCase().includes('size') || spec.specification_key.toLowerCase().includes('dimension') || spec.specification_key.toLowerCase().includes('length') || spec.specification_key.toLowerCase().includes('width') || spec.specification_key.toLowerCase().includes('height'));
+  const sizeSpecs = specifications.filter(spec => 
+    (spec.variant_id === variant.id || spec.variant_id === null) && 
+    (spec.specification_key.toLowerCase().includes('size') || 
+     spec.specification_key.toLowerCase().includes('dimension') || 
+     spec.specification_key.toLowerCase().includes('length') || 
+     spec.specification_key.toLowerCase().includes('width') || 
+     spec.specification_key.toLowerCase().includes('height'))
+  );
   return <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
         {/* Floating Close Button */}
