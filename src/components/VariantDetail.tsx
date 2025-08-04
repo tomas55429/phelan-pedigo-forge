@@ -47,116 +47,159 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
 }) => {
   const variantFeatures = features.filter(f => f.variant_id === variant.id);
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
+  const sizeSpecs = variantSpecs.filter(spec => 
+    spec.specification_key.toLowerCase().includes('size') || 
+    spec.specification_key.toLowerCase().includes('dimension') ||
+    spec.specification_key.toLowerCase().includes('length') ||
+    spec.specification_key.toLowerCase().includes('width') ||
+    spec.specification_key.toLowerCase().includes('height')
+  );
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-background rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
+      <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
         {/* Floating Close Button */}
         <Button 
           variant="outline" 
           size="sm" 
           onClick={onClose}
-          className="fixed top-[50px] right-[40px] z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+          className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
         >
           <X className="h-4 w-4" />
         </Button>
         
-        <div className="flex justify-between items-start mb-6">
-          <div>
-            <h2 className="text-3xl font-bold">{productName}</h2>
-            <div className="flex items-center gap-2 mt-2">
-              <Badge variant="outline" className="text-lg px-3 py-1">
-                {variant.variant_name}
-              </Badge>
-            </div>
-            {variant.variant_description && (
-              <p className="text-muted-foreground text-lg mt-2">{variant.variant_description}</p>
-            )}
-          </div>
+        {/* Variant Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">{variant.variant_description || 'Standard'} - {variant.variant_name}</h1>
         </div>
         
-        <div className="grid lg:grid-cols-2 gap-8 mb-6">
-          {/* Left Column - 3D Viewer and Traditional Image */}
-          <div className="space-y-4">
-            {/* 3D Product Viewer */}
-            {variant.model_3d_url && (
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-3">3D Variant View</h3>
-                <Product3DViewer 
-                  modelUrl={variant.model_3d_url} 
-                  imageUrl={variant.image_url} 
-                  productName={`${productName} - ${variant.variant_name}`} 
-                  className="w-full h-96 sm:h-80 md:h-96 lg:h-[28rem]" 
-                />
-              </div>
-            )}
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* Left Column - Variant Details */}
+          <div className="space-y-8">
+            {/* Description */}
+            <div>
+              <div className="text-muted-foreground mb-4">[description text if any]</div>
+              {variant.variant_description && (
+                <p className="text-muted-foreground leading-relaxed">
+                  {variant.variant_description}
+                </p>
+              )}
+            </div>
             
-            {/* Traditional Variant Image */}
-            {variant.image_url && (
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Variant Image</h3>
-                <div className="relative group">
-                  <img 
-                    src={variant.image_url} 
-                    alt={`${productName} - ${variant.variant_name}`} 
-                    className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity" 
-                    onClick={() => onImageEnlarge?.(variant.image_url!)}
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
-                    <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm">
-                      <ZoomIn className="h-4 w-4 mr-2" />
-                      Enlarge
-                    </Button>
+            {/* Variant Features */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Variant Features</h2>
+              <div className="text-muted-foreground mb-3">[Feature list]</div>
+              {variantFeatures.length > 0 ? (
+                <ul className="space-y-2">
+                  {variantFeatures.map((feature) => (
+                    <li key={feature.id} className="flex items-start space-x-2">
+                      <span className="text-lg leading-none mt-1">-</span>
+                      <span>{feature.feature}</span>
+                      {feature.is_optional && (
+                        <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start space-x-2">
+                    <span className="text-lg leading-none mt-1">-</span>
+                    <span>No variant-specific features listed</span>
+                  </li>
+                </ul>
+              )}
+            </div>
+            
+            {/* Sizes */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Sizes</h2>
+              <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                {sizeSpecs.length > 0 ? (
+                  <div className="w-full">
+                    <div className="text-center mb-4 text-lg font-medium">
+                      Size Chart for {variant.variant_name}
+                    </div>
+                    <div className="text-center mb-4 text-sm text-muted-foreground">
+                      (a cropped version of the general specs table that only includes size info for this variant)
+                    </div>
+                    <div className="space-y-3">
+                      {sizeSpecs
+                        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+                        .map((spec) => (
+                          <div key={spec.id} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
+                            <span className="font-medium">{spec.specification_key}</span>
+                            <span className="text-muted-foreground">{spec.specification_value}</span>
+                          </div>
+                        ))}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    <div className="text-lg mb-2">Size Chart for {variant.variant_name}</div>
+                    <div className="text-sm mb-4">
+                      (a cropped version of the general specs table that only includes size info for this variant)
+                    </div>
+                    <p className="text-sm">No size specifications available</p>
+                  </div>
+                )}
               </div>
-            )}
+              <div className="mt-4 text-sm text-muted-foreground">
+                Include some mention that custom sizes are available
+              </div>
+            </div>
           </div>
           
-          {/* Right Column - Variant Details */}
-          <div className="space-y-6">
-            {/* Variant Features */}
-            {variantFeatures.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Variant Features</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {variantFeatures.map((feature) => (
-                      <li key={feature.id} className="flex items-center space-x-2">
-                        <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
-                        <span className="text-sm">{feature.feature}</span>
-                        {feature.is_optional && (
-                          <Badge variant="secondary" className="text-xs">Optional</Badge>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            )}
-            
-            {/* Variant Specifications */}
-            {variantSpecs.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Variant Specifications</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {variantSpecs
-                      .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-                      .map((spec) => (
-                        <div key={spec.id} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
-                          <span className="font-medium text-sm">{spec.specification_key}</span>
-                          <span className="text-sm text-muted-foreground">{spec.specification_value}</span>
-                        </div>
-                      ))}
+          {/* Right Column - 3D Viewer and Image */}
+          <div className="space-y-8">
+            {/* 3D Model Viewer */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">3D Model Viewer</h2>
+              <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[300px] flex items-center justify-center">
+                {variant.model_3d_url ? (
+                  <Product3DViewer 
+                    modelUrl={variant.model_3d_url} 
+                    imageUrl={variant.image_url} 
+                    productName={`${productName} - ${variant.variant_name}`} 
+                    className="w-full h-80" 
+                  />
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    <div className="text-lg mb-2">3D model of {variant.variant_name}</div>
+                    <p className="text-sm">No 3D model available</p>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                )}
+              </div>
+            </div>
+            
+            {/* Product Image */}
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Product Image</h2>
+              <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[300px] flex items-center justify-center">
+                {variant.image_url ? (
+                  <div className="relative group w-full">
+                    <img 
+                      src={variant.image_url} 
+                      alt={`${productName} - ${variant.variant_name}`} 
+                      className="w-full h-auto object-contain max-h-80 rounded cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => onImageEnlarge?.(variant.image_url!)}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded">
+                      <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm">
+                        <ZoomIn className="h-4 w-4 mr-2" />
+                        Enlarge
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    <div className="text-lg mb-2">Image of {variant.variant_name}</div>
+                    <p className="text-sm">No variant image available</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </div>
