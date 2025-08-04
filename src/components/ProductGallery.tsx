@@ -352,11 +352,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       <div className="container mx-auto px-4">
         {/* Product Details Modal */}
         {selectedProduct && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
-              {/* Floating Close Button */}
-              <Button variant="outline" size="sm" onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2">
+            <div className="bg-background rounded-lg max-w-7xl w-full max-h-[90vh] relative">
+              {/* Fixed Close Button - Always Visible */}
+              <Button variant="outline" size="sm" onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-20 bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2">
                 <X className="h-4 w-4" />
               </Button>
+              
+              {/* Scrollable Content */}
+              <div className="p-8 overflow-y-auto max-h-[90vh]">
               
               {/* Product Header */}
               <div className="mb-8">
@@ -458,20 +461,21 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 </div>
               </div>
               
-              {/* Specifications Section */}
-              <div className="mt-12">
-                
-                <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
-                  {selectedProduct.specifications.length > 0 ? <div className="w-full">
-                      <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
-                    </div> : <div className="text-center text-muted-foreground">
-                      <div className="text-xl mb-2">Specs Table</div>
-                      <p className="text-sm">No specifications available</p>
-                    </div>}
-                </div>
-              </div>
-            </div>
-          </div>}
+               {/* Specifications Section */}
+               <div className="mt-12">
+                 
+                 <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                   {selectedProduct.specifications.length > 0 ? <div className="w-full">
+                       <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
+                     </div> : <div className="text-center text-muted-foreground">
+                       <div className="text-xl mb-2">Specs Table</div>
+                       <p className="text-sm">No specifications available</p>
+                     </div>}
+                 </div>
+               </div>
+               </div>
+             </div>
+           </div>}
 
         {/* Enlarged Image Dialog with Zoom */}
         <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
