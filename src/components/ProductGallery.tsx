@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductVariantsTable from './ProductVariantsTable';
-import Product3DViewer from './Product3DViewer';
+import VariantDetail from './VariantDetail';
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
 type ProductFeature = Tables<'product_features'>;
@@ -46,6 +46,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [specsProduct, setSpecsProduct] = useState<ProductWithDetails | null>(null);
   const [userSelectedCategory, setUserSelectedCategory] = useState(false); // Track if user manually changed category
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [selectedVariantProduct, setSelectedVariantProduct] = useState<ProductWithDetails | null>(null);
 
   // Fetch products and related data from Supabase
   useEffect(() => {
@@ -366,13 +367,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               <div className="grid lg:grid-cols-2 gap-8 mb-6">
                 {/* Left Column - 3D Viewer and Traditional Image */}
                 <div className="space-y-4">
-                  {/* 3D Product Viewer */}
-                  <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-3">3D Product View</h3>
-                    <Product3DViewer modelUrl={selectedProduct.product.model_3d_url || undefined} imageUrl={selectedProduct.product.image_url || undefined} productName={selectedProduct.product.name} className="w-full h-96 sm:h-80 md:h-96 lg:h-[28rem]" />
-                  </div>
-                  
                   {/* Traditional Product Image */}
+                  
                   <div>
                     <h3 className="text-lg font-semibold mb-3">Product Image</h3>
                     {selectedProduct.product.image_url ? (
@@ -415,7 +411,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                           <div 
                             key={variant.id} 
                             className="p-3 border border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                            onClick={() => setSelectedVariant(variant)}
+                             onClick={() => {
+                               setSelectedVariant(variant);
+                               setSelectedVariantProduct(selectedProduct);
+                             }}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
@@ -644,161 +643,20 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           </DialogContent>
         </Dialog>
 
-        {/* Variant Details Modal */}
-        <Dialog open={!!selectedVariant} onOpenChange={() => setSelectedVariant(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center text-xl">
-                <Eye className="h-5 w-5 mr-2" />
-                {selectedVariant?.variant_name} - Variant Details
-              </DialogTitle>
-            </DialogHeader>
-            
-            {selectedVariant && selectedProduct && (
-              <div className="space-y-6">
-                {/* Variant Basic Info with Image */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="font-semibold mb-2">Variant Information</h3>
-                      <div className="space-y-2 text-sm">
-                        <div><span className="font-medium">Product:</span> {selectedProduct.product.name}</div>
-                        <div><span className="font-medium">Variant:</span> {selectedVariant.variant_name}</div>
-                        {selectedVariant.variant_description && (
-                          <div><span className="font-medium">Description:</span> {selectedVariant.variant_description}</div>
-                        )}
-                        <div><span className="font-medium">Category:</span> {selectedProduct.category?.name || 'Uncategorized'}</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Variant Image */}
-                  <div className="flex justify-center">
-                    {selectedVariant.image_url ? (
-                      <div className="relative group">
-                        <img 
-                          src={selectedVariant.image_url} 
-                          alt={selectedVariant.variant_name} 
-                          className="w-full max-w-sm h-64 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => setEnlargedImage(selectedVariant.image_url!)}
-                        />
-                        <div className="text-center mt-2">
-                          <span className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => setEnlargedImage(selectedVariant.image_url!)}>
-                            click to enlarge
-                          </span>
-                        </div>
-                      </div>
-                    ) : selectedProduct.product.image_url ? (
-                      <div className="relative group">
-                        <img 
-                          src={selectedProduct.product.image_url} 
-                          alt={selectedProduct.product.name} 
-                          className="w-full max-w-sm h-64 object-cover rounded-lg border opacity-60"
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg">
-                          <span className="text-white text-sm font-medium">No variant-specific image</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full max-w-sm h-64 bg-muted flex items-center justify-center rounded-lg border">
-                        <FileText className="h-16 w-16 text-muted-foreground" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Variant-specific Specifications */}
-                {selectedProduct.specifications.some(spec => spec.variant_id === selectedVariant.id) && (
-                  <div>
-                    <h3 className="font-semibold mb-3">Variant Specifications</h3>
-                    <div className="border border-border rounded-lg overflow-hidden">
-                      <div className="grid grid-cols-2 gap-0">
-                        {selectedProduct.specifications
-                          .filter(spec => spec.variant_id === selectedVariant.id)
-                          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-                          .map((spec, index) => (
-                            <React.Fragment key={spec.id}>
-                              <div className={`p-3 font-medium bg-muted/30 ${index % 2 === 0 ? 'border-b border-border' : ''}`}>
-                                {spec.specification_key}
-                              </div>
-                              <div className={`p-3 ${index % 2 === 0 ? 'border-b border-border' : ''}`}>
-                                {spec.specification_value}
-                              </div>
-                            </React.Fragment>
-                          ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Variant-specific Features */}
-                {selectedProduct.features.some(feature => feature.variant_id === selectedVariant.id) && (
-                  <div>
-                    <h3 className="font-semibold mb-3">Variant Features</h3>
-                    <div className="grid md:grid-cols-2 gap-2">
-                      {selectedProduct.features
-                        .filter(feature => feature.variant_id === selectedVariant.id)
-                        .map(feature => (
-                          <div key={feature.id} className="flex items-center space-x-2 text-sm">
-                            <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
-                            <span>{feature.feature}</span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* General Product Information */}
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold mb-3">Product Information</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {selectedProduct.product.description || 'No description available'}
-                  </p>
-
-                  {/* General Features (not variant-specific) */}
-                  {selectedProduct.features.some(feature => !feature.variant_id) && (
-                    <div className="mb-4">
-                      <h4 className="font-medium mb-2">General Features</h4>
-                      <div className="grid md:grid-cols-2 gap-2">
-                        {selectedProduct.features
-                          .filter(feature => !feature.variant_id)
-                          .map(feature => (
-                            <div key={feature.id} className="flex items-center space-x-2 text-sm">
-                              <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
-                              <span>{feature.feature}</span>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Special Notes */}
-                  {selectedProduct.product.special_notes && (
-                    <div className="p-4 bg-muted/50 border border-border rounded-lg">
-                      <h4 className="font-medium text-foreground mb-2 flex items-center">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Special Notes
-                      </h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {selectedProduct.product.special_notes}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* No Specific Data Message */}
-                {!selectedProduct.specifications.some(spec => spec.variant_id === selectedVariant.id) && 
-                 !selectedProduct.features.some(feature => feature.variant_id === selectedVariant.id) && (
-                  <div className="text-center py-6 text-muted-foreground border border-border rounded-lg">
-                    <Eye className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No variant-specific details available.</p>
-                    <p className="text-xs mt-1">This variant shares the general product specifications.</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        {/* Variant Details Modal with 3D Viewer */}
+        {selectedVariant && selectedVariantProduct && (
+          <VariantDetail
+            variant={selectedVariant}
+            productName={selectedVariantProduct.product.name}
+            features={selectedVariantProduct.features}
+            specifications={selectedVariantProduct.specifications}
+            onClose={() => {
+              setSelectedVariant(null);
+              setSelectedVariantProduct(null);
+            }}
+            onImageEnlarge={setEnlargedImage}
+          />
+        )}
 
         {/* Header */}
         <div className="text-center mb-12">

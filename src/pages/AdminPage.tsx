@@ -97,6 +97,7 @@ interface ProductVariant {
   variant_name: string;
   variant_description?: string;
   image_url?: string;
+  model_3d_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -141,6 +142,7 @@ const AdminPage = () => {
   const [variantName, setVariantName] = useState('');
   const [variantDescription, setVariantDescription] = useState('');
   const [variantImage, setVariantImage] = useState<File | null>(null);
+  const [variant3DModel, setVariant3DModel] = useState<File | null>(null);
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
   const [variantDialogOpen, setVariantDialogOpen] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -670,10 +672,16 @@ const AdminPage = () => {
     setLoading(true);
     try {
       let imageUrl = editingVariant?.image_url || null;
+      let model3DUrl = editingVariant?.model_3d_url || null;
       
       if (variantImage) {
         const uploadedUrl = await uploadProductImage(variantImage);
         if (uploadedUrl) imageUrl = uploadedUrl;
+      }
+
+      if (variant3DModel) {
+        const uploaded3DUrl = await upload3DModel(variant3DModel);
+        if (uploaded3DUrl) model3DUrl = uploaded3DUrl;
       }
 
       const variantData = {
@@ -681,6 +689,7 @@ const AdminPage = () => {
         variant_name: variantName,
         variant_description: variantDescription || null,
         image_url: imageUrl,
+        model_3d_url: model3DUrl,
       };
 
       if (editingVariant) {
@@ -717,6 +726,7 @@ const AdminPage = () => {
     setVariantName('');
     setVariantDescription('');
     setVariantImage(null);
+    setVariant3DModel(null);
     setEditingVariant(null);
     setVariantDialogOpen(false);
   };
@@ -1198,6 +1208,15 @@ const AdminPage = () => {
                                   onChange={(e) => setVariantImage(e.target.files?.[0] || null)}
                                 />
                               </div>
+                              <div>
+                                <Label htmlFor="variant3DModel">3D Model (GLB)</Label>
+                                <Input
+                                  id="variant3DModel"
+                                  type="file"
+                                  accept=".glb,.gltf"
+                                  onChange={(e) => setVariant3DModel(e.target.files?.[0] || null)}
+                                />
+                              </div>
                               <div className="flex justify-end space-x-2">
                                 <Button type="button" variant="outline" onClick={resetVariantForm}>
                                   Cancel
@@ -1243,6 +1262,7 @@ const AdminPage = () => {
                                     setEditingVariant(variant);
                                     setVariantName(variant.variant_name);
                                     setVariantDescription(variant.variant_description || '');
+                                    setVariant3DModel(null);
                                     setVariantDialogOpen(true);
                                   }}
                                 >

@@ -7,6 +7,7 @@ interface ProductVariant {
   variant_name: string;
   variant_description?: string;
   image_url?: string;
+  model_3d_url?: string;
 }
 
 interface ProductSpecification {
