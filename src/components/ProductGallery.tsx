@@ -350,111 +350,183 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   return <div className="py-20 bg-background">
       <div className="container mx-auto px-4">
         {/* Product Details Modal */}
-        {selectedProduct && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-background rounded-lg p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto relative">
+        {selectedProduct && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
               {/* Floating Close Button */}
-              <Button variant="outline" size="sm" onClick={() => setSelectedProduct(null)} className="fixed top-[50px] right-[40px] z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setSelectedProduct(null)}
+                className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+              >
                 <X className="h-4 w-4" />
               </Button>
               
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h2 className="text-3xl font-bold">{selectedProduct.product.name}</h2>
-                  <p className="text-muted-foreground text-lg">{selectedProduct.category?.name || 'Uncategorized'}</p>
-                </div>
+              {/* Product Header */}
+              <div className="mb-8">
+                <h1 className="text-4xl font-bold mb-2">{selectedProduct.product.name}</h1>
+                <p className="text-xl text-muted-foreground">{selectedProduct.category?.name || 'Uncategorized'}</p>
               </div>
               
-              <div className="grid lg:grid-cols-2 gap-8 mb-6">
-                {/* Left Column - 3D Viewer and Traditional Image */}
-                <div className="space-y-4">
-                  {/* Traditional Product Image */}
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold mb-3">Product Image</h3>
+              <div className="grid lg:grid-cols-2 gap-12">
+                {/* Left Column - Product Image */}
+                <div>
+                  <h2 className="text-xl font-semibold mb-4">Product Image</h2>
+                  <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
                     {selectedProduct.product.image_url ? (
-                      <div className="relative group">
-                        <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-80 sm:h-72 md:h-80 lg:h-96 object-cover rounded-lg border border-border cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} />
-                        <div className="text-center mt-2">
-                          <span className="text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)}>
-                            click to enlarge
-                          </span>
+                      <div className="relative group w-full">
+                        <img 
+                          src={selectedProduct.product.image_url} 
+                          alt={selectedProduct.product.name} 
+                          className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => setEnlargedImage(selectedProduct.product.image_url!)}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded">
+                          <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm">
+                            <ZoomIn className="h-4 w-4 mr-2" />
+                            Enlarge
+                          </Button>
                         </div>
                       </div>
                     ) : (
-                      <div className="w-full h-80 sm:h-72 md:h-80 lg:h-96 bg-muted flex items-center justify-center rounded-lg border border-border">
-                        <FileText className="h-16 w-16 text-muted-foreground" />
+                      <div className="text-center text-muted-foreground">
+                        <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                        <p>No image available</p>
+                        <p className="text-sm mt-2">
+                          {selectedProduct.variants.length > 0 
+                            ? `${selectedProduct.variants[0].variant_name} will be considered the default, so display its image here`
+                            : 'Please add a product image'
+                          }
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
                 
                 {/* Right Column - Product Information */}
-                <div>
-                  <p className="text-muted-foreground mb-4">
-                    {selectedProduct.product.description || 'No description available'}
-                  </p>
+                <div className="space-y-8">
+                  {/* Description */}
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">[description text if any]</h2>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {selectedProduct.product.description || 'No description available'}
+                    </p>
+                  </div>
                   
-                  {selectedProduct.features.length > 0 && <div className="mb-4">
-                      <h3 className="font-semibold mb-2">Features:</h3>
-                      <ul className="space-y-1 text-sm text-muted-foreground">
-                        {selectedProduct.features.map(feature => <li key={feature.id} className="flex items-center space-x-2">
-                            <span className="w-1 h-1 bg-primary rounded-full"></span>
-                            <span>{feature.feature}</span>
-                          </li>)}
+                  {/* Features */}
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Features</h2>
+                    <div className="text-muted-foreground mb-3">[Feature list]</div>
+                    {selectedProduct.features.length > 0 ? (
+                      <ul className="space-y-2">
+                        {selectedProduct.features
+                          .filter(feature => !feature.is_optional)
+                          .map((feature) => (
+                            <li key={feature.id} className="flex items-start space-x-2">
+                              <span className="text-lg leading-none mt-1">-</span>
+                              <span>{feature.feature}</span>
+                            </li>
+                          ))}
+                        {selectedProduct.features
+                          .filter(feature => feature.is_optional)
+                          .map((feature) => (
+                            <li key={feature.id} className="flex items-start space-x-2 text-muted-foreground">
+                              <span className="text-lg leading-none mt-1">-</span>
+                              <span>{feature.feature} (Optional)</span>
+                            </li>
+                          ))}
                       </ul>
-                    </div>}
+                    ) : (
+                      <ul className="space-y-2 text-muted-foreground">
+                        <li className="flex items-start space-x-2">
+                          <span className="text-lg leading-none mt-1">-</span>
+                          <span>No features listed</span>
+                        </li>
+                      </ul>
+                    )}
+                  </div>
                   
-                  {selectedProduct.variants.length > 0 && <div>
-                      <h3 className="font-semibold mb-2">Available Variants:</h3>
-                      <div className="space-y-2">
-                        {selectedProduct.variants.map(variant => (
-                          <div 
-                            key={variant.id} 
-                            className="p-3 border border-border rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                             onClick={() => {
-                               setSelectedVariant(variant);
-                               setSelectedVariantProduct(selectedProduct);
-                             }}
+                  {/* Variants */}
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Variants</h2>
+                    <div className="space-y-3">
+                      {selectedProduct.variants.length > 0 ? (
+                        selectedProduct.variants.map((variant) => (
+                          <button
+                            key={variant.id}
+                            className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all"
+                            onClick={() => {
+                              setSelectedVariant(variant);
+                              setSelectedVariantProduct(selectedProduct);
+                            }}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="font-medium group-hover:text-primary transition-colors">{variant.variant_name}</div>
-                                {variant.variant_description && <div className="text-sm text-muted-foreground mt-1">{variant.variant_description}</div>}
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                {variant.image_url && (
-                                  <div className="w-8 h-8 rounded overflow-hidden">
-                                    <img 
-                                      src={variant.image_url} 
-                                      alt={variant.variant_name}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                )}
-                                <Eye className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                              </div>
+                            <div className="font-medium text-lg">
+                              {variant.variant_description || 'Standard'} - {variant.variant_name}
                             </div>
-                          </div>
-                        ))}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="p-4 border-2 border-muted rounded-lg text-muted-foreground">
+                          No variants available
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Accessories */}
+                  {selectedProduct.features.some(f => f.is_optional) && (
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4">Accessories</h2>
+                      <div className="space-y-3">
+                        {selectedProduct.features
+                          .filter(feature => feature.is_optional)
+                          .map((accessory) => (
+                            <div key={accessory.id} className="p-4 border-2 border-muted rounded-lg">
+                              <div className="font-medium">{accessory.feature}</div>
+                            </div>
+                          ))}
                       </div>
-                    </div>}
+                    </div>
+                  )}
+                  
+                  {/* Special Notes */}
+                  {selectedProduct.product.special_notes && (
+                    <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                      <h4 className="font-medium text-warning-foreground mb-2 flex items-center">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Special Notes
+                      </h4>
+                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {selectedProduct.product.special_notes}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               
-              {selectedProduct.specifications.length > 0 && <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />}
-              
-              {/* Special Notes Section */}
-              {selectedProduct.product.special_notes && <div className="mt-6 p-4 bg-muted/50 border border-border rounded-lg">
-                  <h3 className="font-semibold text-foreground mb-2 flex items-center">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Special Notes
-                  </h3>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {selectedProduct.product.special_notes}
-                  </p>
-                </div>}
+              {/* Specifications Section */}
+              <div className="mt-12">
+                <h2 className="text-2xl font-semibold mb-6">Specifications</h2>
+                <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                  {selectedProduct.specifications.length > 0 ? (
+                    <div className="w-full">
+                      <ProductVariantsTable 
+                        variants={selectedProduct.variants}
+                        specifications={selectedProduct.specifications}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center text-muted-foreground">
+                      <div className="text-xl mb-2">Specs Table</div>
+                      <p className="text-sm">No specifications available</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>}
+          </div>
+        )}
 
         {/* Enlarged Image Dialog with Zoom */}
         <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
