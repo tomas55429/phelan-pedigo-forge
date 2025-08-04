@@ -40,9 +40,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
-  const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
+  const [imagePan, setImagePan] = useState({
+    x: 0,
+    y: 0
+  });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [dragStart, setDragStart] = useState({
+    x: 0,
+    y: 0
+  });
   const [specsProduct, setSpecsProduct] = useState<ProductWithDetails | null>(null);
   const [userSelectedCategory, setUserSelectedCategory] = useState(false); // Track if user manually changed category
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
@@ -97,30 +103,34 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   useEffect(() => {
     if (enlargedImage) {
       setImageZoom(1);
-      setImagePan({ x: 0, y: 0 });
+      setImagePan({
+        x: 0,
+        y: 0
+      });
     }
   }, [enlargedImage]);
-
   const handleZoomIn = () => {
     setImageZoom(prev => Math.min(prev * 1.5, 5));
   };
-
   const handleZoomOut = () => {
     setImageZoom(prev => Math.max(prev / 1.5, 0.5));
   };
-
   const resetZoom = () => {
     setImageZoom(1);
-    setImagePan({ x: 0, y: 0 });
+    setImagePan({
+      x: 0,
+      y: 0
+    });
   };
-
   const handleMouseDown = (e: React.MouseEvent) => {
     if (imageZoom > 1) {
       setIsDragging(true);
-      setDragStart({ x: e.clientX - imagePan.x, y: e.clientY - imagePan.y });
+      setDragStart({
+        x: e.clientX - imagePan.x,
+        y: e.clientY - imagePan.y
+      });
     }
   };
-
   const handleMouseMove = (e: React.MouseEvent) => {
     if (isDragging && imageZoom > 1) {
       setImagePan({
@@ -129,11 +139,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       });
     }
   };
-
   const handleMouseUp = () => {
     setIsDragging(false);
   };
-
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
@@ -148,22 +156,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     }) => {
       // Enhanced search that includes product name, description, features, and specifications
       const searchLower = searchTerm.toLowerCase();
-      
       const nameMatch = product.name?.toLowerCase().includes(searchLower);
       const descriptionMatch = product.description?.toLowerCase().includes(searchLower);
       const specialNotesMatch = product.special_notes?.toLowerCase().includes(searchLower);
-      
+
       // Search through features
-      const featuresMatch = features.some(feature => 
-        feature.feature?.toLowerCase().includes(searchLower)
-      );
-      
+      const featuresMatch = features.some(feature => feature.feature?.toLowerCase().includes(searchLower));
+
       // Search through specifications
-      const specificationsMatch = specifications.some(spec => 
-        spec.specification_key?.toLowerCase().includes(searchLower) ||
-        spec.specification_value?.toLowerCase().includes(searchLower)
-      );
-      
+      const specificationsMatch = specifications.some(spec => spec.specification_key?.toLowerCase().includes(searchLower) || spec.specification_value?.toLowerCase().includes(searchLower));
       const matchesSearch = !searchTerm || nameMatch || descriptionMatch || specialNotesMatch || featuresMatch || specificationsMatch;
 
       // Determine which category filter to use
@@ -350,16 +351,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   return <div className="py-20 bg-background">
       <div className="container mx-auto px-4">
         {/* Product Details Modal */}
-        {selectedProduct && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        {selectedProduct && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
               {/* Floating Close Button */}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
-              >
+              <Button variant="outline" size="sm" onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-10 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2">
                 <X className="h-4 w-4" />
               </Button>
               
@@ -374,33 +369,21 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <div>
                   <h2 className="text-xl font-semibold mb-4">Product Image</h2>
                   <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                    {selectedProduct.product.image_url ? (
-                      <div className="relative group w-full">
-                        <img 
-                          src={selectedProduct.product.image_url} 
-                          alt={selectedProduct.product.name} 
-                          className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity"
-                          onClick={() => setEnlargedImage(selectedProduct.product.image_url!)}
-                        />
+                    {selectedProduct.product.image_url ? <div className="relative group w-full">
+                        <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} />
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded">
                           <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm">
                             <ZoomIn className="h-4 w-4 mr-2" />
                             Enlarge
                           </Button>
                         </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-muted-foreground">
+                      </div> : <div className="text-center text-muted-foreground">
                         <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
                         <p>No image available</p>
                         <p className="text-sm mt-2">
-                          {selectedProduct.variants.length > 0 
-                            ? `${selectedProduct.variants[0].variant_name} will be considered the default, so display its image here`
-                            : 'Please add a product image'
-                          }
+                          {selectedProduct.variants.length > 0 ? `${selectedProduct.variants[0].variant_name} will be considered the default, so display its image here` : 'Please add a product image'}
                         </p>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                 </div>
                 
@@ -408,7 +391,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <div className="space-y-8">
                   {/* Description */}
                   <div>
-                    <h2 className="text-xl font-semibold mb-4">[description text if any]</h2>
+                    <h2 className="text-xl font-semibold mb-4">Product Description</h2>
                     <p className="text-muted-foreground leading-relaxed">
                       {selectedProduct.product.description || 'No description available'}
                     </p>
@@ -418,81 +401,52 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   <div>
                     <h2 className="text-xl font-semibold mb-4">Features</h2>
                     <div className="text-muted-foreground mb-3">[Feature list]</div>
-                    {selectedProduct.features.length > 0 ? (
-                      <ul className="space-y-2">
-                        {selectedProduct.features
-                          .filter(feature => !feature.is_optional)
-                          .map((feature) => (
-                            <li key={feature.id} className="flex items-start space-x-2">
+                    {selectedProduct.features.length > 0 ? <ul className="space-y-2">
+                        {selectedProduct.features.filter(feature => !feature.is_optional).map(feature => <li key={feature.id} className="flex items-start space-x-2">
                               <span className="text-lg leading-none mt-1">-</span>
                               <span>{feature.feature}</span>
-                            </li>
-                          ))}
-                        {selectedProduct.features
-                          .filter(feature => feature.is_optional)
-                          .map((feature) => (
-                            <li key={feature.id} className="flex items-start space-x-2 text-muted-foreground">
+                            </li>)}
+                        {selectedProduct.features.filter(feature => feature.is_optional).map(feature => <li key={feature.id} className="flex items-start space-x-2 text-muted-foreground">
                               <span className="text-lg leading-none mt-1">-</span>
                               <span>{feature.feature} (Optional)</span>
-                            </li>
-                          ))}
-                      </ul>
-                    ) : (
-                      <ul className="space-y-2 text-muted-foreground">
+                            </li>)}
+                      </ul> : <ul className="space-y-2 text-muted-foreground">
                         <li className="flex items-start space-x-2">
                           <span className="text-lg leading-none mt-1">-</span>
                           <span>No features listed</span>
                         </li>
-                      </ul>
-                    )}
+                      </ul>}
                   </div>
                   
                   {/* Variants */}
                   <div>
                     <h2 className="text-xl font-semibold mb-4">Variants</h2>
                     <div className="space-y-3">
-                      {selectedProduct.variants.length > 0 ? (
-                        selectedProduct.variants.map((variant) => (
-                          <button
-                            key={variant.id}
-                            className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all"
-                            onClick={() => {
-                              setSelectedVariant(variant);
-                              setSelectedVariantProduct(selectedProduct);
-                            }}
-                          >
+                      {selectedProduct.variants.length > 0 ? selectedProduct.variants.map(variant => <button key={variant.id} className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all" onClick={() => {
+                    setSelectedVariant(variant);
+                    setSelectedVariantProduct(selectedProduct);
+                  }}>
                             <div className="font-medium text-lg">
                               {variant.variant_description || 'Standard'} - {variant.variant_name}
                             </div>
-                          </button>
-                        ))
-                      ) : (
-                        <div className="p-4 border-2 border-muted rounded-lg text-muted-foreground">
+                          </button>) : <div className="p-4 border-2 border-muted rounded-lg text-muted-foreground">
                           No variants available
-                        </div>
-                      )}
+                        </div>}
                     </div>
                   </div>
                   
                   {/* Accessories */}
-                  {selectedProduct.features.some(f => f.is_optional) && (
-                    <div>
+                  {selectedProduct.features.some(f => f.is_optional) && <div>
                       <h2 className="text-xl font-semibold mb-4">Accessories</h2>
                       <div className="space-y-3">
-                        {selectedProduct.features
-                          .filter(feature => feature.is_optional)
-                          .map((accessory) => (
-                            <div key={accessory.id} className="p-4 border-2 border-muted rounded-lg">
+                        {selectedProduct.features.filter(feature => feature.is_optional).map(accessory => <div key={accessory.id} className="p-4 border-2 border-muted rounded-lg">
                               <div className="font-medium">{accessory.feature}</div>
-                            </div>
-                          ))}
+                            </div>)}
                       </div>
-                    </div>
-                  )}
+                    </div>}
                   
                   {/* Special Notes */}
-                  {selectedProduct.product.special_notes && (
-                    <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
+                  {selectedProduct.product.special_notes && <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
                       <h4 className="font-medium text-warning-foreground mb-2 flex items-center">
                         <FileText className="h-4 w-4 mr-2" />
                         Special Notes
@@ -500,8 +454,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                         {selectedProduct.product.special_notes}
                       </p>
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </div>
               
@@ -509,24 +462,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               <div className="mt-12">
                 <h2 className="text-2xl font-semibold mb-6">Specifications</h2>
                 <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
-                  {selectedProduct.specifications.length > 0 ? (
-                    <div className="w-full">
-                      <ProductVariantsTable 
-                        variants={selectedProduct.variants}
-                        specifications={selectedProduct.specifications}
-                      />
-                    </div>
-                  ) : (
-                    <div className="text-center text-muted-foreground">
+                  {selectedProduct.specifications.length > 0 ? <div className="w-full">
+                      <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
+                    </div> : <div className="text-center text-muted-foreground">
                       <div className="text-xl mb-2">Specs Table</div>
                       <p className="text-sm">No specifications available</p>
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
 
         {/* Enlarged Image Dialog with Zoom */}
         <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
@@ -534,34 +479,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             <DialogHeader className="sr-only">
               <DialogTitle>Enlarged Product Image</DialogTitle>
             </DialogHeader>
-            {enlargedImage && (
-              <div className="relative w-full h-[90vh] bg-black/90 flex items-center justify-center overflow-hidden">
+            {enlargedImage && <div className="relative w-full h-[90vh] bg-black/90 flex items-center justify-center overflow-hidden">
                 {/* Zoom Controls */}
                 <div className="absolute top-4 right-4 z-10 flex space-x-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleZoomIn}
-                    disabled={imageZoom >= 5}
-                    className="bg-background/80 backdrop-blur-sm"
-                  >
+                  <Button variant="secondary" size="sm" onClick={handleZoomIn} disabled={imageZoom >= 5} className="bg-background/80 backdrop-blur-sm">
                     <ZoomIn className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleZoomOut}
-                    disabled={imageZoom <= 0.5}
-                    className="bg-background/80 backdrop-blur-sm"
-                  >
+                  <Button variant="secondary" size="sm" onClick={handleZoomOut} disabled={imageZoom <= 0.5} className="bg-background/80 backdrop-blur-sm">
                     <ZoomOut className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={resetZoom}
-                    className="bg-background/80 backdrop-blur-sm"
-                  >
+                  <Button variant="secondary" size="sm" onClick={resetZoom} className="bg-background/80 backdrop-blur-sm">
                     <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
@@ -572,42 +499,25 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 </div>
 
                 {/* Pan Instructions */}
-                {imageZoom > 1 && (
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-background/80 backdrop-blur-sm px-3 py-1 rounded text-sm">
+                {imageZoom > 1 && <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-background/80 backdrop-blur-sm px-3 py-1 rounded text-sm">
                     Drag to pan • Scroll to zoom
-                  </div>
-                )}
+                  </div>}
 
                 {/* Zoomable Image */}
-                <div 
-                  className="w-full h-full flex items-center justify-center"
-                  onWheel={handleWheel}
-                  onMouseDown={handleMouseDown}
-                  onMouseMove={handleMouseMove}
-                  onMouseUp={handleMouseUp}
-                  onMouseLeave={handleMouseUp}
-                  style={{
-                    cursor: imageZoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'
-                  }}
-                >
-                  <img 
-                    src={enlargedImage} 
-                    alt="Enlarged product view" 
-                    className="max-w-none select-none"
-                    style={{
-                      transform: `scale(${imageZoom}) translate(${imagePan.x / imageZoom}px, ${imagePan.y / imageZoom}px)`,
-                      transition: isDragging ? 'none' : 'transform 0.2s ease-out',
-                      maxWidth: imageZoom === 1 ? '100%' : 'none',
-                      maxHeight: imageZoom === 1 ? '100%' : 'none',
-                      width: imageZoom === 1 ? 'auto' : '100%',
-                      height: imageZoom === 1 ? 'auto' : '100%',
-                      objectFit: imageZoom === 1 ? 'contain' : 'cover'
-                    }}
-                    draggable={false}
-                  />
+                <div className="w-full h-full flex items-center justify-center" onWheel={handleWheel} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp} style={{
+              cursor: imageZoom > 1 ? isDragging ? 'grabbing' : 'grab' : 'default'
+            }}>
+                  <img src={enlargedImage} alt="Enlarged product view" className="max-w-none select-none" style={{
+                transform: `scale(${imageZoom}) translate(${imagePan.x / imageZoom}px, ${imagePan.y / imageZoom}px)`,
+                transition: isDragging ? 'none' : 'transform 0.2s ease-out',
+                maxWidth: imageZoom === 1 ? '100%' : 'none',
+                maxHeight: imageZoom === 1 ? '100%' : 'none',
+                width: imageZoom === 1 ? 'auto' : '100%',
+                height: imageZoom === 1 ? 'auto' : '100%',
+                objectFit: imageZoom === 1 ? 'contain' : 'cover'
+              }} draggable={false} />
                 </div>
-              </div>
-            )}
+              </div>}
           </DialogContent>
         </Dialog>
 
@@ -621,8 +531,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               </DialogTitle>
             </DialogHeader>
             
-            {specsProduct && (
-              <div className="space-y-6">
+            {specsProduct && <div className="space-y-6">
                 {/* Product Basic Info */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -633,63 +542,41 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     </div>
                   </div>
                   
-                  {specsProduct.product.image_url && (
-                    <div className="flex justify-center">
-                      <img 
-                        src={specsProduct.product.image_url} 
-                        alt={specsProduct.product.name} 
-                        className="w-48 h-48 object-cover rounded-lg border"
-                      />
-                    </div>
-                  )}
+                  {specsProduct.product.image_url && <div className="flex justify-center">
+                      <img src={specsProduct.product.image_url} alt={specsProduct.product.name} className="w-48 h-48 object-cover rounded-lg border" />
+                    </div>}
                 </div>
 
                 {/* Features Section */}
-                {specsProduct.features.length > 0 && (
-                  <div>
+                {specsProduct.features.length > 0 && <div>
                     <h3 className="font-semibold mb-3">Features</h3>
                     <div className="grid md:grid-cols-2 gap-2">
-                      {specsProduct.features.map(feature => (
-                        <div key={feature.id} className="flex items-center space-x-2 text-sm">
+                      {specsProduct.features.map(feature => <div key={feature.id} className="flex items-center space-x-2 text-sm">
                           <span className="w-2 h-2 bg-primary rounded-full flex-shrink-0"></span>
                           <span>{feature.feature}</span>
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Variants Section */}
-                {specsProduct.variants.length > 0 && (
-                  <div>
+                {specsProduct.variants.length > 0 && <div>
                     <h3 className="font-semibold mb-3">Available Variants</h3>
                     <div className="space-y-3">
-                      {specsProduct.variants.map(variant => (
-                        <div key={variant.id} className="p-3 border border-border rounded-lg">
+                      {specsProduct.variants.map(variant => <div key={variant.id} className="p-3 border border-border rounded-lg">
                           <h4 className="font-medium">{variant.variant_name}</h4>
-                          {variant.variant_description && (
-                            <p className="text-sm text-muted-foreground mt-1">{variant.variant_description}</p>
-                          )}
-                        </div>
-                      ))}
+                          {variant.variant_description && <p className="text-sm text-muted-foreground mt-1">{variant.variant_description}</p>}
+                        </div>)}
                     </div>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Specifications Table */}
-                {specsProduct.specifications.length > 0 && (
-                  <div>
+                {specsProduct.specifications.length > 0 && <div>
                     <h3 className="font-semibold mb-3">Technical Specifications</h3>
-                    <ProductVariantsTable 
-                      variants={specsProduct.variants} 
-                      specifications={specsProduct.specifications} 
-                    />
-                  </div>
-                )}
+                    <ProductVariantsTable variants={specsProduct.variants} specifications={specsProduct.specifications} />
+                  </div>}
 
                 {/* Special Notes */}
-                {specsProduct.product.special_notes && (
-                  <div className="p-4 bg-muted/50 border border-border rounded-lg">
+                {specsProduct.product.special_notes && <div className="p-4 bg-muted/50 border border-border rounded-lg">
                     <h3 className="font-semibold text-foreground mb-2 flex items-center">
                       <FileText className="h-4 w-4 mr-2" />
                       Special Notes
@@ -697,38 +584,22 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                       {specsProduct.product.special_notes}
                     </p>
-                  </div>
-                )}
+                  </div>}
 
                 {/* No Data Message */}
-                {specsProduct.features.length === 0 && 
-                 specsProduct.variants.length === 0 && 
-                 specsProduct.specifications.length === 0 && 
-                 !specsProduct.product.special_notes && (
-                  <div className="text-center py-8 text-muted-foreground">
+                {specsProduct.features.length === 0 && specsProduct.variants.length === 0 && specsProduct.specifications.length === 0 && !specsProduct.product.special_notes && <div className="text-center py-8 text-muted-foreground">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No detailed specifications available for this product.</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  </div>}
+              </div>}
           </DialogContent>
         </Dialog>
 
         {/* Variant Details Modal with 3D Viewer */}
-        {selectedVariant && selectedVariantProduct && (
-          <VariantDetail
-            variant={selectedVariant}
-            productName={selectedVariantProduct.product.name}
-            features={selectedVariantProduct.features}
-            specifications={selectedVariantProduct.specifications}
-            onClose={() => {
-              setSelectedVariant(null);
-              setSelectedVariantProduct(null);
-            }}
-            onImageEnlarge={setEnlargedImage}
-          />
-        )}
+        {selectedVariant && selectedVariantProduct && <VariantDetail variant={selectedVariant} productName={selectedVariantProduct.product.name} features={selectedVariantProduct.features} specifications={selectedVariantProduct.specifications} onClose={() => {
+        setSelectedVariant(null);
+        setSelectedVariantProduct(null);
+      }} onImageEnlarge={setEnlargedImage} />}
 
         {/* Header */}
         <div className="text-center mb-12">
