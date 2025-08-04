@@ -134,7 +134,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
       
       {/* 3D Canvas */}
       <Canvas shadows className={isFullscreen ? 'cursor-default' : 'pointer-events-none'}>
-        <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={45} />
+        <PerspectiveCamera makeDefault position={[0, 0, 20]} fov={45} />
         
         {/* Lighting Setup */}
         <ambientLight intensity={0.4} />
@@ -168,8 +168,8 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
           enableZoom={true}
           enableRotate={true}
           autoRotate={false}
-          minDistance={8}
-          maxDistance={25}
+          minDistance={15}
+          maxDistance={30}
           maxPolarAngle={Math.PI / 2}
           enabled={isFullscreen}
         />
