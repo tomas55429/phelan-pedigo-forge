@@ -427,7 +427,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     setSelectedVariantProduct(selectedProduct);
                   }}>
                             <div className="font-medium text-lg">
-                              {variant.variant_description || 'Standard'} - {variant.variant_name}
+                              {variant.variant_name}
                             </div>
                           </button>) : <div className="p-4 border-2 border-muted rounded-lg text-muted-foreground">
                           No variants available
