@@ -64,6 +64,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
     (spec.specification_key.toLowerCase().includes('size') || 
      spec.specification_key.toLowerCase().includes('dimension') || 
      spec.specification_key.toLowerCase().includes('length') || 
+     spec.specification_key.toLowerCase().includes('lenght') || // Handle misspelling
      spec.specification_key.toLowerCase().includes('width') || 
      spec.specification_key.toLowerCase().includes('height'))
   );
