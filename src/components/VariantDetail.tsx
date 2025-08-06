@@ -115,7 +115,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                   </div>}
               </div>
               <div className="mt-4 text-sm text-muted-foreground">
-                Custom sizes are available
+                Custom sizes available
               </div>
             </div>
           </div>

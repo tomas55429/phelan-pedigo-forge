@@ -156,6 +156,9 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
             </TableBody>
           </Table>
         </div>
+        <div className="mt-4 text-sm text-muted-foreground text-center">
+          Custom sizes available
+        </div>
       </CardContent>
     </Card>
   );
