@@ -41,22 +41,12 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
   onClose,
   onImageEnlarge
 }) => {
-  // Helper function to format variant name to show only name and number
+  // Helper function to format variant name - removes hyphens and everything after them
   const formatVariantName = (variantName: string) => {
-    // Extract just the name and model number, removing extra descriptive text
     const name = variantName || '';
-    // Look for pattern like "Name Number-Letter" or just return the first part if it follows that pattern
-    const match = name.match(/^([^,]+?)(?:\s*[,-]\s*(.+))?$/);
-    if (match) {
-      const mainPart = match[1].trim();
-      // If there's a model number pattern, include it
-      const modelMatch = mainPart.match(/^(.+?)\s+([A-Z0-9-]+[A-Z])$/);
-      if (modelMatch) {
-        return `${modelMatch[1]} ${modelMatch[2]}`;
-      }
-      return mainPart;
-    }
-    return name;
+    // Remove hyphen and everything after it
+    const cleanName = name.split('-')[0].trim();
+    return cleanName;
   };
   const variantFeatures = features.filter(f => f.variant_id === variant.id || f.variant_id === null);
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
