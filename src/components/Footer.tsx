@@ -88,6 +88,12 @@ const Footer = () => {
                   {category.name}
                 </button>
               ))}
+              <button
+                onClick={() => navigate('/custom-solutions')}
+                className="text-background/80 hover:text-primary-light transition-colors text-left"
+              >
+                Previous Custom Solutions
+              </button>
             </nav>
           </div>
         </div>
