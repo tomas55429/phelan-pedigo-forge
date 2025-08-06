@@ -107,27 +107,66 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                 </ul>}
             </div>
             
-            {/* Sizes */}
+            {/* Dimensions */}
             <div>
-              <h2 className="text-xl font-semibold mb-4">Sizes</h2>
+              <h2 className="text-xl font-semibold mb-4">Dimensions</h2>
               <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
                 {sizeSpecs.length > 0 ? <div className="w-full">
                     <div className="text-center mb-4 text-lg font-medium">
-                      Size Chart for {formatVariantName(variant.variant_name)}
+                      Dimensions for {formatVariantName(variant.variant_name)}
                     </div>
                     
                     <div className="space-y-3">
-                      {sizeSpecs.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(spec => <div key={spec.id} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
+                      {(() => {
+                        // Extract width, length, and depth values
+                        const width = sizeSpecs.find(spec => 
+                          spec.specification_key.toLowerCase().includes('width')
+                        )?.specification_value;
+                        
+                        const length = sizeSpecs.find(spec => 
+                          spec.specification_key.toLowerCase().includes('length') || 
+                          spec.specification_key.toLowerCase().includes('lenght')
+                        )?.specification_value;
+                        
+                        const depth = sizeSpecs.find(spec => 
+                          spec.specification_key.toLowerCase().includes('depth')
+                        )?.specification_value;
+
+                        // Build dimension string
+                        const dimensions = [width, length, depth].filter(Boolean);
+                        const dimensionLabels = [];
+                        if (width) dimensionLabels.push('Width');
+                        if (length) dimensionLabels.push('Length'); 
+                        if (depth) dimensionLabels.push('Depth');
+
+                        if (dimensions.length > 0) {
+                          return (
+                            <div className="text-center">
+                              <div className="text-2xl font-bold mb-2">
+                                {dimensions.join(' x ')}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {dimensionLabels.join(' x ')}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // Fall back to showing other size specifications if no W/L/D found
+                        return sizeSpecs.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(spec => (
+                          <div key={spec.id} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
                             <span className="font-medium">{spec.specification_key}</span>
                             <span className="text-muted-foreground">{spec.specification_value}</span>
-                          </div>)}
+                          </div>
+                        ));
+                      })()}
                     </div>
                   </div> : <div className="text-center text-muted-foreground">
-                    <div className="text-lg mb-2">Size Chart for {formatVariantName(variant.variant_name)}</div>
+                    <div className="text-lg mb-2">Dimensions for {formatVariantName(variant.variant_name)}</div>
                     <div className="text-sm mb-4">
-                      (a cropped version of the general specs table that only includes size info for this variant)
+                      (a cropped version of the general specs table that only includes dimension info for this variant)
                     </div>
-                    <p className="text-sm">No size specifications available</p>
+                    <p className="text-sm">No dimension specifications available</p>
                   </div>}
               </div>
               <div className="mt-4 text-sm text-muted-foreground">
