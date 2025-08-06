@@ -37,20 +37,20 @@ const About = () => {
 
   const values = [
     {
-      title: "Quality First",
-      description: "We pay particular attention to producing high quality, dependable products that stand up to the rigors of daily use in a hospital."
+      title: "Honesty",
+      description: "Be transparent with our clients and employees"
     },
     {
-      title: "Customer Satisfaction",
-      description: "Our focus on customer satisfaction has made us a very successful company with clients worldwide."
+      title: "Passion",
+      description: "For our work and our interactions with others"
     },
     {
-      title: "Innovation & Creativity",
-      description: "We are one of the most creative and innovative custom design firms in the medical equipment field."
+      title: "Dedication",
+      description: "To the history of the company and execution at the highest levels"
     },
     {
-      title: "Reliability",
-      description: "Our tremendous work ethic and commitment to excellence ensures we deliver products you can depend on."
+      title: "Empathy",
+      description: "Thinking and adapting our work seeking customer satisfaction as our own with attention to detail and asking the question why"
     }
   ];
 
