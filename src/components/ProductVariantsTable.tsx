@@ -50,31 +50,36 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     return acc;
   }, {} as Record<string, { values: Record<string, string>, sort_order: number, generalValue: string | null }>);
 
-  // Function to format size values with smaller fractions
+  // Function to format size values with proper fraction symbols
   const formatSizeValue = (value: string) => {
     if (!value || value === '-') return value;
     
-    // Check if the value contains fractions like 1/2", 3/4", etc.
-    const fractionRegex = /\d+\/\d+/g;
+    // Mapping of common fractions to Unicode symbols
+    const fractionMap: { [key: string]: string } = {
+      '1/2': '½',
+      '1/3': '⅓',
+      '2/3': '⅔',
+      '1/4': '¼',
+      '3/4': '¾',
+      '1/5': '⅕',
+      '2/5': '⅖',
+      '3/5': '⅗',
+      '4/5': '⅘',
+      '1/6': '⅙',
+      '5/6': '⅚',
+      '1/8': '⅛',
+      '3/8': '⅜',
+      '5/8': '⅝',
+      '7/8': '⅞'
+    };
     
-    if (fractionRegex.test(value)) {
-      // Split by spaces and format each part
-      const parts = value.split(' ');
-      return (
-        <>
-          {parts.map((part, index) => (
-            <React.Fragment key={index}>
-              <span className={/\d+\/\d+/.test(part) ? 'text-xs' : ''}>
-                {part}
-              </span>
-              {index < parts.length - 1 && ' '}
-            </React.Fragment>
-          ))}
-        </>
-      );
-    }
+    // Replace fractions with Unicode symbols
+    let formattedValue = value;
+    Object.entries(fractionMap).forEach(([fraction, symbol]) => {
+      formattedValue = formattedValue.replace(new RegExp(fraction, 'g'), symbol);
+    });
     
-    return value;
+    return formattedValue;
   };
 
   // Use original specs without modification
