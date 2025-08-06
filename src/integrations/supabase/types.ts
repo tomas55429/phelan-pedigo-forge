@@ -82,6 +82,7 @@ export type Database = {
           created_at: string
           feature: string
           id: string
+          image_url: string | null
           is_optional: boolean | null
           product_id: string
           variant_id: string | null
@@ -90,6 +91,7 @@ export type Database = {
           created_at?: string
           feature: string
           id?: string
+          image_url?: string | null
           is_optional?: boolean | null
           product_id: string
           variant_id?: string | null
@@ -98,6 +100,7 @@ export type Database = {
           created_at?: string
           feature?: string
           id?: string
+          image_url?: string | null
           is_optional?: boolean | null
           product_id?: string
           variant_id?: string | null

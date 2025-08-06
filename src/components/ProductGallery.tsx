@@ -12,7 +12,7 @@ import ProductVariantsTable from './ProductVariantsTable';
 import VariantDetail from './VariantDetail';
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
-type ProductFeature = Tables<'product_features'>;
+type ProductFeature = Tables<'product_features'> & { image_url?: string };
 type ProductSpecification = Tables<'product_specifications'>;
 type Category = Tables<'categories'>;
 interface ProductWithDetails {
@@ -460,9 +460,35 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {selectedProduct.features.some(f => f.is_optional) && <div>
                       <h2 className="text-xl font-semibold mb-4">Accessories</h2>
                       <div className="space-y-3">
-                        {selectedProduct.features.filter(feature => feature.is_optional).map(accessory => <div key={accessory.id} className="p-4 border-2 border-muted rounded-lg">
-                              <div className="font-medium">{accessory.feature}</div>
-                            </div>)}
+                        {selectedProduct.features.filter(feature => feature.is_optional).map(accessory => 
+                          <div 
+                            key={accessory.id} 
+                            className={`p-4 border-2 rounded-lg transition-all ${
+                              accessory.image_url 
+                                ? 'border-muted hover:border-primary/50 cursor-pointer hover:bg-muted/30' 
+                                : 'border-muted'
+                            }`}
+                            onClick={() => accessory.image_url && setEnlargedImage(accessory.image_url)}
+                          >
+                            <div className="flex items-center space-x-3">
+                              {accessory.image_url && (
+                                <img 
+                                  src={accessory.image_url} 
+                                  alt={accessory.feature}
+                                  className="w-12 h-12 object-cover rounded border"
+                                />
+                              )}
+                              <div className="flex-1">
+                                <div className="font-medium">{accessory.feature}</div>
+                                {accessory.image_url && (
+                                  <div className="text-xs text-muted-foreground mt-1">
+                                    Click to view image
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>}
                   

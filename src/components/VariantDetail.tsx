@@ -16,6 +16,7 @@ interface ProductFeature {
   feature: string;
   is_optional?: boolean;
   variant_id?: string;
+  image_url?: string;
 }
 interface ProductSpecification {
   id: string;

@@ -80,6 +80,7 @@ interface ProductFeature {
   product_id: string;
   feature: string;
   is_optional?: boolean;
+  image_url?: string;
 }
 
 interface ProductSpecification {
@@ -132,6 +133,7 @@ const AdminPage = () => {
   const [specifications, setSpecifications] = useState<ProductSpecification[]>([]);
   const [newFeature, setNewFeature] = useState('');
   const [newOptionalFeature, setNewOptionalFeature] = useState('');
+  const [accessoryImage, setAccessoryImage] = useState<File | null>(null);
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
   const [draggedSpecId, setDraggedSpecId] = useState<string | null>(null);
@@ -479,24 +481,47 @@ const AdminPage = () => {
     if (!selectedProduct || !featureText.trim()) return;
 
     try {
+      let imageUrl = null;
+
+      // Upload image for accessories (optional features) if provided
+      if (isOptional && accessoryImage) {
+        const fileExt = accessoryImage.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, accessoryImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+        
+        imageUrl = publicUrl;
+      }
+
       const { error } = await supabase
         .from('product_features')
         .insert([{
           product_id: selectedProduct.id,
           feature: featureText,
           is_optional: isOptional,
+          image_url: imageUrl,
         }]);
       
       if (error) throw error;
       if (isOptional) {
         setNewOptionalFeature('');
+        setAccessoryImage(null);
       } else {
         setNewFeature('');
       }
       fetchProductDetails(selectedProduct.id);
       toast({ 
         title: "Success", 
-        description: `${isOptional ? 'Optional feature' : 'Feature'} added successfully` 
+        description: `${isOptional ? 'Accessory' : 'Feature'} added successfully` 
       });
     } catch (error: any) {
       toast({
@@ -1326,24 +1351,39 @@ const AdminPage = () => {
                       </CardContent>
                     </Card>
 
-                    {/* Optional Features */}
+                    {/* Accessories */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>Optional Features</CardTitle>
+                        <CardTitle>Accessories</CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex space-x-2">
+                        <div className="space-y-2">
                           <Input
                             value={newOptionalFeature}
                             onChange={(e) => setNewOptionalFeature(e.target.value)}
-                            placeholder="Add new optional feature"
+                            placeholder="Add new accessory"
                           />
-                          <Button onClick={() => handleAddFeature(true)}>Add</Button>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => setAccessoryImage(e.target.files?.[0] || null)}
+                            placeholder="Accessory image (optional)"
+                          />
+                          <Button onClick={() => handleAddFeature(true)} className="w-full">Add Accessory</Button>
                         </div>
                         <div className="space-y-2">
                           {features.filter(f => f.is_optional).map((feature) => (
                             <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                              <span>{feature.feature}</span>
+                              <div className="flex items-center space-x-3 flex-1">
+                                {feature.image_url && (
+                                  <img 
+                                    src={feature.image_url} 
+                                    alt={feature.feature}
+                                    className="w-10 h-10 object-cover rounded"
+                                  />
+                                )}
+                                <span className="flex-1">{feature.feature}</span>
+                              </div>
                               <Button
                                 size="sm"
                                 variant="destructive"
