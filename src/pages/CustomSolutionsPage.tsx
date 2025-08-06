@@ -329,7 +329,7 @@ const CustomSolutionsPage = () => {
               <img
                 src={enlargedImage}
                 alt="Enlarged view"
-                className="max-w-none select-none"
+                className="max-w-full max-h-full object-contain select-none"
                 style={{
                   transform: `scale(${imageZoom}) translate(${imagePan.x / imageZoom}px, ${imagePan.y / imageZoom}px)`,
                   cursor: imageZoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'
