@@ -68,26 +68,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     return value;
   };
 
-  // Change "Size" related specs to "Size Options"
+  // Use original specs without modification
   const processedSpecs = { ...specsByKey };
-  
-  // Find size-related specifications and rename to "Size Options"
-  const sizeKeys = Object.keys(specsByKey).filter(key => 
-    key.toLowerCase().includes('size')
-  );
-  
-  if (sizeKeys.length > 0) {
-    const firstSizeKey = sizeKeys[0];
-    if (firstSizeKey && specsByKey[firstSizeKey]) {
-      processedSpecs['Size Options'] = { ...specsByKey[firstSizeKey] };
-      delete processedSpecs[firstSizeKey];
-      
-      // Remove other size keys if there are multiple
-      sizeKeys.slice(1).forEach(key => {
-        delete processedSpecs[key];
-      });
-    }
-  }
 
   // Get all unique specification keys sorted by sort_order, then by name
   const specificationKeys = Object.keys(processedSpecs).sort((a, b) => {
