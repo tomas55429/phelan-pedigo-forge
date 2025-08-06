@@ -64,6 +64,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
   // Fetch products and related data from Supabase
   useEffect(() => {
+    console.log('ProductGallery: Fetching data, selectedProduct:', selectedProduct, 'specsProduct:', specsProduct);
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -503,16 +504,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 </div>
               </div>
               
-               {/* Specifications Section - Only show if there are specifications */}
-               {selectedProduct.specifications.length > 0 && (
-                 <div className="mt-12">
-                   <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
-                     <div className="w-full">
-                       <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
-                     </div>
-                   </div>
-                 </div>
-               )}
                </div>
              </div>
            </div>}
