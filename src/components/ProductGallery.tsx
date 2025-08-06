@@ -392,8 +392,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
                     {selectedProduct.product.image_url ? <div className="relative group w-full">
                         <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded">
-                          <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="bg-background/90 backdrop-blur-sm pointer-events-auto"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEnlargedImage(selectedProduct.product.image_url!);
+                            }}
+                          >
                             <ZoomIn className="h-4 w-4 mr-2" />
                             Enlarge
                           </Button>
