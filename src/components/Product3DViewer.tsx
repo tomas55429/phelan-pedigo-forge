@@ -92,6 +92,7 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
 }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const controlsRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const resetView = () => {
     if (controlsRef.current) {
@@ -113,16 +114,73 @@ const Product3DViewer: React.FC<Product3DViewerProps> = ({
     }
   };
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+  const toggleFullscreen = async () => {
+    if (!isFullscreen && containerRef.current) {
+      try {
+        // Enter browser fullscreen
+        if (containerRef.current.requestFullscreen) {
+          await containerRef.current.requestFullscreen();
+        } else if ((containerRef.current as any).webkitRequestFullscreen) {
+          await (containerRef.current as any).webkitRequestFullscreen();
+        } else if ((containerRef.current as any).msRequestFullscreen) {
+          await (containerRef.current as any).msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+      } catch (error) {
+        console.error('Error entering fullscreen:', error);
+        // Fallback to CSS fullscreen
+        setIsFullscreen(true);
+      }
+    } else {
+      try {
+        // Exit browser fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        } else if ((document as any).msExitFullscreen) {
+          await (document as any).msExitFullscreen();
+        }
+        setIsFullscreen(false);
+      } catch (error) {
+        console.error('Error exiting fullscreen:', error);
+        // Fallback
+        setIsFullscreen(false);
+      }
+    }
   };
 
+  // Listen for fullscreen changes (user pressing ESC)
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = 
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).msFullscreenElement;
+      
+      setIsFullscreen(!!isCurrentlyFullscreen);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   const containerClass = isFullscreen 
-    ? "fixed inset-0 z-50 bg-background" 
+    ? "fixed inset-0 z-50 bg-background w-screen h-screen" 
     : className;
 
   return (
-    <div className={`relative bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg overflow-hidden border border-border ${containerClass} ${!isFullscreen ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}>
+    <div 
+      ref={containerRef}
+      className={`relative bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg overflow-hidden border border-border ${containerClass} ${!isFullscreen ? 'cursor-pointer hover:opacity-90 transition-opacity' : ''}`}
+    >
       {/* Click overlay for enlarging when not in fullscreen */}
       {!isFullscreen && (
         <div 
