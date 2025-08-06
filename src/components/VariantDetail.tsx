@@ -60,15 +60,9 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
   };
   const variantFeatures = features.filter(f => f.variant_id === variant.id || f.variant_id === null);
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
-  const sizeSpecs = specifications.filter(spec => 
-    (spec.variant_id === variant.id || spec.variant_id === null) && 
-    (spec.specification_key.toLowerCase().includes('size') || 
-     spec.specification_key.toLowerCase().includes('dimension') || 
-     spec.specification_key.toLowerCase().includes('length') || 
-     spec.specification_key.toLowerCase().includes('lenght') || // Handle misspelling
-     spec.specification_key.toLowerCase().includes('width') || 
-     spec.specification_key.toLowerCase().includes('height'))
-  );
+  const sizeSpecs = specifications.filter(spec => (spec.variant_id === variant.id || spec.variant_id === null) && (spec.specification_key.toLowerCase().includes('size') || spec.specification_key.toLowerCase().includes('dimension') || spec.specification_key.toLowerCase().includes('length') || spec.specification_key.toLowerCase().includes('lenght') ||
+  // Handle misspelling
+  spec.specification_key.toLowerCase().includes('width') || spec.specification_key.toLowerCase().includes('height')));
   return <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
         {/* Floating Close Button */}
@@ -119,7 +113,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                     <div className="space-y-3">
                       {sizeSpecs.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(spec => <div key={spec.id} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
                             <span className="font-medium">{spec.specification_key}</span>
-                            <span className="text-muted-foreground">{spec.specification_value}</span>
+                            <span className="text-muted-foreground text-xs">{spec.specification_value}</span>
                           </div>)}
                     </div>
                   </div> : <div className="text-center text-muted-foreground">
@@ -156,15 +150,10 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                 {variant.image_url ? <div className="relative group w-full">
                     <img src={variant.image_url} alt={`${productName} - ${formatVariantName(variant.variant_name)}`} className="w-full h-auto object-contain max-h-80 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => onImageEnlarge?.(variant.image_url!)} />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="bg-background/90 backdrop-blur-sm pointer-events-auto"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onImageEnlarge?.(variant.image_url!);
-                        }}
-                      >
+                      <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm pointer-events-auto" onClick={e => {
+                    e.stopPropagation();
+                    onImageEnlarge?.(variant.image_url!);
+                  }}>
                         <ZoomIn className="h-4 w-4 mr-2" />
                         Enlarge
                       </Button>
