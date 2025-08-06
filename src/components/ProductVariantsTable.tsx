@@ -124,7 +124,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                    {hasVariants ? (
                      variants.map((variant) => (
                        <TableCell key={variant.id} className="text-center">
-                         {specKey === 'Size Options' 
+                         {specKey.toLowerCase().includes('size') 
                            ? formatSizeValue(processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
                            : (processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
                          }
@@ -132,7 +132,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                      ))
                    ) : (
                      <TableCell className="text-center">
-                       {specKey === 'Size Options'
+                       {specKey.toLowerCase().includes('size')
                          ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
                          : (processedSpecs[specKey].generalValue || '-')
                        }
