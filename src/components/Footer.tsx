@@ -16,6 +16,7 @@ const Footer = () => {
         const { data, error } = await supabase
           .from('categories')
           .select('*')
+          .eq('show_on_homepage', true)
           .order('name');
 
         if (error) throw error;

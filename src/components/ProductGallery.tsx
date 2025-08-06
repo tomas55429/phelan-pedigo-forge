@@ -72,7 +72,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         // Fetch all data in parallel
         const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes] = await Promise.all([
           supabase.from('products').select('*').order('name'), 
-          supabase.from('categories').select('*').order('name'), 
+          supabase.from('categories').select('*').eq('show_on_homepage', true).order('name'), 
           supabase.from('product_variants').select('*'), 
           supabase.from('product_features').select('*'), 
           supabase.from('product_specifications').select('*'),
