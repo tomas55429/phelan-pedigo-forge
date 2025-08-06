@@ -561,17 +561,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
         {/* Product Specifications Modal */}
         <Dialog open={!!specsProduct} onOpenChange={() => setSpecsProduct(null)}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto relative">
-            {/* Fixed Close Button - Always Visible */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setSpecsProduct(null)} 
-              className="absolute top-4 right-4 z-50 bg-background/90 backdrop-blur-sm hover:bg-background shadow-lg border-2"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center text-xl">
                 <FileText className="h-5 w-5 mr-2" />
