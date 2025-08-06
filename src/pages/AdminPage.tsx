@@ -103,6 +103,14 @@ interface ProductVariant {
   updated_at: string;
 }
 
+// Helper function to format variant name - removes hyphens and everything after them
+const formatVariantName = (variantName: string) => {
+  const name = variantName || '';
+  // Remove hyphen and everything after it
+  const cleanName = name.split('-')[0].trim();
+  return cleanName;
+};
+
 const AdminPage = () => {
   const { signOut } = useAuth();
   const { toast } = useToast();
@@ -1274,7 +1282,7 @@ const AdminPage = () => {
                                   </div>
                                 )}
                                 <div>
-                                  <div className="font-medium">{variant.variant_name}</div>
+                                  <div className="font-medium">{formatVariantName(variant.variant_name)}</div>
                                   {variant.variant_description && (
                                     <div className="text-sm text-muted-foreground">{variant.variant_description}</div>
                                   )}
@@ -1422,7 +1430,7 @@ const AdminPage = () => {
                               <SelectItem value="product">Product (General)</SelectItem>
                               {variants.map((variant) => (
                                 <SelectItem key={variant.id} value={variant.id}>
-                                  {variant.variant_name}
+                                  {formatVariantName(variant.variant_name)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -1461,7 +1469,7 @@ const AdminPage = () => {
                                   <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
                                   {spec.variant_id && (
                                     <div className="text-xs text-muted-foreground">
-                                      Variant: {variants.find(v => v.id === spec.variant_id)?.variant_name}
+                                      Variant: {formatVariantName(variants.find(v => v.id === spec.variant_id)?.variant_name || '')}
                                     </div>
                                   )}
                                 </div>

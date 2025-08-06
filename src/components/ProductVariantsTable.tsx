@@ -27,6 +27,14 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   variants,
   specifications
 }) => {
+  // Helper function to format variant name - removes hyphens and everything after them
+  const formatVariantName = (variantName: string) => {
+    const name = variantName || '';
+    // Remove hyphen and everything after it
+    const cleanName = name.split('-')[0].trim();
+    return cleanName;
+  };
+
   // Return null only if there are no specifications at all
   if (specifications.length === 0) {
     return null;
@@ -114,7 +122,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                 {hasVariants ? (
                   variants.map((variant) => (
                     <TableHead key={variant.id} className="text-center font-semibold">
-                      {variant.variant_name}
+                      {formatVariantName(variant.variant_name)}
                     </TableHead>
                   ))
                 ) : (
