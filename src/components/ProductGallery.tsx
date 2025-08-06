@@ -417,44 +417,44 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                       {selectedProduct.product.description || 'No description available'}
                     </p>
                   </div>
+                   
+                   {/* Features - Only show if there are features */}
+                   {selectedProduct.features.filter(feature => !feature.is_optional).length > 0 && (
+                     <div>
+                       <h2 className="text-xl font-semibold mb-4">Features</h2>
+                       <ul className="space-y-2">
+                         {selectedProduct.features.filter(feature => !feature.is_optional).map(feature => (
+                           <li key={feature.id} className="flex items-start space-x-2">
+                             <span className="text-lg leading-none mt-1">-</span>
+                             <span>{feature.feature}</span>
+                           </li>
+                         ))}
+                       </ul>
+                     </div>
+                   )}
                   
-                  {/* Features */}
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Features</h2>
-                    
-                    {selectedProduct.features.length > 0 ? <ul className="space-y-2">
-                        {selectedProduct.features.filter(feature => !feature.is_optional).map(feature => <li key={feature.id} className="flex items-start space-x-2">
-                              <span className="text-lg leading-none mt-1">-</span>
-                              <span>{feature.feature}</span>
-                            </li>)}
-                        {selectedProduct.features.filter(feature => feature.is_optional).map(feature => <li key={feature.id} className="flex items-start space-x-2 text-muted-foreground">
-                              <span className="text-lg leading-none mt-1">-</span>
-                              <span>{feature.feature} (Optional)</span>
-                            </li>)}
-                      </ul> : <ul className="space-y-2 text-muted-foreground">
-                        <li className="flex items-start space-x-2">
-                          <span className="text-lg leading-none mt-1">-</span>
-                          <span>No features listed</span>
-                        </li>
-                      </ul>}
-                  </div>
-                  
-                  {/* Variants */}
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Variants</h2>
-                    <div className="space-y-3">
-                      {selectedProduct.variants.length > 0 ? selectedProduct.variants.map(variant => <button key={variant.id} className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all" onClick={() => {
-                    setSelectedVariant(variant);
-                    setSelectedVariantProduct(selectedProduct);
-                  }}>
-                            <div className="font-medium text-lg">
-                              {formatVariantName(variant)}
-                            </div>
-                          </button>) : <div className="p-4 border-2 border-muted rounded-lg text-muted-foreground">
-                          No variants available
-                        </div>}
-                    </div>
-                  </div>
+                   {/* Variants - Only show if there are variants */}
+                   {selectedProduct.variants.length > 0 && (
+                     <div>
+                       <h2 className="text-xl font-semibold mb-4">Variants</h2>
+                       <div className="space-y-3">
+                         {selectedProduct.variants.map(variant => (
+                           <button 
+                             key={variant.id} 
+                             className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all" 
+                             onClick={() => {
+                               setSelectedVariant(variant);
+                               setSelectedVariantProduct(selectedProduct);
+                             }}
+                           >
+                             <div className="font-medium text-lg">
+                               {formatVariantName(variant)}
+                             </div>
+                           </button>
+                         ))}
+                       </div>
+                     </div>
+                   )}
                   
                   {/* Accessories */}
                   {selectedProduct.features.some(f => f.is_optional) && <div>
