@@ -50,7 +50,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     return acc;
   }, {} as Record<string, { values: Record<string, string>, sort_order: number, generalValue: string | null }>);
 
-  // Function to format size values with proper fraction symbols
+  // Function to format size values with proper fraction symbols and smaller font
   const formatSizeValue = (value: string) => {
     if (!value || value === '-') return value;
     
@@ -79,7 +79,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       formattedValue = formattedValue.replace(new RegExp(fraction, 'g'), symbol);
     });
     
-    return formattedValue;
+    return <span className="text-sm">{formattedValue}</span>;
   };
 
   // Use original specs without modification
