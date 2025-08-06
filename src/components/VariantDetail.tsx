@@ -113,7 +113,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                     <div className="space-y-3">
                       {sizeSpecs.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(spec => <div key={spec.id} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
                             <span className="font-medium">{spec.specification_key}</span>
-                            <span className="text-muted-foreground text-xs">{spec.specification_value}</span>
+                            <span className="text-muted-foreground text-xs text-right">{spec.specification_value}</span>
                           </div>)}
                     </div>
                   </div> : <div className="text-center text-muted-foreground">
