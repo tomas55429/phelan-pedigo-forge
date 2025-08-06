@@ -513,18 +513,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 </div>
               </div>
               
-               {/* Specifications Section */}
-               <div className="mt-12">
-                 
-                 <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
-                   {selectedProduct.specifications.length > 0 ? <div className="w-full">
+               {/* Specifications Section - Only show if there are specifications */}
+               {selectedProduct.specifications.length > 0 && (
+                 <div className="mt-12">
+                   <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                     <div className="w-full">
                        <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
-                     </div> : <div className="text-center text-muted-foreground">
-                       <div className="text-xl mb-2">Specs Table</div>
-                       <p className="text-sm">No specifications available</p>
-                     </div>}
+                     </div>
+                   </div>
                  </div>
-               </div>
+               )}
                </div>
              </div>
            </div>}
