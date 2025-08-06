@@ -4,7 +4,7 @@ import { Tables } from '@/integrations/supabase/types';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Phone } from 'lucide-react';
+import { Loader2, Phone, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Product = Tables<'products'>;
@@ -18,6 +18,62 @@ interface ProductWithCategory {
 const CustomSolutionsPage = () => {
   const [customProducts, setCustomProducts] = useState<ProductWithCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [imageZoom, setImageZoom] = useState(1);
+  const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  // Reset zoom and pan when image changes
+  useEffect(() => {
+    if (enlargedImage) {
+      setImageZoom(1);
+      setImagePan({ x: 0, y: 0 });
+    }
+  }, [enlargedImage]);
+
+  // Image zoom and pan handlers
+  const handleZoomIn = () => {
+    setImageZoom(prev => Math.min(prev * 1.5, 5));
+  };
+
+  const handleZoomOut = () => {
+    setImageZoom(prev => Math.max(prev / 1.5, 0.5));
+  };
+
+  const resetZoom = () => {
+    setImageZoom(1);
+    setImagePan({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (imageZoom > 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.clientX - imagePan.x,
+        y: e.clientY - imagePan.y
+      });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && imageZoom > 1) {
+      setImagePan({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      });
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setImageZoom(prev => Math.min(Math.max(prev * delta, 0.5), 5));
+  };
 
   useEffect(() => {
     const fetchCustomProducts = async () => {
@@ -89,6 +145,20 @@ const CustomSolutionsPage = () => {
     fetchCustomProducts();
   }, []);
 
+  // Keyboard event handler for ESC key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && enlargedImage) {
+        setEnlargedImage(null);
+      }
+    };
+
+    if (enlargedImage) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [enlargedImage]);
+
   if (loading) {
     return (
       <div className="min-h-screen">
@@ -156,7 +226,8 @@ const CustomSolutionsPage = () => {
                       <img
                         src={product.image_url!}
                         alt={product.name}
-                        className="w-full h-64 object-cover"
+                        className="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setEnlargedImage(product.image_url!)}
                       />
                     </div>
                     <CardContent className="p-6">
@@ -204,6 +275,79 @@ const CustomSolutionsPage = () => {
             </>
           )}
         </div>
+
+        {/* Image Enlargement Modal */}
+        {enlargedImage && (
+          <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50">
+            {/* Close button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEnlargedImage(null)}
+              className="absolute top-4 right-4 z-20 bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+
+            {/* Zoom controls */}
+            <div className="absolute top-4 left-4 z-20 flex space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleZoomIn}
+                className="bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleZoomOut}
+                className="bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={resetZoom}
+                className="bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Image container */}
+            <div 
+              className="relative w-full h-full flex items-center justify-center overflow-hidden cursor-move"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onWheel={handleWheel}
+            >
+              <img
+                src={enlargedImage}
+                alt="Enlarged view"
+                className="max-w-none select-none"
+                style={{
+                  transform: `scale(${imageZoom}) translate(${imagePan.x / imageZoom}px, ${imagePan.y / imageZoom}px)`,
+                  cursor: imageZoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'
+                }}
+                draggable={false}
+              />
+            </div>
+
+            {/* Instructions */}
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+              <div className="bg-background/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border">
+                <p className="text-sm text-muted-foreground text-center">
+                  Click and drag to pan • Scroll to zoom • Click controls or press ESC to close
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       <Footer />
     </div>
