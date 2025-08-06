@@ -50,78 +50,41 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     return acc;
   }, {} as Record<string, { values: Record<string, string>, sort_order: number, generalValue: string | null }>);
 
-  // Function to format dimensions from Width, Length, Depth
-  const formatDimensions = (width: string | undefined, length: string | undefined, depth: string | undefined) => {
-    const w = width || '-';
-    const l = length || '-';
-    const d = depth || '-';
-    return `${w} x ${l} x ${d}`;
+  // Function to format size values with smaller fractions
+  const formatSizeValue = (value: string) => {
+    if (!value || value === '-') return value;
+    
+    // Check if the value contains fractions like 1/2", 3/4", etc.
+    const fractionRegex = /(\d+\/\d+)/g;
+    
+    if (fractionRegex.test(value)) {
+      return value.split(' ').map((part, index) => (
+        <span key={index} className={fractionRegex.test(part) ? 'text-sm' : ''}>
+          {part}{index < value.split(' ').length - 1 ? ' ' : ''}
+        </span>
+      ));
+    }
+    
+    return value;
   };
 
-  // Create combined dimensions and filter out individual dimension specs
+  // Change "Size" related specs to "Size Options"
   const processedSpecs = { ...specsByKey };
-  const dimensionKeys = ['Width', 'Length', 'Depth', 'width', 'length', 'depth'];
   
-  // Check if we have any dimension specifications
-  const hasDimensions = dimensionKeys.some(key => 
-    Object.keys(specsByKey).some(specKey => 
-      specKey.toLowerCase().includes(key.toLowerCase())
-    )
+  // Find size-related specifications and rename to "Size Options"
+  const sizeKeys = Object.keys(specsByKey).filter(key => 
+    key.toLowerCase().includes('size')
   );
-
-  if (hasDimensions) {
-    // Find width, length, depth specs (case insensitive)
-    const widthKey = Object.keys(specsByKey).find(key => key.toLowerCase().includes('width'));
-    const lengthKey = Object.keys(specsByKey).find(key => key.toLowerCase().includes('length'));
-    const depthKey = Object.keys(specsByKey).find(key => key.toLowerCase().includes('depth'));
-
-    // Create combined dimensions spec
-    if (widthKey || lengthKey || depthKey) {
-      const dimensionsSpec = {
-        values: {} as Record<string, string>,
-        sort_order: Math.min(
-          specsByKey[widthKey]?.sort_order || 999,
-          specsByKey[lengthKey]?.sort_order || 999,
-          specsByKey[depthKey]?.sort_order || 999
-        ),
-        generalValue: null as string | null
-      };
-
-      // Handle variant-specific dimensions
-      const allVariantIds = new Set<string>();
-      [widthKey, lengthKey, depthKey].forEach(key => {
-        if (key && specsByKey[key]) {
-          Object.keys(specsByKey[key].values).forEach(variantId => {
-            allVariantIds.add(variantId);
-          });
-        }
-      });
-
-      // Combine dimensions for each variant
-      allVariantIds.forEach(variantId => {
-        const width = widthKey ? specsByKey[widthKey].values[variantId] : undefined;
-        const length = lengthKey ? specsByKey[lengthKey].values[variantId] : undefined;
-        const depth = depthKey ? specsByKey[depthKey].values[variantId] : undefined;
-        dimensionsSpec.values[variantId] = formatDimensions(width, length, depth);
-      });
-
-      // Handle general dimensions (not tied to variants)
-      const generalWidth = widthKey ? specsByKey[widthKey].generalValue : null;
-      const generalLength = lengthKey ? specsByKey[lengthKey].generalValue : null;
-      const generalDepth = depthKey ? specsByKey[depthKey].generalValue : null;
+  
+  if (sizeKeys.length > 0) {
+    const firstSizeKey = sizeKeys[0];
+    if (firstSizeKey && specsByKey[firstSizeKey]) {
+      processedSpecs['Size Options'] = { ...specsByKey[firstSizeKey] };
+      delete processedSpecs[firstSizeKey];
       
-      if (generalWidth || generalLength || generalDepth) {
-        dimensionsSpec.generalValue = formatDimensions(generalWidth || undefined, generalLength || undefined, generalDepth || undefined);
-      }
-
-      // Add the combined dimensions spec
-      processedSpecs['Dimensions'] = dimensionsSpec;
-
-      // Remove individual dimension specs
-      [widthKey, lengthKey, depthKey].forEach(key => {
-        if (key) {
-          delete processedSpecs[key];
-        }
+      // Remove other size keys if there are multiple
+      sizeKeys.slice(1).forEach(key => {
+        delete processedSpecs[key];
       });
     }
   }
@@ -167,17 +130,23 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
               {specificationKeys.map((specKey) => (
                 <TableRow key={specKey}>
                   <TableCell className="font-medium">{specKey}</TableCell>
-                  {hasVariants ? (
-                    variants.map((variant) => (
-                      <TableCell key={variant.id} className="text-center">
-                        {processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-'}
-                      </TableCell>
-                    ))
-                  ) : (
-                    <TableCell className="text-center">
-                      {processedSpecs[specKey].generalValue || '-'}
-                    </TableCell>
-                  )}
+                   {hasVariants ? (
+                     variants.map((variant) => (
+                       <TableCell key={variant.id} className="text-center">
+                         {specKey === 'Size Options' 
+                           ? formatSizeValue(processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
+                           : (processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
+                         }
+                       </TableCell>
+                     ))
+                   ) : (
+                     <TableCell className="text-center">
+                       {specKey === 'Size Options'
+                         ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
+                         : (processedSpecs[specKey].generalValue || '-')
+                       }
+                     </TableCell>
+                   )}
                 </TableRow>
               ))}
             </TableBody>
