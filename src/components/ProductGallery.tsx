@@ -17,7 +17,7 @@ type ProductSpecification = Tables<'product_specifications'>;
 type Category = Tables<'categories'>;
 interface ProductWithDetails {
   product: Product;
-  category: Category | null;
+  categories: Category[]; // Changed from single category to multiple categories
   variants: ProductVariant[];
   features: ProductFeature[];
   specifications: ProductSpecification[];
@@ -70,26 +70,46 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         setLoading(true);
 
         // Fetch all data in parallel
-        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes] = await Promise.all([supabase.from('products').select('*').order('name'), supabase.from('categories').select('*').order('name'), supabase.from('product_variants').select('*'), supabase.from('product_features').select('*'), supabase.from('product_specifications').select('*')]);
+        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes] = await Promise.all([
+          supabase.from('products').select('*').order('name'), 
+          supabase.from('categories').select('*').order('name'), 
+          supabase.from('product_variants').select('*'), 
+          supabase.from('product_features').select('*'), 
+          supabase.from('product_specifications').select('*'),
+          supabase.from('product_categories').select('*')
+        ]);
         if (productsRes.error) throw productsRes.error;
         if (categoriesRes.error) throw categoriesRes.error;
         if (variantsRes.error) throw variantsRes.error;
         if (featuresRes.error) throw featuresRes.error;
         if (specificationsRes.error) throw specificationsRes.error;
+        if (productCategoriesRes.error) throw productCategoriesRes.error;
+        
         const products = productsRes.data || [];
         const categoriesData = categoriesRes.data || [];
         const variants = variantsRes.data || [];
         const features = featuresRes.data || [];
         const specifications = specificationsRes.data || [];
+        const productCategories = productCategoriesRes.data || [];
 
         // Group data by product
-        const productsWithDetailsData: ProductWithDetails[] = products.map(product => ({
-          product,
-          category: categoriesData.find(cat => cat.id === product.category_id) || null,
-          variants: variants.filter(variant => variant.product_id === product.id),
-          features: features.filter(feature => feature.product_id === product.id),
-          specifications: specifications.filter(spec => spec.product_id === product.id)
-        }));
+        const productsWithDetailsData: ProductWithDetails[] = products.map(product => {
+          // Get categories for this product
+          const productCategoryIds = productCategories
+            .filter(pc => pc.product_id === product.id)
+            .map(pc => pc.category_id);
+          const productCategoriesData = categoriesData.filter(cat => 
+            productCategoryIds.includes(cat.id)
+          );
+
+          return {
+            product,
+            categories: productCategoriesData,
+            variants: variants.filter(variant => variant.product_id === product.id),
+            features: features.filter(feature => feature.product_id === product.id),
+            specifications: specifications.filter(spec => spec.product_id === product.id)
+          };
+        });
         setProductsWithDetails(productsWithDetailsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -159,7 +179,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const filteredProducts = useMemo(() => {
     return productsWithDetails.filter(({
       product,
-      category,
+      categories,
       features,
       specifications
     }) => {
@@ -180,13 +200,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       let matchesCategory = true;
       if (userSelectedCategory) {
         // If user manually selected a category via dropdown, use that
-        matchesCategory = selectedCategory === 'All Products' || category?.name === selectedCategory;
+        matchesCategory = selectedCategory === 'All Products' || categories.some(cat => cat.name === selectedCategory);
       } else if (selectedCategoryId !== undefined && selectedCategoryId !== null) {
         // If a category is selected from the categories section, filter by category ID
-        matchesCategory = product.category_id === selectedCategoryId;
+        matchesCategory = categories.some(cat => cat.id === selectedCategoryId);
       } else if (selectedCategory !== 'All Products') {
         // If using internal category dropdown, filter by category name
-        matchesCategory = category?.name === selectedCategory;
+        matchesCategory = categories.some(cat => cat.name === selectedCategory);
       }
       // If selectedCategoryId is null or selectedCategory is 'All Products', show all products
 
@@ -201,7 +221,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   }) => {
     const {
       product,
-      category,
+      categories,
       variants,
       features
     } = productWithDetails;
@@ -222,7 +242,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 {variants.length} variants
               </Badge>}
           </div>
-          <p className="text-sm text-muted-foreground">{category?.name || 'Uncategorized'}</p>
+          <p className="text-sm text-muted-foreground">{categories.length > 0 ? categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
         </CardHeader>
         <CardContent className="pt-0">
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
@@ -290,7 +310,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   }) => {
     const {
       product,
-      category,
+      categories,
       variants,
       features
     } = productWithDetails;
@@ -314,7 +334,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     {variants.length} variants
                   </Badge>}
               </div>
-              <p className="text-sm text-muted-foreground mb-2">{category?.name || 'Uncategorized'}</p>
+              <p className="text-sm text-muted-foreground mb-2">{categories.length > 0 ? categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
               <p className="text-sm text-muted-foreground mb-3">{product.description || 'No description available'}</p>
               
               <div className="grid grid-cols-2 gap-4 text-xs">
@@ -373,7 +393,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               {/* Product Header */}
               <div className="mb-8">
                 <h1 className="text-4xl font-bold mb-2">{selectedProduct.product.name}</h1>
-                <p className="text-xl text-muted-foreground">{selectedProduct.category?.name || 'Uncategorized'}</p>
+                <p className="text-xl text-muted-foreground">{selectedProduct.categories.length > 0 ? selectedProduct.categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
               </div>
               
               <div className="grid lg:grid-cols-2 gap-12">

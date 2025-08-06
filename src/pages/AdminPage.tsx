@@ -127,7 +127,7 @@ const AdminPage = () => {
   // State for products
   const [products, setProducts] = useState<Product[]>([]);
   const [productName, setProductName] = useState('');
-  const [productCategoryId, setProductCategoryId] = useState('');
+  const [productCategoryIds, setProductCategoryIds] = useState<string[]>([]);
   const [productDescription, setProductDescription] = useState('');
   const [productSpecialNotes, setProductSpecialNotes] = useState('');
   const [productFeatured, setProductFeatured] = useState(false);
@@ -415,12 +415,15 @@ const AdminPage = () => {
 
       const productData = {
         name: productName,
-        category_id: productCategoryId === 'none' ? null : productCategoryId || null,
+        // Keep the old category_id for backward compatibility for now
+        category_id: productCategoryIds.length > 0 ? productCategoryIds[0] : null,
         description: productDescription || null,
         special_notes: productSpecialNotes || null,
         image_url: imageUrl,
         featured: productFeatured,
       };
+
+      let productId: string;
 
       if (editingProduct) {
         const { error } = await supabase
@@ -429,15 +432,42 @@ const AdminPage = () => {
           .eq('id', editingProduct.id);
         
         if (error) throw error;
-        toast({ title: "Success", description: "Product updated successfully" });
+        productId = editingProduct.id;
+
+        // Delete existing category relationships
+        await supabase
+          .from('product_categories')
+          .delete()
+          .eq('product_id', productId);
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('products')
-          .insert([productData]);
+          .insert([productData])
+          .select()
+          .single();
         
         if (error) throw error;
-        toast({ title: "Success", description: "Product created successfully" });
+        productId = data.id;
       }
+
+      // Insert new category relationships
+      if (productCategoryIds.length > 0) {
+        const categoryRelations = productCategoryIds.map(categoryId => ({
+          product_id: productId,
+          category_id: categoryId
+        }));
+
+        const { error } = await supabase
+          .from('product_categories')
+          .insert(categoryRelations);
+
+        if (error) throw error;
+      }
+
+      toast({ 
+        title: "Success", 
+        description: editingProduct ? "Product updated successfully" : "Product created successfully" 
+      });
 
       resetProductForm();
       fetchProducts();
@@ -454,7 +484,7 @@ const AdminPage = () => {
 
   const resetProductForm = () => {
     setProductName('');
-    setProductCategoryId('');
+    setProductCategoryIds([]);
     setProductDescription('');
     setProductSpecialNotes('');
     setProductFeatured(false);
@@ -996,20 +1026,29 @@ const AdminPage = () => {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="productCategory">Category</Label>
-                        <Select value={productCategoryId} onValueChange={setProductCategoryId}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">No Category</SelectItem>
-                            {categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
+                        <Label htmlFor="productCategories">Categories</Label>
+                        <div className="space-y-2">
+                          {categories.map((category) => (
+                            <div key={category.id} className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`category-${category.id}`}
+                                checked={productCategoryIds.includes(category.id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setProductCategoryIds([...productCategoryIds, category.id]);
+                                  } else {
+                                    setProductCategoryIds(productCategoryIds.filter(id => id !== category.id));
+                                  }
+                                }}
+                                className="rounded border-gray-300"
+                              />
+                              <label htmlFor={`category-${category.id}`} className="text-sm">
                                 {category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                              </label>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                       <div>
                         <Label htmlFor="productDescription">Description</Label>
@@ -1102,13 +1141,22 @@ const AdminPage = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => {
+                                onClick={async () => {
                                   setEditingProduct(product);
                                   setProductName(product.name);
-                                  setProductCategoryId(product.category_id || 'none');
                                   setProductDescription(product.description || '');
                                   setProductSpecialNotes(product.special_notes || '');
                                   setProductFeatured(product.featured);
+                                  
+                                  // Fetch current categories for this product
+                                  const { data: productCategories } = await supabase
+                                    .from('product_categories')
+                                    .select('category_id')
+                                    .eq('product_id', product.id);
+                                  
+                                  const categoryIds = productCategories?.map(pc => pc.category_id) || [];
+                                  setProductCategoryIds(categoryIds);
+                                  
                                   setProductDialogOpen(true);
                                 }}
                               >
