@@ -55,14 +55,23 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     if (!value || value === '-') return value;
     
     // Check if the value contains fractions like 1/2", 3/4", etc.
-    const fractionRegex = /(\d+\/\d+)/g;
+    const fractionRegex = /\d+\/\d+/g;
     
     if (fractionRegex.test(value)) {
-      return value.split(' ').map((part, index) => (
-        <span key={index} className={fractionRegex.test(part) ? 'text-sm' : ''}>
-          {part}{index < value.split(' ').length - 1 ? ' ' : ''}
-        </span>
-      ));
+      // Split by spaces and format each part
+      const parts = value.split(' ');
+      return (
+        <>
+          {parts.map((part, index) => (
+            <React.Fragment key={index}>
+              <span className={/\d+\/\d+/.test(part) ? 'text-xs' : ''}>
+                {part}
+              </span>
+              {index < parts.length - 1 && ' '}
+            </React.Fragment>
+          ))}
+        </>
+      );
     }
     
     return value;
