@@ -15,7 +15,7 @@ interface ProductFeature {
   id: string;
   feature: string;
   is_optional?: boolean;
-  variant_id?: string;
+  variant_id: string; // Now required since all features must belong to variants
   image_url?: string;
 }
 interface ProductSpecification {
@@ -48,7 +48,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
     const cleanName = name.split('-')[0].trim();
     return cleanName;
   };
-  const variantFeatures = features.filter(f => f.variant_id === variant.id || f.variant_id === null);
+  const variantFeatures = features.filter(f => f.variant_id === variant.id);
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
   const sizeSpecs = specifications.filter(spec => (spec.variant_id === variant.id || spec.variant_id === null) && (spec.specification_key.toLowerCase().includes('size') || spec.specification_key.toLowerCase().includes('dimension') || spec.specification_key.toLowerCase().includes('length') || spec.specification_key.toLowerCase().includes('lenght') ||
   // Handle misspelling

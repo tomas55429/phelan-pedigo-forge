@@ -85,7 +85,7 @@ export type Database = {
           image_url: string | null
           is_optional: boolean | null
           product_id: string
-          variant_id: string | null
+          variant_id: string
         }
         Insert: {
           created_at?: string
@@ -94,7 +94,7 @@ export type Database = {
           image_url?: string | null
           is_optional?: boolean | null
           product_id: string
-          variant_id?: string | null
+          variant_id: string
         }
         Update: {
           created_at?: string
@@ -103,7 +103,7 @@ export type Database = {
           image_url?: string | null
           is_optional?: boolean | null
           product_id?: string
-          variant_id?: string | null
+          variant_id?: string
         }
         Relationships: [
           {
@@ -117,7 +117,7 @@ export type Database = {
             foreignKeyName: "product_features_variant_id_fkey"
             columns: ["variant_id"]
             isOneToOne: false
-            referencedRelation: "product_features"
+            referencedRelation: "product_variants"
             referencedColumns: ["id"]
           },
         ]

@@ -78,6 +78,7 @@ interface Product {
 interface ProductFeature {
   id: string;
   product_id: string;
+  variant_id: string; // Now required since all features must belong to variants
   feature: string;
   is_optional?: boolean;
   image_url?: string;
@@ -486,7 +487,24 @@ const AdminPage = () => {
 
   const handleAddFeature = async (isOptional: boolean = false) => {
     const featureText = isOptional ? newOptionalFeature : newFeature;
-    if (!selectedProduct || !featureText.trim()) return;
+    if (!selectedProduct || !featureText.trim()) {
+      toast({
+        title: "Error",
+        description: "Please select a product and enter a feature",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Now features must be associated with a variant
+    if (!selectedVariant) {
+      toast({
+        title: "Error",
+        description: "Please select a variant to add features to",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       let imageUrl = null;
@@ -514,6 +532,7 @@ const AdminPage = () => {
         .from('product_features')
         .insert([{
           product_id: selectedProduct.id,
+          variant_id: selectedVariant.id,
           feature: featureText,
           is_optional: isOptional,
           image_url: imageUrl,
@@ -529,7 +548,7 @@ const AdminPage = () => {
       fetchProductDetails(selectedProduct.id);
       toast({ 
         title: "Success", 
-        description: `${isOptional ? 'Accessory' : 'Feature'} added successfully` 
+        description: `${isOptional ? 'Accessory' : 'Feature'} added to ${formatVariantName(selectedVariant.variant_name)}` 
       });
     } catch (error: any) {
       toast({
@@ -1332,30 +1351,66 @@ const AdminPage = () => {
                     <Card>
                       <CardHeader>
                         <CardTitle>Features</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          Features are now managed per variant. Select a variant to add/edit features.
+                        </p>
                       </CardHeader>
                       <CardContent className="space-y-4">
-                        <div className="flex space-x-2">
-                          <Input
-                            value={newFeature}
-                            onChange={(e) => setNewFeature(e.target.value)}
-                            placeholder="Add new feature"
-                          />
-                          <Button onClick={() => handleAddFeature(false)}>Add</Button>
-                        </div>
+                        {/* Variant Selection for Features */}
                         <div className="space-y-2">
-                          {features.filter(f => !f.is_optional).map((feature) => (
-                            <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                              <span>{feature.feature}</span>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteFeature(feature.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ))}
+                          <label className="text-sm font-medium">Select Variant for Features:</label>
+                          <Select 
+                            value={selectedVariant?.id || ''} 
+                            onValueChange={(value) => {
+                              const variant = variants.find(v => v.id === value);
+                              setSelectedVariant(variant || null);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a variant to manage features" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {variants.map((variant) => (
+                                <SelectItem key={variant.id} value={variant.id}>
+                                  {formatVariantName(variant.variant_name)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
+
+                        {selectedVariant && (
+                          <>
+                            <div className="flex space-x-2">
+                              <Input
+                                value={newFeature}
+                                onChange={(e) => setNewFeature(e.target.value)}
+                                placeholder={`Add feature to ${formatVariantName(selectedVariant.variant_name)}`}
+                              />
+                              <Button onClick={() => handleAddFeature(false)}>Add</Button>
+                            </div>
+                            <div className="space-y-2">
+                              {features.filter(f => !f.is_optional && f.variant_id === selectedVariant.id).map((feature) => (
+                                <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                                  <span>{feature.feature}</span>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteFeature(feature.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        {!selectedVariant && (
+                          <p className="text-muted-foreground text-center py-4">
+                            Please select a variant to manage features
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
 
@@ -1363,45 +1418,81 @@ const AdminPage = () => {
                     <Card>
                       <CardHeader>
                         <CardTitle>Accessories</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          Accessories are now managed per variant. Select a variant to add/edit accessories.
+                        </p>
                       </CardHeader>
                       <CardContent className="space-y-4">
+                        {/* Variant Selection for Accessories */}
                         <div className="space-y-2">
-                          <Input
-                            value={newOptionalFeature}
-                            onChange={(e) => setNewOptionalFeature(e.target.value)}
-                            placeholder="Add new accessory"
-                          />
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setAccessoryImage(e.target.files?.[0] || null)}
-                            placeholder="Accessory image (optional)"
-                          />
-                          <Button onClick={() => handleAddFeature(true)} className="w-full">Add Accessory</Button>
+                          <label className="text-sm font-medium">Select Variant for Accessories:</label>
+                          <Select 
+                            value={selectedVariant?.id || ''} 
+                            onValueChange={(value) => {
+                              const variant = variants.find(v => v.id === value);
+                              setSelectedVariant(variant || null);
+                            }}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a variant to manage accessories" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {variants.map((variant) => (
+                                <SelectItem key={variant.id} value={variant.id}>
+                                  {formatVariantName(variant.variant_name)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <div className="space-y-2">
-                          {features.filter(f => f.is_optional).map((feature) => (
-                            <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                              <div className="flex items-center space-x-3 flex-1">
-                                {feature.image_url && (
-                                  <img 
-                                    src={feature.image_url} 
-                                    alt={feature.feature}
-                                    className="w-10 h-10 object-cover rounded"
-                                  />
-                                )}
-                                <span className="flex-1">{feature.feature}</span>
-                              </div>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteFeature(feature.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+
+                        {selectedVariant && (
+                          <>
+                            <div className="space-y-2">
+                              <Input
+                                value={newOptionalFeature}
+                                onChange={(e) => setNewOptionalFeature(e.target.value)}
+                                placeholder={`Add accessory to ${formatVariantName(selectedVariant.variant_name)}`}
+                              />
+                              <Input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => setAccessoryImage(e.target.files?.[0] || null)}
+                                placeholder="Accessory image (optional)"
+                              />
+                              <Button onClick={() => handleAddFeature(true)} className="w-full">Add Accessory</Button>
                             </div>
-                          ))}
-                        </div>
+                            <div className="space-y-2">
+                              {features.filter(f => f.is_optional && f.variant_id === selectedVariant.id).map((feature) => (
+                                <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                                  <div className="flex items-center space-x-3 flex-1">
+                                    {feature.image_url && (
+                                      <img 
+                                        src={feature.image_url} 
+                                        alt={feature.feature}
+                                        className="w-10 h-10 object-cover rounded"
+                                      />
+                                    )}
+                                    <span className="flex-1">{feature.feature}</span>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => handleDeleteFeature(feature.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
+
+                        {!selectedVariant && (
+                          <p className="text-muted-foreground text-center py-4">
+                            Please select a variant to manage accessories
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
 

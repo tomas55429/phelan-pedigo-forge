@@ -417,20 +417,32 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     </p>
                   </div>
                    
-                   {/* Features - Only show if there are features */}
-                   {selectedProduct.features.filter(feature => !feature.is_optional).length > 0 && (
-                     <div>
-                       <h2 className="text-xl font-semibold mb-4">Features</h2>
-                       <ul className="space-y-2">
-                         {selectedProduct.features.filter(feature => !feature.is_optional).map(feature => (
-                           <li key={feature.id} className="flex items-start space-x-2">
-                             <span className="text-lg leading-none mt-1">-</span>
-                             <span>{feature.feature}</span>
-                           </li>
-                         ))}
-                       </ul>
-                     </div>
-                   )}
+                    {/* Combined Features from All Variants - deduplicated */}
+                    {(() => {
+                      // Get all features from all variants, deduplicated by feature text
+                      const allFeatures = selectedProduct.features.filter(feature => !feature.is_optional);
+                      const deduplicatedFeatures = allFeatures.reduce((acc, feature) => {
+                        if (!acc.some(f => f.feature === feature.feature)) {
+                          acc.push(feature);
+                        }
+                        return acc;
+                      }, [] as typeof allFeatures);
+                      
+                      return deduplicatedFeatures.length > 0 && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Features</h2>
+                          <p className="text-sm text-muted-foreground mb-3">Combined features from all variants</p>
+                          <ul className="space-y-2">
+                            {deduplicatedFeatures.map(feature => (
+                              <li key={feature.id} className="flex items-start space-x-2">
+                                <span className="text-lg leading-none mt-1">-</span>
+                                <span>{feature.feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })()}
                   
                    {/* Variants - Only show if there are variants */}
                    {selectedProduct.variants.length > 0 && (
@@ -455,41 +467,55 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                      </div>
                    )}
                   
-                  {/* Accessories */}
-                  {selectedProduct.features.some(f => f.is_optional) && <div>
-                      <h2 className="text-xl font-semibold mb-4">Accessories</h2>
-                      <div className="space-y-3">
-                        {selectedProduct.features.filter(feature => feature.is_optional).map(accessory => 
-                          <div 
-                            key={accessory.id} 
-                            className={`p-4 border-2 rounded-lg transition-all ${
-                              accessory.image_url 
-                                ? 'border-muted hover:border-primary/50 cursor-pointer hover:bg-muted/30' 
-                                : 'border-muted'
-                            }`}
-                            onClick={() => accessory.image_url && setEnlargedImage(accessory.image_url)}
-                          >
-                            <div className="flex items-center space-x-3">
-                              {accessory.image_url && (
-                                <img 
-                                  src={accessory.image_url} 
-                                  alt={accessory.feature}
-                                  className="w-12 h-12 object-cover rounded border"
-                                />
-                              )}
-                              <div className="flex-1">
-                                <div className="font-medium">{accessory.feature}</div>
-                                {accessory.image_url && (
-                                  <div className="text-xs text-muted-foreground mt-1">
-                                    Click to view image
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>}
+                   {/* Combined Accessories from All Variants - deduplicated */}
+                   {(() => {
+                     // Get all accessories from all variants, deduplicated by feature text
+                     const allAccessories = selectedProduct.features.filter(feature => feature.is_optional);
+                     const deduplicatedAccessories = allAccessories.reduce((acc, accessory) => {
+                       if (!acc.some(a => a.feature === accessory.feature)) {
+                         acc.push(accessory);
+                       }
+                       return acc;
+                     }, [] as typeof allAccessories);
+                     
+                     return deduplicatedAccessories.length > 0 && (
+                       <div>
+                         <h2 className="text-xl font-semibold mb-4">Accessories</h2>
+                         <p className="text-sm text-muted-foreground mb-3">Combined accessories from all variants</p>
+                         <div className="space-y-3">
+                           {deduplicatedAccessories.map(accessory => 
+                             <div 
+                               key={accessory.id} 
+                               className={`p-4 border-2 rounded-lg transition-all ${
+                                 accessory.image_url 
+                                   ? 'border-muted hover:border-primary/50 cursor-pointer hover:bg-muted/30' 
+                                   : 'border-muted'
+                               }`}
+                               onClick={() => accessory.image_url && setEnlargedImage(accessory.image_url)}
+                             >
+                               <div className="flex items-center space-x-3">
+                                 {accessory.image_url && (
+                                   <img 
+                                     src={accessory.image_url} 
+                                     alt={accessory.feature}
+                                     className="w-12 h-12 object-cover rounded border"
+                                   />
+                                 )}
+                                 <div className="flex-1">
+                                   <div className="font-medium">{accessory.feature}</div>
+                                   {accessory.image_url && (
+                                     <div className="text-xs text-muted-foreground mt-1">
+                                       Click to view image
+                                     </div>
+                                   )}
+                                 </div>
+                               </div>
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                     );
+                   })()}
                   
                   {/* Special Notes */}
                   {selectedProduct.product.special_notes && <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
