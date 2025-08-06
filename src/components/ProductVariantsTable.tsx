@@ -65,47 +65,125 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   const hasVariantSpecs = specifications.some(spec => spec.variant_id);
   const hasGeneralSpecs = specifications.some(spec => !spec.variant_id);
 
+  // Helper function to format dimensions
+  const formatDimensions = (variantId?: string) => {
+    const width = specifications.find(spec => 
+      (spec.variant_id === variantId || (!variantId && !spec.variant_id)) &&
+      spec.specification_key.toLowerCase().includes('width')
+    )?.specification_value;
+    
+    const length = specifications.find(spec => 
+      (spec.variant_id === variantId || (!variantId && !spec.variant_id)) &&
+      (spec.specification_key.toLowerCase().includes('length') || 
+       spec.specification_key.toLowerCase().includes('lenght'))
+    )?.specification_value;
+    
+    const depth = specifications.find(spec => 
+      (spec.variant_id === variantId || (!variantId && !spec.variant_id)) &&
+      spec.specification_key.toLowerCase().includes('depth')
+    )?.specification_value;
+
+    const dimensions = [width, length, depth].filter(Boolean);
+    return dimensions.length > 0 ? dimensions.join(' x ') : null;
+  };
+
+  // Filter out dimension specs from regular specs since we'll show them separately
+  const dimensionKeys = ['width', 'length', 'lenght', 'depth'];
+  const nonDimensionKeys = specificationKeys.filter(key => 
+    !dimensionKeys.some(dimKey => key.toLowerCase().includes(dimKey))
+  );
+
+  // Check if we have any dimension specs
+  const hasDimensions = specifications.some(spec => 
+    dimensionKeys.some(dimKey => spec.specification_key.toLowerCase().includes(dimKey))
+  );
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Specifications</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="font-semibold">Specification</TableHead>
-                {hasVariants ? (
-                  variants.map((variant) => (
-                    <TableHead key={variant.id} className="text-center font-semibold">
-                      {variant.variant_name}
-                    </TableHead>
-                  ))
-                ) : (
-                  <TableHead className="text-center font-semibold">Value</TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {specificationKeys.map((specKey) => (
-                <TableRow key={specKey}>
-                  <TableCell className="font-medium">{specKey}</TableCell>
-                  {hasVariants ? (
-                    variants.map((variant) => (
-                      <TableCell key={variant.id} className="text-center">
-                        {specsByKey[specKey].values[variant.id] || specsByKey[specKey].generalValue || '-'}
+        <div className="overflow-x-auto space-y-6">
+          {/* Dimensions Section */}
+          {hasDimensions && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Dimensions</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">Specification</TableHead>
+                    {hasVariants ? (
+                      variants.map((variant) => (
+                        <TableHead key={variant.id} className="text-center font-semibold">
+                          {variant.variant_name}
+                        </TableHead>
+                      ))
+                    ) : (
+                      <TableHead className="text-center font-semibold">Value</TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium">Dimensions</TableCell>
+                    {hasVariants ? (
+                      variants.map((variant) => (
+                        <TableCell key={variant.id} className="text-center">
+                          {formatDimensions(variant.id) || '-'}
+                        </TableCell>
+                      ))
+                    ) : (
+                      <TableCell className="text-center">
+                        {formatDimensions() || '-'}
                       </TableCell>
-                    ))
-                  ) : (
-                    <TableCell className="text-center">
-                      {specsByKey[specKey].generalValue || '-'}
-                    </TableCell>
-                  )}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    )}
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          )}
+
+          {/* Other Specifications */}
+          {nonDimensionKeys.length > 0 && (
+            <div>
+              <h3 className="text-lg font-semibold mb-3">Other Specifications</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold">Specification</TableHead>
+                    {hasVariants ? (
+                      variants.map((variant) => (
+                        <TableHead key={variant.id} className="text-center font-semibold">
+                          {variant.variant_name}
+                        </TableHead>
+                      ))
+                    ) : (
+                      <TableHead className="text-center font-semibold">Value</TableHead>
+                    )}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {nonDimensionKeys.map((specKey) => (
+                    <TableRow key={specKey}>
+                      <TableCell className="font-medium">{specKey}</TableCell>
+                      {hasVariants ? (
+                        variants.map((variant) => (
+                          <TableCell key={variant.id} className="text-center">
+                            {specsByKey[specKey].values[variant.id] || specsByKey[specKey].generalValue || '-'}
+                          </TableCell>
+                        ))
+                      ) : (
+                        <TableCell className="text-center">
+                          {specsByKey[specKey].generalValue || '-'}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
