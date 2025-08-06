@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Card,
   CardContent,
@@ -61,6 +62,7 @@ interface Category {
   name: string;
   description: string | null;
   image_url: string | null;
+  show_on_homepage: boolean;
 }
 
 interface Product {
@@ -120,6 +122,7 @@ const AdminPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryName, setCategoryName] = useState('');
   const [categoryDescription, setCategoryDescription] = useState('');
+  const [categoryShowOnHomepage, setCategoryShowOnHomepage] = useState(true);
   const [categoryImage, setCategoryImage] = useState<File | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
@@ -258,6 +261,7 @@ const AdminPage = () => {
         const updateData: any = {
           name: categoryName,
           description: categoryDescription || null,
+          show_on_homepage: categoryShowOnHomepage,
         };
         
         if (imageUrl) {
@@ -278,6 +282,7 @@ const AdminPage = () => {
             name: categoryName,
             description: categoryDescription || null,
             image_url: imageUrl,
+            show_on_homepage: categoryShowOnHomepage,
           }]);
         
         if (error) throw error;
@@ -286,6 +291,7 @@ const AdminPage = () => {
 
       setCategoryName('');
       setCategoryDescription('');
+      setCategoryShowOnHomepage(true);
       setCategoryImage(null);
       setEditingCategory(null);
       setCategoryDialogOpen(false);
@@ -918,6 +924,16 @@ const AdminPage = () => {
                           </p>
                         )}
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="categoryShowOnHomepage"
+                          checked={categoryShowOnHomepage}
+                          onCheckedChange={(checked) => setCategoryShowOnHomepage(checked as boolean)}
+                        />
+                        <Label htmlFor="categoryShowOnHomepage" className="text-sm">
+                          Show on homepage categories section
+                        </Label>
+                      </div>
                       <div className="flex justify-end space-x-2">
                         <Button 
                           type="button" 
@@ -927,6 +943,7 @@ const AdminPage = () => {
                             setEditingCategory(null);
                             setCategoryName('');
                             setCategoryDescription('');
+                            setCategoryShowOnHomepage(true);
                             setCategoryImage(null);
                           }}
                         >
@@ -949,6 +966,7 @@ const AdminPage = () => {
                         <TableHead>Name</TableHead>
                         <TableHead>Description</TableHead>
                         <TableHead>Image</TableHead>
+                        <TableHead>Homepage</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -966,17 +984,27 @@ const AdminPage = () => {
                               />
                             ) : '-'}
                           </TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 rounded-full text-xs ${
+                              category.show_on_homepage 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {category.show_on_homepage ? 'Visible' : 'Hidden'}
+                            </span>
+                          </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => {
-                                  setEditingCategory(category);
-                                  setCategoryName(category.name);
-                                  setCategoryDescription(category.description || '');
-                                  setCategoryDialogOpen(true);
-                                }}
+                onClick={() => {
+                  setEditingCategory(category);
+                  setCategoryName(category.name);
+                  setCategoryDescription(category.description || '');
+                  setCategoryShowOnHomepage(category.show_on_homepage);
+                  setCategoryDialogOpen(true);
+                }}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>

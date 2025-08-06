@@ -54,6 +54,7 @@ const CategoriesSection: React.FC<CategoriesSectionProps> = ({
       const { data, error } = await supabase
         .from('categories')
         .select('*')
+        .eq('show_on_homepage', true)
         .order('name', { ascending: true });
 
       if (error) {
