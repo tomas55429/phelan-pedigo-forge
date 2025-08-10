@@ -20,6 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
+				aptos: ['Aptos', 'Segoe UI', 'system-ui', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
