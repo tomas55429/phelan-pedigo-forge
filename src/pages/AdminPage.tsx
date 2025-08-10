@@ -596,7 +596,82 @@ const AdminPage = () => {
     }
   };
 
+  const handleAddProductAccessory = async () => {
+    if (!newOptionalFeature.trim() || !editingProduct) return;
+
+    try {
+      let imageUrl = null;
+      
+      // Upload image for accessories if provided
+      if (accessoryImage) {
+        const fileExt = accessoryImage.name.split('.').pop();
+        const filePath = `accessory-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(filePath, accessoryImage);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(filePath);
+        
+        imageUrl = data.publicUrl;
+      }
+
+      // Since accessories are now product-level, we need a default variant or create one
+      let defaultVariant = variants.find(v => v.variant_name.toLowerCase().includes('default')) || variants[0];
+      
+      if (!defaultVariant && variants.length === 0) {
+        // Create a default variant if none exists
+        const { data: newVariantData, error: variantError } = await supabase
+          .from('product_variants')
+          .insert([{
+            product_id: editingProduct.id,
+            variant_name: 'Standard',
+            variant_description: 'Standard configuration'
+          }])
+          .select()
+          .single();
+
+        if (variantError) throw variantError;
+        defaultVariant = newVariantData;
+        setVariants([...variants, defaultVariant]);
+      }
+
+      const { error } = await supabase
+        .from('product_features')
+        .insert([{
+          product_id: editingProduct.id,
+          variant_id: defaultVariant!.id,
+          feature: newOptionalFeature,
+          is_optional: true,
+          image_url: imageUrl
+        }]);
+      
+      if (error) throw error;
+      
+      setNewOptionalFeature('');
+      setAccessoryImage(null);
+      fetchProductDetails(editingProduct.id);
+      
+      toast({ 
+        title: "Success", 
+        description: "Accessory added to product" 
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDeleteFeature = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this feature?')) return;
+
     try {
       const { error } = await supabase
         .from('product_features')
@@ -614,6 +689,7 @@ const AdminPage = () => {
       });
     }
   };
+
 
   const handleAddSpecification = async () => {
     if (!selectedProduct || !newSpecKey.trim() || !newSpecValue.trim()) return;
@@ -1115,8 +1191,69 @@ const AdminPage = () => {
                           onChange={(e) => setProductFeatured(e.target.checked)}
                           className="rounded border-border"
                         />
-                        <Label htmlFor="productFeatured">Featured Product</Label>
-                      </div>
+                         <Label htmlFor="productFeatured">Featured Product</Label>
+                       </div>
+                       
+                       {/* Accessories Section - Only show when editing */}
+                       {editingProduct && (
+                         <div className="space-y-4 border-t pt-4">
+                           <div>
+                             <Label className="text-base font-semibold">Product Accessories</Label>
+                             <p className="text-sm text-muted-foreground">
+                               Manage accessories available for this entire product
+                             </p>
+                           </div>
+                           
+                           <div className="space-y-3">
+                             <div className="flex space-x-2">
+                               <Input
+                                 value={newOptionalFeature}
+                                 onChange={(e) => setNewOptionalFeature(e.target.value)}
+                                 placeholder="Add accessory name"
+                                 className="flex-1"
+                               />
+                               <Input
+                                 type="file"
+                                 accept="image/*"
+                                 onChange={(e) => setAccessoryImage(e.target.files?.[0] || null)}
+                                 className="flex-1"
+                               />
+                               <Button 
+                                 type="button"
+                                 onClick={() => handleAddProductAccessory()}
+                                 size="sm"
+                               >
+                                 Add
+                               </Button>
+                             </div>
+                             
+                             <div className="space-y-2 max-h-40 overflow-y-auto">
+                               {features.filter(f => f.is_optional).map((accessory) => (
+                                 <div key={accessory.id} className="flex items-center justify-between p-3 bg-muted rounded">
+                                   <div className="flex items-center space-x-3 flex-1">
+                                     {accessory.image_url && (
+                                       <img 
+                                         src={accessory.image_url} 
+                                         alt={accessory.feature}
+                                         className="w-8 h-8 object-cover rounded"
+                                       />
+                                     )}
+                                     <span className="flex-1">{accessory.feature}</span>
+                                   </div>
+                                   <Button
+                                     type="button"
+                                     size="sm"
+                                     variant="destructive"
+                                     onClick={() => handleDeleteFeature(accessory.id)}
+                                   >
+                                     <Trash2 className="h-4 w-4" />
+                                   </Button>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         </div>
+                       )}
                       <div className="flex justify-end space-x-2">
                         <Button 
                           type="button" 
@@ -1185,6 +1322,9 @@ const AdminPage = () => {
                                   
                                   const categoryIds = productCategories?.map(pc => pc.category_id) || [];
                                   setProductCategoryIds(categoryIds);
+                                  
+                                  // Fetch product details including accessories
+                                  await fetchProductDetails(product.id);
                                   
                                   setProductDialogOpen(true);
                                 }}
@@ -1491,87 +1631,6 @@ const AdminPage = () => {
                       </CardContent>
                     </Card>
 
-                    {/* Accessories */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Accessories</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          Accessories are now managed per variant. Select a variant to add/edit accessories.
-                        </p>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Variant Selection for Accessories */}
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Select Variant for Accessories:</label>
-                          <Select 
-                            value={selectedVariant?.id || ''} 
-                            onValueChange={(value) => {
-                              const variant = variants.find(v => v.id === value);
-                              setSelectedVariant(variant || null);
-                            }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a variant to manage accessories" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {variants.map((variant) => (
-                                <SelectItem key={variant.id} value={variant.id}>
-                                  {formatVariantName(variant.variant_name)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {selectedVariant && (
-                          <>
-                            <div className="space-y-2">
-                              <Input
-                                value={newOptionalFeature}
-                                onChange={(e) => setNewOptionalFeature(e.target.value)}
-                                placeholder={`Add accessory to ${formatVariantName(selectedVariant.variant_name)}`}
-                              />
-                              <Input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setAccessoryImage(e.target.files?.[0] || null)}
-                                placeholder="Accessory image (optional)"
-                              />
-                              <Button onClick={() => handleAddFeature(true)} className="w-full">Add Accessory</Button>
-                            </div>
-                            <div className="space-y-2">
-                              {features.filter(f => f.is_optional && f.variant_id === selectedVariant.id).map((feature) => (
-                                <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                                  <div className="flex items-center space-x-3 flex-1">
-                                    {feature.image_url && (
-                                      <img 
-                                        src={feature.image_url} 
-                                        alt={feature.feature}
-                                        className="w-10 h-10 object-cover rounded"
-                                      />
-                                    )}
-                                    <span className="flex-1">{feature.feature}</span>
-                                  </div>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleDeleteFeature(feature.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              ))}
-                            </div>
-                          </>
-                        )}
-
-                        {!selectedVariant && (
-                          <p className="text-muted-foreground text-center py-4">
-                            Please select a variant to manage accessories
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
 
                     {/* Size Specifications */}
                     <SizeSpecificationInput
