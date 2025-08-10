@@ -1563,7 +1563,32 @@ const AdminPage = () => {
                     specifications={specifications}
                   />
 
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Size Specifications - Full Width Row */}
+                  <SizeSpecificationInput
+                    productId={selectedProduct.id}
+                    variants={variants}
+                    onSpecificationsChange={(specs) => {
+                      // Add the specifications to the database
+                      specs.forEach(async (spec) => {
+                        const { error } = await supabase
+                          .from('product_specifications')
+                          .insert([spec]);
+                        
+                        if (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to save specification",
+                            variant: "destructive",
+                          });
+                        }
+                      });
+                      // Refresh specifications
+                      fetchProductDetails(selectedProduct.id);
+                    }}
+                    existingSpecifications={specifications}
+                  />
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Features */}
                     <Card>
                       <CardHeader>
@@ -1631,31 +1656,6 @@ const AdminPage = () => {
                       </CardContent>
                     </Card>
 
-
-                    {/* Size Specifications */}
-                    <SizeSpecificationInput
-                      productId={selectedProduct.id}
-                      variants={variants}
-                      onSpecificationsChange={(specs) => {
-                        // Add the specifications to the database
-                        specs.forEach(async (spec) => {
-                          const { error } = await supabase
-                            .from('product_specifications')
-                            .insert([spec]);
-                          
-                          if (error) {
-                            toast({
-                              title: "Error",
-                              description: "Failed to save specification",
-                              variant: "destructive",
-                            });
-                          }
-                        });
-                        // Refresh specifications
-                        fetchProductDetails(selectedProduct.id);
-                      }}
-                      existingSpecifications={specifications}
-                    />
 
                     {/* Specifications */}
                     <Card>
