@@ -39,17 +39,14 @@ const Header = () => {
   }];
   return <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
-        {/* Top Bar with Logo */}
-        <div className="flex items-center justify-center py-3">
-          {/* Logo */}
+        <div className="flex items-center justify-between py-3">
+          {/* Logo on the left */}
           <div className="flex items-center">
             <Link to="/">
               <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-12' : 'h-24'}`} />
             </Link>
           </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
+
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             {navigation.map(item => item.href.startsWith('#') ? <a key={item.name} href={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
@@ -59,38 +56,41 @@ const Header = () => {
                 </Link>)}
           </nav>
 
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-8">
-            <GlobalSearch />
-          </div>
-
-          {/* Phone Number and Auth Section */}
-          <div className="hidden lg:flex items-center space-x-6">
-            <div className="flex items-center space-x-2 text-primary">
-              <Phone className="h-4 w-4" />
-              <span className="font-semibold">1-800-328-2358</span>
+          {/* Right side: Search Bar, Phone Number and Auth Section */}
+          <div className="flex items-center space-x-6">
+            {/* Search Bar */}
+            <div className="max-w-md">
+              <GlobalSearch />
             </div>
-            
-            {user ? <div className="flex items-center space-x-2">
-                {isAdmin && <Link to="/admin">
-                    <Button variant="outline" size="sm">
-                      Admin Panel
-                    </Button>
-                  </Link>}
-                <Button variant="ghost" size="sm" onClick={signOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
-              </div> : <Link to="/auth">
-                
-              </Link>}
-          </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden ml-auto">
-            <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-foreground">
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            {/* Phone Number and Auth Section */}
+            <div className="hidden lg:flex items-center space-x-6">
+              <div className="flex items-center space-x-2 text-primary">
+                <Phone className="h-4 w-4" />
+                <span className="font-semibold">1-800-328-2358</span>
+              </div>
+              
+              {user ? <div className="flex items-center space-x-2">
+                  {isAdmin && <Link to="/admin">
+                      <Button variant="outline" size="sm">
+                        Admin Panel
+                      </Button>
+                    </Link>}
+                  <Button variant="ghost" size="sm" onClick={signOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div> : <Link to="/auth">
+                  
+                </Link>}
+            </div>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden ml-auto">
+              <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-foreground">
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </Button>
+            </div>
           </div>
         </div>
 
