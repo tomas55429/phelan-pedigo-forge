@@ -279,13 +279,49 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                         </div>
                       </div>}
                     
-                    {/* Special Notes */}
-                    {product.special_notes && <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
-                        <p className="text-xs font-medium text-warning-foreground mb-1">Special Notes:</p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {product.special_notes}
-                        </p>
-                      </div>}
+                     {/* Accessories Section */}
+                     {(() => {
+                       const allAccessories = features.filter(feature => feature.is_optional);
+                       const deduplicatedAccessories = allAccessories.reduce((acc, accessory) => {
+                         if (!acc.some(a => a.feature === accessory.feature)) {
+                           acc.push(accessory);
+                         }
+                         return acc;
+                       }, [] as typeof allAccessories);
+                       
+                       return deduplicatedAccessories.length > 0 && (
+                         <div>
+                           <h5 className="text-sm font-semibold mb-2">Available Accessories:</h5>
+                           <div className="space-y-2">
+                             {deduplicatedAccessories.slice(0, 3).map(accessory => (
+                               <div key={accessory.id} className="flex items-center space-x-2">
+                                 {accessory.image_url && (
+                                   <img 
+                                     src={accessory.image_url} 
+                                     alt={accessory.feature}
+                                     className="w-6 h-6 object-cover rounded border"
+                                   />
+                                 )}
+                                 <span className="text-xs text-muted-foreground">{accessory.feature}</span>
+                               </div>
+                             ))}
+                             {deduplicatedAccessories.length > 3 && (
+                               <p className="text-xs text-muted-foreground">
+                                 +{deduplicatedAccessories.length - 3} more accessories
+                               </p>
+                             )}
+                           </div>
+                         </div>
+                       );
+                     })()}
+                     
+                     {/* Special Notes */}
+                     {product.special_notes && <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
+                         <p className="text-xs font-medium text-warning-foreground mb-1">Special Notes:</p>
+                         <p className="text-xs text-muted-foreground line-clamp-2">
+                           {product.special_notes}
+                         </p>
+                       </div>}
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -487,55 +523,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                      </div>
                    )}
                   
-                   {/* Combined Accessories from All Variants - deduplicated */}
-                   {(() => {
-                     // Get all accessories from all variants, deduplicated by feature text
-                     const allAccessories = selectedProduct.features.filter(feature => feature.is_optional);
-                     const deduplicatedAccessories = allAccessories.reduce((acc, accessory) => {
-                       if (!acc.some(a => a.feature === accessory.feature)) {
-                         acc.push(accessory);
-                       }
-                       return acc;
-                     }, [] as typeof allAccessories);
-                     
-                     return deduplicatedAccessories.length > 0 && (
-                       <div>
-                         <h2 className="text-xl font-semibold mb-4">Accessories</h2>
-                         <p className="text-sm text-muted-foreground mb-3">Combined accessories from all variants</p>
-                         <div className="space-y-3">
-                           {deduplicatedAccessories.map(accessory => 
-                             <div 
-                               key={accessory.id} 
-                               className={`p-4 border-2 rounded-lg transition-all ${
-                                 accessory.image_url 
-                                   ? 'border-muted hover:border-primary/50 cursor-pointer hover:bg-muted/30' 
-                                   : 'border-muted'
-                               }`}
-                               onClick={() => accessory.image_url && setEnlargedImage(accessory.image_url)}
-                             >
-                               <div className="flex items-center space-x-3">
-                                 {accessory.image_url && (
-                                   <img 
-                                     src={accessory.image_url} 
-                                     alt={accessory.feature}
-                                     className="w-12 h-12 object-cover rounded border"
-                                   />
-                                 )}
-                                 <div className="flex-1">
-                                   <div className="font-medium">{accessory.feature}</div>
-                                   {accessory.image_url && (
-                                     <div className="text-xs text-muted-foreground mt-1">
-                                       Click to view image
-                                     </div>
-                                   )}
-                                 </div>
-                               </div>
-                             </div>
-                           )}
-                         </div>
-                       </div>
-                     );
-                   })()}
                   
                   {/* Special Notes */}
                   {selectedProduct.product.special_notes && <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
