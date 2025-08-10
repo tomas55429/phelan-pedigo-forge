@@ -109,6 +109,11 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   specifications,
   onSpecificationOrderChange
 }) => {
+  // Return null BEFORE any hooks are called
+  if (specifications.length === 0) {
+    return null;
+  }
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -122,11 +127,6 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     const cleanName = name.split('-')[0].trim();
     return cleanName;
   };
-
-  // Return null only if there are no specifications at all
-  if (specifications.length === 0) {
-    return null;
-  }
 
   // Group specifications by key and variant
   const specsByKey = specifications.reduce((acc, spec) => {
