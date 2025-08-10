@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,9 +18,9 @@ interface ProductVariant {
 
 interface SizeSpecification {
   variantId: string;
-  width: string;
-  length: string;
-  depth: string;
+  width: string[];
+  length: string[];
+  depth: string[];
 }
 
 interface SizeSpecificationInputProps {
@@ -27,6 +28,12 @@ interface SizeSpecificationInputProps {
   variants: ProductVariant[];
   onSpecificationsChange: (specifications: any[]) => void;
   existingSpecifications?: any[];
+}
+
+interface DimensionConfig {
+  key: string;
+  label: string;
+  enabled: boolean;
 }
 
 export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
@@ -37,41 +44,75 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
 }) => {
   const [isVertical, setIsVertical] = useState(false);
   const [sizeSpecs, setSizeSpecs] = useState<SizeSpecification[]>([]);
+  const [tableDescription, setTableDescription] = useState("Standard Sizes (inside dimensions)");
+  const [dimensions, setDimensions] = useState<DimensionConfig[]>([
+    { key: 'width', label: 'Width', enabled: true },
+    { key: 'length', label: 'Length', enabled: true },
+    { key: 'depth', label: 'Depth', enabled: true }
+  ]);
   const { toast } = useToast();
 
   // Initialize with existing specifications or create empty entries for each variant
   useEffect(() => {
     if (variants.length > 0) {
       const initialSpecs = variants.map(variant => {
-        // Find existing specs for this variant
-        const existingWidth = existingSpecifications.find(spec => 
-          spec.variant_id === variant.id && spec.specification_key === 'Width'
-        )?.specification_value || '';
+        // Find existing specs for this variant and group by dimension
+        const existingWidth = existingSpecifications
+          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Width')
+          .map(spec => spec.specification_value)
+          .filter(val => val);
         
-        const existingLength = existingSpecifications.find(spec => 
-          spec.variant_id === variant.id && spec.specification_key === 'Length'
-        )?.specification_value || '';
+        const existingLength = existingSpecifications
+          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Length')
+          .map(spec => spec.specification_value)
+          .filter(val => val);
         
-        const existingDepth = existingSpecifications.find(spec => 
-          spec.variant_id === variant.id && spec.specification_key === 'Depth'
-        )?.specification_value || '';
+        const existingDepth = existingSpecifications
+          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Depth')
+          .map(spec => spec.specification_value)
+          .filter(val => val);
 
         return {
           variantId: variant.id,
-          width: existingWidth,
-          length: existingLength,
-          depth: existingDepth
+          width: existingWidth.length > 0 ? existingWidth : [''],
+          length: existingLength.length > 0 ? existingLength : [''],
+          depth: existingDepth.length > 0 ? existingDepth : ['']
         };
       });
       setSizeSpecs(initialSpecs);
     }
   }, [variants, existingSpecifications]);
 
-  const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth', value: string) => {
+  const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth', index: number, value: string) => {
     setSizeSpecs(prev => prev.map(spec => 
       spec.variantId === variantId 
-        ? { ...spec, [dimension]: value }
+        ? { 
+            ...spec, 
+            [dimension]: spec[dimension].map((val, i) => i === index ? value : val)
+          }
         : spec
+    ));
+  };
+
+  const addSizeOption = (variantId: string, dimension: 'width' | 'length' | 'depth') => {
+    setSizeSpecs(prev => prev.map(spec => 
+      spec.variantId === variantId 
+        ? { ...spec, [dimension]: [...spec[dimension], ''] }
+        : spec
+    ));
+  };
+
+  const removeSizeOption = (variantId: string, dimension: 'width' | 'length' | 'depth', index: number) => {
+    setSizeSpecs(prev => prev.map(spec => 
+      spec.variantId === variantId && spec[dimension].length > 1
+        ? { ...spec, [dimension]: spec[dimension].filter((_, i) => i !== index) }
+        : spec
+    ));
+  };
+
+  const toggleDimension = (dimensionKey: string) => {
+    setDimensions(prev => prev.map(dim => 
+      dim.key === dimensionKey ? { ...dim, enabled: !dim.enabled } : dim
     ));
   };
 
@@ -83,33 +124,22 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     const specifications: any[] = [];
     
     sizeSpecs.forEach(spec => {
-      if (spec.width) {
-        specifications.push({
-          product_id: productId,
-          variant_id: spec.variantId,
-          specification_key: 'Width',
-          specification_value: spec.width,
-          sort_order: 1
-        });
-      }
-      if (spec.length) {
-        specifications.push({
-          product_id: productId,
-          variant_id: spec.variantId,
-          specification_key: 'Length',
-          specification_value: spec.length,
-          sort_order: 2
-        });
-      }
-      if (spec.depth) {
-        specifications.push({
-          product_id: productId,
-          variant_id: spec.variantId,
-          specification_key: 'Depth',
-          specification_value: spec.depth,
-          sort_order: 3
-        });
-      }
+      dimensions.forEach((dim, dimIndex) => {
+        if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
+          const values = spec[dim.key as keyof SizeSpecification] as string[];
+          values.forEach((value, valueIndex) => {
+            if (value.trim()) {
+              specifications.push({
+                product_id: productId,
+                variant_id: spec.variantId,
+                specification_key: dim.label,
+                specification_value: value,
+                sort_order: (dimIndex + 1) * 100 + valueIndex
+              });
+            }
+          });
+        }
+      });
     });
 
     onSpecificationsChange(specifications);
@@ -122,9 +152,9 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   const clearAll = () => {
     setSizeSpecs(prev => prev.map(spec => ({
       ...spec,
-      width: '',
-      length: '',
-      depth: ''
+      width: [''],
+      length: [''],
+      depth: ['']
     })));
   };
 
@@ -163,6 +193,36 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
             </Button>
           </div>
         </div>
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="table-description">Table Description</Label>
+            <Input
+              id="table-description"
+              value={tableDescription}
+              onChange={(e) => setTableDescription(e.target.value)}
+              placeholder="e.g., Standard Sizes (inside dimensions)"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label>Active Dimensions</Label>
+            <div className="flex space-x-4">
+              {dimensions.map((dim) => (
+                <div key={dim.key} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`dim-${dim.key}`}
+                    checked={dim.enabled}
+                    onCheckedChange={() => toggleDimension(dim.key)}
+                  />
+                  <Label htmlFor={`dim-${dim.key}`} className="text-sm">
+                    {dim.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
         <div className="flex space-x-2">
           <Button onClick={generateSpecifications} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
@@ -193,34 +253,40 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                         </p>
                       )}
                     </CardHeader>
-                    <CardContent className="grid grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor={`width-${variant.id}`}>Width</Label>
-                        <Input
-                          id={`width-${variant.id}`}
-                          value={spec?.width || ''}
-                          onChange={(e) => handleSpecChange(variant.id, 'width', e.target.value)}
-                          placeholder="e.g., 12″, 15¼″"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`length-${variant.id}`}>Length</Label>
-                        <Input
-                          id={`length-${variant.id}`}
-                          value={spec?.length || ''}
-                          onChange={(e) => handleSpecChange(variant.id, 'length', e.target.value)}
-                          placeholder="e.g., 18″, 20½″"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor={`depth-${variant.id}`}>Depth</Label>
-                        <Input
-                          id={`depth-${variant.id}`}
-                          value={spec?.depth || ''}
-                          onChange={(e) => handleSpecChange(variant.id, 'depth', e.target.value)}
-                          placeholder="e.g., 6″, 8¾″"
-                        />
-                      </div>
+                    <CardContent className={`grid gap-4 ${dimensions.filter(d => d.enabled).length === 3 ? 'grid-cols-3' : dimensions.filter(d => d.enabled).length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                      {dimensions.filter(dim => dim.enabled).map((dim) => (
+                        <div key={dim.key} className="space-y-2">
+                          <Label htmlFor={`${dim.key}-${variant.id}`}>{dim.label}</Label>
+                          {(spec?.[dim.key as keyof SizeSpecification] as string[])?.map((value: string, index: number) => (
+                            <div key={index} className="flex items-center space-x-2">
+                              <Input
+                                value={value}
+                                onChange={(e) => handleSpecChange(variant.id, dim.key as 'width' | 'length' | 'depth', index, e.target.value)}
+                                placeholder={`e.g., 12″, 15¼″`}
+                              />
+                              {(spec?.[dim.key as keyof SizeSpecification] as string[])?.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => removeSizeOption(variant.id, dim.key as 'width' | 'length' | 'depth', index)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addSizeOption(variant.id, dim.key as 'width' | 'length' | 'depth')}
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add {dim.label}
+                          </Button>
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 );
@@ -256,25 +322,52 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {['Width', 'Length', 'Depth'].map((dimension, index) => (
-                    <TableRow key={dimension} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                  {dimensions.filter(dim => dim.enabled).map((dimension, index) => (
+                    <TableRow key={dimension.key} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                       <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
-                        {dimension}
+                        {dimension.label}
                       </TableCell>
                       {variants.map((variant) => {
                         const spec = sizeSpecs.find(s => s.variantId === variant.id);
-                        const dimensionKey = dimension.toLowerCase() as 'width' | 'length' | 'depth';
+                        const dimensionKey = dimension.key as 'width' | 'length' | 'depth';
                         return (
                           <TableCell 
                             key={variant.id} 
                             className="border border-border text-center px-3 py-3"
                           >
-                            <Input
-                              value={spec?.[dimensionKey] || ''}
-                              onChange={(e) => handleSpecChange(variant.id, dimensionKey, e.target.value)}
-                              placeholder={`Enter ${dimension.toLowerCase()}`}
-                              className="text-center"
-                            />
+                            <div className="space-y-2">
+                              {spec?.[dimensionKey]?.map((value: string, valueIndex: number) => (
+                                <div key={valueIndex} className="flex items-center space-x-1">
+                                  <Input
+                                    value={value}
+                                    onChange={(e) => handleSpecChange(variant.id, dimensionKey, valueIndex, e.target.value)}
+                                    placeholder={`Enter ${dimension.label.toLowerCase()}`}
+                                    className="text-center text-xs"
+                                  />
+                                  {spec?.[dimensionKey]?.length > 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => removeSizeOption(variant.id, dimensionKey, valueIndex)}
+                                      className="p-1 h-6 w-6"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              ))}
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addSizeOption(variant.id, dimensionKey)}
+                                className="w-full py-1 h-6 text-xs"
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add
+                              </Button>
+                            </div>
                           </TableCell>
                         );
                       })}

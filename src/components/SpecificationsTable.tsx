@@ -98,7 +98,7 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
     return a.localeCompare(b);
   });
 
-  // Separate dimension specs from others
+  // Separate dimension specs from others and ensure proper order
   const dimensionSpecs = ['Width', 'Length', 'Depth'];
   const otherSpecs = specificationKeys.filter(key => !dimensionSpecs.includes(key));
   const orderedSpecs = [...dimensionSpecs.filter(key => specificationKeys.includes(key)), ...otherSpecs];
@@ -158,7 +158,11 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                       return (
                         <TableCell 
                           key={variant.id} 
-                          className="border border-border text-center px-3 py-3 text-sm"
+                          className={`border text-center px-3 py-3 text-sm ${
+                            dimensionSpecs.includes(specKey) 
+                              ? 'border-r-2 border-r-primary/30 border-l border-t border-b border-border' 
+                              : 'border-border'
+                          }`}
                         >
                           {dimensionSpecs.includes(specKey) ? formatSizeValue(value) : value}
                         </TableCell>
