@@ -56,6 +56,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProductVariantsTable from '@/components/ProductVariantsTable';
+import SizeSpecificationInput from '@/components/SizeSpecificationInput';
 
 interface Category {
   id: string;
@@ -1572,10 +1573,38 @@ const AdminPage = () => {
                       </CardContent>
                     </Card>
 
+                    {/* Size Specifications */}
+                    <SizeSpecificationInput
+                      productId={selectedProduct.id}
+                      variants={variants}
+                      onSpecificationsChange={(specs) => {
+                        // Add the specifications to the database
+                        specs.forEach(async (spec) => {
+                          const { error } = await supabase
+                            .from('product_specifications')
+                            .insert([spec]);
+                          
+                          if (error) {
+                            toast({
+                              title: "Error",
+                              description: "Failed to save specification",
+                              variant: "destructive",
+                            });
+                          }
+                        });
+                        // Refresh specifications
+                        fetchProductDetails(selectedProduct.id);
+                      }}
+                      existingSpecifications={specifications}
+                    />
+
                     {/* Specifications */}
                     <Card>
                       <CardHeader>
-                        <CardTitle>Specifications</CardTitle>
+                        <CardTitle>Other Specifications</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          For non-dimension specifications (e.g., Weight, Material, etc.)
+                        </p>
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
@@ -1605,17 +1634,17 @@ const AdminPage = () => {
                           <Input
                             value={newSpecKey}
                             onChange={(e) => setNewSpecKey(e.target.value)}
-                            placeholder="Specification key (e.g., Height)"
+                            placeholder="Specification key (e.g., Weight, Material)"
                           />
                           <Input
                             value={newSpecValue}
                             onChange={(e) => setNewSpecValue(e.target.value)}
-                            placeholder="Specification value (e.g., 36 inches)"
+                            placeholder="Specification value (e.g., 15 lbs, Stainless Steel)"
                           />
                           <Button onClick={handleAddSpecification}>Add Specification</Button>
                         </div>
                         <div className="space-y-2">
-                          {specifications.map((spec, index) => (
+                          {specifications.filter(spec => !['Width', 'Length', 'Depth'].includes(spec.specification_key)).map((spec, index) => (
                             <div
                               key={spec.id}
                               draggable
