@@ -161,6 +161,13 @@ const AdminPage = () => {
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
   const [variantDialogOpen, setVariantDialogOpen] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  
+  // State for product dimensions configuration
+  const [productDimensions, setProductDimensions] = useState<{key: string, label: string, enabled: boolean}[]>([
+    { key: 'width', label: 'Width', enabled: true },
+    { key: 'length', label: 'Length', enabled: true },
+    { key: 'depth', label: 'Depth', enabled: true }
+  ]);
 
   const [loading, setLoading] = useState(false);
 
@@ -1586,6 +1593,14 @@ const AdminPage = () => {
                       fetchProductDetails(selectedProduct.id);
                     }}
                     existingSpecifications={specifications}
+                    customDimensions={productDimensions}
+                    onDimensionsChange={(newDimensions) => {
+                      setProductDimensions(newDimensions);
+                      toast({
+                        title: "Success",
+                        description: "Dimension configuration updated"
+                      });
+                    }}
                   />
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

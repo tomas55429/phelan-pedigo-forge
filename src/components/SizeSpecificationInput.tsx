@@ -28,6 +28,8 @@ interface SizeSpecificationInputProps {
   variants: ProductVariant[];
   onSpecificationsChange: (specifications: any[]) => void;
   existingSpecifications?: any[];
+  customDimensions?: DimensionConfig[];
+  onDimensionsChange?: (dimensions: DimensionConfig[]) => void;
 }
 
 interface DimensionConfig {
@@ -40,17 +42,28 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   productId,
   variants,
   onSpecificationsChange,
-  existingSpecifications = []
+  existingSpecifications = [],
+  customDimensions,
+  onDimensionsChange
 }) => {
   const [isVertical, setIsVertical] = useState(false);
   const [sizeSpecs, setSizeSpecs] = useState<SizeSpecification[]>([]);
   const [tableDescription, setTableDescription] = useState("Standard Sizes (inside dimensions)");
-  const [dimensions, setDimensions] = useState<DimensionConfig[]>([
-    { key: 'width', label: 'Width', enabled: true },
-    { key: 'length', label: 'Length', enabled: true },
-    { key: 'depth', label: 'Depth', enabled: true }
-  ]);
+  const [dimensions, setDimensions] = useState<DimensionConfig[]>(
+    customDimensions || [
+      { key: 'width', label: 'Width', enabled: true },
+      { key: 'length', label: 'Length', enabled: true },
+      { key: 'depth', label: 'Depth', enabled: true }
+    ]
+  );
   const { toast } = useToast();
+
+  // Update dimensions when customDimensions prop changes
+  useEffect(() => {
+    if (customDimensions) {
+      setDimensions(customDimensions);
+    }
+  }, [customDimensions]);
 
   // Initialize with existing specifications or create empty entries for each variant
   useEffect(() => {
@@ -111,9 +124,23 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   };
 
   const toggleDimension = (dimensionKey: string) => {
-    setDimensions(prev => prev.map(dim => 
+    const newDimensions = dimensions.map(dim => 
       dim.key === dimensionKey ? { ...dim, enabled: !dim.enabled } : dim
-    ));
+    );
+    setDimensions(newDimensions);
+    if (onDimensionsChange) {
+      onDimensionsChange(newDimensions);
+    }
+  };
+
+  const updateDimensionLabel = (dimensionKey: string, newLabel: string) => {
+    const newDimensions = dimensions.map(dim => 
+      dim.key === dimensionKey ? { ...dim, label: newLabel } : dim
+    );
+    setDimensions(newDimensions);
+    if (onDimensionsChange) {
+      onDimensionsChange(newDimensions);
+    }
   };
 
   const formatVariantName = (variantName: string) => {
@@ -206,20 +233,32 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           </div>
           
           <div className="space-y-2">
-            <Label>Active Dimensions</Label>
-            <div className="flex space-x-4">
+            <Label>Dimension Configuration</Label>
+            <div className="space-y-3">
               {dimensions.map((dim) => (
-                <div key={dim.key} className="flex items-center space-x-2">
+                <div key={dim.key} className="flex items-center space-x-3 p-3 border rounded-lg bg-muted/20">
                   <Checkbox
                     id={`dim-${dim.key}`}
                     checked={dim.enabled}
                     onCheckedChange={() => toggleDimension(dim.key)}
                   />
-                  <Label htmlFor={`dim-${dim.key}`} className="text-sm">
-                    {dim.label}
+                  <Label htmlFor={`dim-${dim.key}`} className="text-sm font-medium min-w-[60px]">
+                    {dim.key === 'width' ? 'Dim 1:' : dim.key === 'length' ? 'Dim 2:' : 'Dim 3:'}
                   </Label>
+                  <Input
+                    value={dim.label}
+                    onChange={(e) => updateDimensionLabel(dim.key, e.target.value)}
+                    placeholder="e.g., Width, Height, Length"
+                    className="flex-1 max-w-[200px]"
+                  />
+                  <Badge variant={dim.enabled ? "default" : "secondary"}>
+                    {dim.enabled ? "Active" : "Disabled"}
+                  </Badge>
                 </div>
               ))}
+              <p className="text-xs text-muted-foreground">
+                Customize dimension names (e.g., change "Depth" to "Height" for vertical products)
+              </p>
             </div>
           </div>
         </div>
