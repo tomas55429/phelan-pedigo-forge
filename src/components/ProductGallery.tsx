@@ -134,6 +134,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 sort_order: img.sort_order
               }));
             
+            console.log('Custom product mapping:', {
+              productId: product.id,
+              customProductId,
+              availableImages: customProductImages.length,
+              filteredImages: additionalImages.length,
+              additionalImages
+            });
+            
             return {
               product,
               categories: customCategoryArray,
