@@ -64,6 +64,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     return cleanName;
   };
 
+  // TEST: Direct debugging - check if custom product images are being fetched
+  useEffect(() => {
+    const testFetch = async () => {
+      console.log('🧪 TEST: Fetching custom product images directly...');
+      const result = await supabase.from('custom_product_images').select('*');
+      console.log('🧪 TEST: Custom product images result:', result);
+    };
+    testFetch();
+  }, []);
+
   // Fetch products and related data from Supabase
   useEffect(() => {
     console.log('ProductGallery: Starting data fetch...');
