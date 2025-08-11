@@ -2058,46 +2058,85 @@ const AdminPage = () => {
                         />
                       </div>
                       <div>
-                        <Label>Additional Images</Label>
-                        <div className="space-y-2">
+                        <Label>Additional Images with Descriptions</Label>
+                        <p className="text-sm text-muted-foreground mb-3">
+                          Add multiple images with descriptions to showcase different views and details of your custom product.
+                        </p>
+                        <div className="space-y-4">
                           {customProductAdditionalImages.map((item, index) => (
-                            <div key={index} className="flex items-center gap-2 p-2 border rounded">
-                              <span className="text-sm flex-1">{item.file.name}</span>
-                              <Input
-                                placeholder="Image description"
-                                value={item.description}
-                                onChange={(e) => {
-                                  const updated = [...customProductAdditionalImages];
-                                  updated[index].description = e.target.value;
-                                  setCustomProductAdditionalImages(updated);
-                                }}
-                                className="flex-1"
-                              />
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => {
-                                  setCustomProductAdditionalImages(prev =>
-                                    prev.filter((_, i) => i !== index)
-                                  );
-                                }}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            <Card key={index} className="p-4 border-2 border-dashed border-muted">
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                    <span className="text-sm font-medium">Image {index + 1}</span>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="destructive"
+                                    onClick={() => {
+                                      setCustomProductAdditionalImages(prev =>
+                                        prev.filter((_, i) => i !== index)
+                                      );
+                                    }}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <div className="text-sm text-muted-foreground bg-muted p-2 rounded">
+                                  {item.file.name} ({(item.file.size / 1024 / 1024).toFixed(2)} MB)
+                                </div>
+                                <div>
+                                  <Label htmlFor={`description-${index}`} className="text-sm font-medium">
+                                    Description *
+                                  </Label>
+                                  <Textarea
+                                    id={`description-${index}`}
+                                    placeholder="Describe what this image shows (e.g., 'Side view showing adjustment mechanism', 'Close-up of locking wheels', 'Interior storage compartment')"
+                                    value={item.description}
+                                    onChange={(e) => {
+                                      const updated = [...customProductAdditionalImages];
+                                      updated[index].description = e.target.value;
+                                      setCustomProductAdditionalImages(updated);
+                                    }}
+                                    className="mt-1"
+                                    rows={2}
+                                  />
+                                  {!item.description && (
+                                    <p className="text-xs text-destructive mt-1">
+                                      Please add a description for this image
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
                           ))}
-                          <div>
+                          
+                          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                            <ImageIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                            <Label htmlFor="additional-images" className="cursor-pointer">
+                              <span className="text-sm font-medium text-primary hover:text-primary-dark">
+                                Click to add more images
+                              </span>
+                            </Label>
                             <Input
+                              id="additional-images"
                               type="file"
                               accept="image/*"
                               multiple
+                              className="hidden"
                               onChange={(e) => {
                                 const files = Array.from(e.target.files || []);
-                                const newImages = files.map(file => ({ file, description: '' }));
+                                const newImages = files.map(file => ({ file, description: "" }));
                                 setCustomProductAdditionalImages(prev => [...prev, ...newImages]);
+                                // Reset the input
+                                e.target.value = "";
                               }}
                             />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              JPG, PNG, WEBP up to 10MB each
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -2105,8 +2144,11 @@ const AdminPage = () => {
                         <Button type="button" variant="outline" onClick={resetCustomProductForm}>
                           Cancel
                         </Button>
-                        <Button type="submit" disabled={loading}>
-                          {loading ? 'Saving...' : editingCustomProduct ? 'Update' : 'Create'}
+                        <Button 
+                          type="submit" 
+                          disabled={loading || customProductAdditionalImages.some(img => !img.description.trim())}
+                        >
+                          {loading ? "Saving..." : editingCustomProduct ? "Update" : "Create"}
                         </Button>
                       </div>
                     </form>
