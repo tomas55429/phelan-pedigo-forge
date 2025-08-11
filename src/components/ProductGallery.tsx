@@ -128,6 +128,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
         // Group data by product
         const productsWithDetailsData: ProductWithDetails[] = allProducts.map(product => {
+          console.log('Processing product:', product.id, 'name:', product.name, 'startsWithCustom:', product.id.toString().startsWith('custom-'));
           // Handle custom products differently
           if (product.id.toString().startsWith('custom-')) {
             const customCategoryArray = customCategory ? [customCategory] : [];
