@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -85,20 +85,22 @@ const SortableRow: React.FC<SortableRowProps> = ({ specKey, processedSpecs, vari
       </TableCell>
       {hasVariants ? (
         variants.map((variant) => (
-          <TableCell key={variant.id} className="text-center">
-            {specKey.toLowerCase().includes('size') 
-              ? formatSizeValue(processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
-              : (processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
-            }
-          </TableCell>
+           <TableCell key={variant.id} className="text-center">
+             {processedSpecs[specKey] ? (
+               specKey.toLowerCase().includes('size') 
+                 ? formatSizeValue(processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
+                 : (processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
+             ) : '-'}
+           </TableCell>
         ))
       ) : (
-        <TableCell className="text-center">
-          {specKey.toLowerCase().includes('size')
-            ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
-            : (processedSpecs[specKey].generalValue || '-')
-          }
-        </TableCell>
+         <TableCell className="text-center">
+           {processedSpecs[specKey] ? (
+             specKey.toLowerCase().includes('size')
+               ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
+               : (processedSpecs[specKey].generalValue || '-')
+           ) : '-'}
+         </TableCell>
       )}
     </TableRow>
   );
@@ -192,8 +194,11 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   };
 
   // Get all unique specification keys with custom ordering
-  const [specificationKeys, setSpecificationKeys] = useState<string[]>(() => {
-    return Object.keys(processedSpecs).sort((a, b) => {
+  const [specificationKeys, setSpecificationKeys] = useState<string[]>([]);
+
+  // Update specificationKeys whenever processedSpecs changes
+  useEffect(() => {
+    const keys = Object.keys(processedSpecs).sort((a, b) => {
       const orderA = getSpecOrder(a);
       const orderB = getSpecOrder(b);
       if (orderA !== orderB) {
@@ -201,7 +206,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       }
       return a.localeCompare(b);
     });
-  });
+    setSpecificationKeys(keys);
+  }, [processedSpecs]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
