@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import Product3DViewer from './Product3DViewer';
+import ProductVariantsTable from './ProductVariantsTable';
 interface ProductVariant {
   id: string;
   variant_name: string;
@@ -91,30 +92,25 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                 </ul>}
             </div>
             
-            {/* Sizes */}
+            {/* Size Chart */}
             <div>
-              <h2 className="text-xl font-semibold mb-4">Sizes</h2>
-              <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
-                {sizeSpecs.length > 0 ? <div className="w-full">
-                    <div className="text-center mb-4 text-lg font-medium">
-                      Size Chart for {formatVariantName(variant.variant_name)}
+              <h2 className="text-xl font-semibold mb-4">Size Chart</h2>
+              <div className="border-2 border-muted rounded-lg overflow-hidden">
+                {specifications.length > 0 ? (
+                  <ProductVariantsTable 
+                    variants={[variant]}
+                    specifications={specifications}
+                  />
+                ) : (
+                  <div className="p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                    <div className="text-center text-muted-foreground">
+                      <div className="text-lg mb-2">Size Chart for {formatVariantName(variant.variant_name)}</div>
+                      <p className="text-sm">No specifications available</p>
                     </div>
-                    
-                    <div className="space-y-3">
-                      {sizeSpecs.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(spec => <div key={spec.id} className="flex justify-between items-center py-2 border-b border-border last:border-b-0">
-                            <span className="font-medium">{spec.specification_key}</span>
-                            <span className="text-muted-foreground text-xs text-right">{spec.specification_value}</span>
-                          </div>)}
-                    </div>
-                  </div> : <div className="text-center text-muted-foreground">
-                    <div className="text-lg mb-2">Size Chart for {formatVariantName(variant.variant_name)}</div>
-                    <div className="text-sm mb-4">
-                      (a cropped version of the general specs table that only includes size info for this variant)
-                    </div>
-                    <p className="text-sm">No size specifications available</p>
-                  </div>}
+                  </div>
+                )}
               </div>
-              <div className="mt-4 text-sm text-muted-foreground">
+              <div className="mt-4 text-sm text-muted-foreground text-center">
                 Custom sizes available
               </div>
             </div>
