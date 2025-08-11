@@ -206,23 +206,14 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           const values = spec[dim.key as keyof SizeSpecification] as string[];
           values.forEach((value, valueIndex) => {
             if (value.trim()) {
-              // Check if this specification already exists
-              const existingSpec = existingSpecifications.find(existing => 
-                existing.variant_id === spec.variantId &&
-                existing.specification_key === dim.label &&
-                existing.specification_value === value
-              );
-              
-              // Only add if it doesn't already exist
-              if (!existingSpec) {
-                newSpecifications.push({
-                  product_id: productId,
-                  variant_id: spec.variantId,
-                  specification_key: dim.label,
-                  specification_value: value,
-                  sort_order: nextSortOrder++
-                });
-              }
+              // Accept all dimensions as entered without matching existing data
+              newSpecifications.push({
+                product_id: productId,
+                variant_id: spec.variantId,
+                specification_key: dim.label,
+                specification_value: value,
+                sort_order: nextSortOrder++
+              });
             }
           });
         }
