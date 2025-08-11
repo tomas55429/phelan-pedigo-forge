@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   DndContext, 
   closestCenter,
@@ -56,9 +57,10 @@ interface SortableRowProps {
   hasVariants: boolean;
   formatSizeValue: (value: string) => JSX.Element | string;
   maxSizeCount: number;
+  isAdmin: boolean;
 }
 
-const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue, maxSizeCount }: SortableRowProps) => {
+const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue, maxSizeCount, isAdmin }: SortableRowProps) => {
   const {
     attributes,
     listeners,
@@ -82,9 +84,11 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
     <TableRow ref={setNodeRef} style={style} {...attributes}>
       <TableCell className="border-t border-r border-b border-border font-medium bg-muted/30 min-w-[120px]">
         <div className="flex items-center space-x-2">
-          <button {...listeners} className="cursor-grab hover:cursor-grabbing">
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </button>
+          {isAdmin && (
+            <button {...listeners} className="cursor-grab hover:cursor-grabbing">
+              <GripVertical className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
           <span>{specKey}</span>
         </div>
       </TableCell>
@@ -176,6 +180,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   if (specifications.length === 0) {
     return null;
   }
+
+  const { isAdmin } = useAuth();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -376,27 +382,45 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                 )}
               </TableRow>
             </TableHeader>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext items={specificationKeys} strategy={verticalListSortingStrategy}>
-                <TableBody>
-                  {specificationKeys.map((specKey) => (
-                    <SortableRow
-                      key={specKey}
-                      specKey={specKey}
-                      processedSpecs={processedSpecs}
-                      variants={variants}
-                      hasVariants={hasVariants}
-                      formatSizeValue={formatSizeValue}
-                      maxSizeCount={maxSizeCount}
-                    />
-                  ))}
-                </TableBody>
-              </SortableContext>
-            </DndContext>
+            {isAdmin ? (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={specificationKeys} strategy={verticalListSortingStrategy}>
+                  <TableBody>
+                    {specificationKeys.map((specKey) => (
+                      <SortableRow
+                        key={specKey}
+                        specKey={specKey}
+                        processedSpecs={processedSpecs}
+                        variants={variants}
+                        hasVariants={hasVariants}
+                        formatSizeValue={formatSizeValue}
+                        maxSizeCount={maxSizeCount}
+                        isAdmin={isAdmin}
+                      />
+                    ))}
+                  </TableBody>
+                </SortableContext>
+              </DndContext>
+            ) : (
+              <TableBody>
+                {specificationKeys.map((specKey) => (
+                  <SortableRow
+                    key={specKey}
+                    specKey={specKey}
+                    processedSpecs={processedSpecs}
+                    variants={variants}
+                    hasVariants={hasVariants}
+                    formatSizeValue={formatSizeValue}
+                    maxSizeCount={maxSizeCount}
+                    isAdmin={isAdmin}
+                  />
+                ))}
+              </TableBody>
+            )}
           </Table>
         </div>
         <div className="mt-4 text-sm text-muted-foreground text-center">
