@@ -1,5 +1,7 @@
 import React from 'react';
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trash2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface ProductVariant {
@@ -22,12 +24,16 @@ interface SpecificationsTableProps {
   variants: ProductVariant[];
   specifications: ProductSpecification[];
   title?: string;
+  onDelete?: (specificationId: string) => Promise<void>;
+  isAdminView?: boolean;
 }
 
 export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
   variants,
   specifications,
-  title = "Specifications: Standard Sizes (inside dimensions)"
+  title = "Specifications: Standard Sizes (inside dimensions)",
+  onDelete,
+  isAdminView = false
 }) => {
   // Helper function to format variant name - removes hyphens and everything after them
   const formatVariantName = (variantName: string) => {
@@ -71,22 +77,27 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
     return null;
   }
 
-  // Group specifications by key and variant
+  
+  // Group specifications by key and variant, keeping track of IDs for deletion
   const specsByKey = specifications.reduce((acc, spec) => {
     if (!acc[spec.specification_key]) {
       acc[spec.specification_key] = {
         values: {},
+        ids: {},
         sort_order: spec.sort_order || 0,
-        generalValue: null
+        generalValue: null,
+        generalId: null
       };
     }
     if (spec.variant_id) {
       acc[spec.specification_key].values[spec.variant_id] = spec.specification_value;
+      acc[spec.specification_key].ids[spec.variant_id] = spec.id;
     } else {
       acc[spec.specification_key].generalValue = spec.specification_value;
+      acc[spec.specification_key].generalId = spec.id;
     }
     return acc;
-  }, {} as Record<string, { values: Record<string, string>, sort_order: number, generalValue: string | null }>);
+  }, {} as Record<string, { values: Record<string, string>, ids: Record<string, string>, sort_order: number, generalValue: string | null, generalId: string | null }>);
 
   // Get specification keys in order
   const specificationKeys = Object.keys(specsByKey).sort((a, b) => {
@@ -151,23 +162,36 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                     {specKey}
                   </TableCell>
                   {variants.length > 0 ? (
-                    variants.map((variant) => {
-                      const value = specsByKey[specKey].values[variant.id] || 
-                                   specsByKey[specKey].generalValue || 
-                                   '-';
-                      return (
-                        <TableCell 
-                          key={variant.id} 
-                          className={`border text-center px-3 py-3 text-sm ${
-                            dimensionSpecs.includes(specKey) 
-                              ? 'border-r-2 border-r-primary/30 border-l border-t border-b border-border' 
-                              : 'border-border'
-                          }`}
-                        >
-                          {dimensionSpecs.includes(specKey) ? formatSizeValue(value) : value}
-                        </TableCell>
-                      );
-                    })
+                     variants.map((variant) => {
+                       const value = specsByKey[specKey].values[variant.id] || 
+                                    specsByKey[specKey].generalValue || 
+                                    '-';
+                       const specId = specsByKey[specKey].ids[variant.id] || specsByKey[specKey].generalId;
+                       return (
+                         <TableCell 
+                           key={variant.id} 
+                           className={`border text-center px-3 py-3 text-sm ${
+                             dimensionSpecs.includes(specKey) 
+                               ? 'border-r-2 border-r-primary/30 border-l border-t border-b border-border' 
+                               : 'border-border'
+                           }`}
+                         >
+                           <div className="flex items-center justify-center space-x-2">
+                             <span>{dimensionSpecs.includes(specKey) ? formatSizeValue(value) : value}</span>
+                             {isAdminView && onDelete && value !== '-' && specId && (
+                               <Button
+                                 variant="ghost"
+                                 size="sm"
+                                 onClick={() => onDelete(specId)}
+                                 className="h-6 w-6 p-0 hover:bg-destructive/10"
+                               >
+                                 <Trash2 className="h-3 w-3 text-destructive" />
+                               </Button>
+                             )}
+                           </div>
+                         </TableCell>
+                       );
+                     })
                   ) : (
                     <TableCell className="border border-border text-center px-4 py-3 text-sm">
                       {dimensionSpecs.includes(specKey) 
