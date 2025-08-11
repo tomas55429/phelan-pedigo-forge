@@ -47,63 +47,75 @@ interface ProductVariantsTableProps {
 
 interface SortableRowProps {
   specKey: string;
-  processedSpecs: Record<string, { values: Record<string, string[]>, sort_order: number, generalValue: string | null }>;
+  processedSpecs: Record<string, { 
+    values: Record<string, {value: string, sort_order: number}[]>, 
+    sort_order: number, 
+    generalValue: string | null 
+  }>;
   variants: ProductVariant[];
   hasVariants: boolean;
   formatSizeValue: (value: string) => JSX.Element | string;
+  maxSizeCount: number;
 }
 
-const SortableRow: React.FC<SortableRowProps> = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue }) => {
+const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue, maxSizeCount }: SortableRowProps) => {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
     transition,
-    isDragging,
   } = useSortable({ id: specKey });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const isSizeSpecification = (key: string) => {
+    const lowerKey = key.toLowerCase();
+    return lowerKey.includes('width') || lowerKey.includes('length') || 
+           lowerKey.includes('depth') || lowerKey.includes('height');
   };
 
   return (
-    <TableRow ref={setNodeRef} style={style} className={isDragging ? 'z-50' : ''}>
-      <TableCell className="font-medium">
+    <TableRow ref={setNodeRef} style={style} {...attributes}>
+      <TableCell className="border border-border font-medium bg-muted/30 min-w-[120px]">
         <div className="flex items-center space-x-2">
-          <div 
-            {...attributes} 
-            {...listeners}
-            className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground"
-          >
-            <GripVertical className="h-4 w-4" />
-          </div>
+          <button {...listeners} className="cursor-grab hover:cursor-grabbing">
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </button>
           <span>{specKey}</span>
         </div>
       </TableCell>
       {hasVariants ? (
-        variants.map((variant) => (
-          <TableCell key={variant.id} className="text-center border border-border">
-            {processedSpecs[specKey]?.values?.[variant.id] ? (
-              <div className="space-y-1">
-                {processedSpecs[specKey].values[variant.id].map((value: string, index: number) => (
-                  <div key={index} className="text-sm">
-                    {specKey.toLowerCase().includes('width') || specKey.toLowerCase().includes('length') || specKey.toLowerCase().includes('depth') || specKey.toLowerCase().includes('height')
-                      ? formatSizeValue(value || '-')
-                      : (value || '-')
-                    }
-                  </div>
-                ))}
-              </div>
-            ) : '-'}
-          </TableCell>
-        ))
+        variants.flatMap((variant) => {
+          const values = processedSpecs[specKey]?.values?.[variant.id] || [];
+          return Array.from({ length: maxSizeCount }).map((_, sizeIndex) => {
+            const valueData = values[sizeIndex];
+            const isFirstOfVariant = sizeIndex === 0;
+            const hasValue = valueData && valueData.value.trim();
+            
+            return (
+              <TableCell 
+                key={`${variant.id}-${sizeIndex}`} 
+                className={`text-center border border-border text-sm ${
+                  isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
+                } ${!hasValue ? 'bg-muted/20' : ''}`}
+              >
+                {hasValue ? (
+                  isSizeSpecification(specKey) 
+                    ? formatSizeValue(valueData.value)
+                    : valueData.value
+                ) : '-'}
+              </TableCell>
+            );
+          });
+        })
       ) : (
         <TableCell className="text-center border border-border">
           {processedSpecs[specKey]?.generalValue ? (
-            specKey.toLowerCase().includes('width') || specKey.toLowerCase().includes('length') || specKey.toLowerCase().includes('depth') || specKey.toLowerCase().includes('height')
+            isSizeSpecification(specKey) 
               ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
               : (processedSpecs[specKey].generalValue || '-')
           ) : '-'}
@@ -129,6 +141,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+  
   // Helper function to format variant name - removes hyphens and everything after them
   const formatVariantName = (variantName: string) => {
     const name = variantName || '';
@@ -137,27 +150,39 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     return cleanName;
   };
 
-  // Group specifications by key and variant, handling multiple values
+  // Group specifications by key and variant, maintaining order for size sets
   const specsByKey = specifications.reduce((acc, spec) => {
     if (!acc[spec.specification_key]) {
       acc[spec.specification_key] = {
         values: {},
         sort_order: spec.sort_order || 0,
-        generalValue: null // For specifications without variant_id
+        generalValue: null
       };
     }
     if (spec.variant_id) {
-      // Handle multiple values for the same specification key and variant
       if (!acc[spec.specification_key].values[spec.variant_id]) {
         acc[spec.specification_key].values[spec.variant_id] = [];
       }
-      acc[spec.specification_key].values[spec.variant_id].push(spec.specification_value);
+      acc[spec.specification_key].values[spec.variant_id].push({
+        value: spec.specification_value,
+        sort_order: spec.sort_order || 0
+      });
     } else {
-      // General specification (not tied to a variant)
       acc[spec.specification_key].generalValue = spec.specification_value;
     }
     return acc;
-  }, {} as Record<string, { values: Record<string, string[]>, sort_order: number, generalValue: string | null }>);
+  }, {} as Record<string, { 
+    values: Record<string, {value: string, sort_order: number}[]>, 
+    sort_order: number, 
+    generalValue: string | null 
+  }>);
+
+  // Sort values within each specification key by sort_order
+  Object.keys(specsByKey).forEach(key => {
+    Object.keys(specsByKey[key].values).forEach(variantId => {
+      specsByKey[key].values[variantId].sort((a, b) => a.sort_order - b.sort_order);
+    });
+  });
 
   // Function to format size values with proper fraction symbols and smaller font
   const formatSizeValue = (value: string) => {
@@ -188,11 +213,19 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       formattedValue = formattedValue.replace(new RegExp(fraction, 'g'), symbol);
     });
     
-    return <span className="text-sm">{formattedValue}</span>;
+    return <span className="text-sm font-medium">{formattedValue}</span>;
   };
 
   // Use original specs without modification
   const processedSpecs = { ...specsByKey };
+
+  // Calculate maximum number of sizes across all variants and specifications
+  const maxSizeCount = Math.max(
+    1,
+    ...Object.values(processedSpecs).flatMap(spec => 
+      Object.values(spec.values).map(values => values.length)
+    )
+  );
 
   // Custom ordering: Description first, then Width, Length, Depth, then others
   const getSpecOrder = (key: string) => {
@@ -225,7 +258,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       }
       return prev;
     });
-  }, [Object.keys(processedSpecs).join(',')]);  // Use string comparison for dependency
+  }, [Object.keys(processedSpecs).join(',')]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -245,26 +278,45 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
 
   // Determine if we have variants to show or just general specs
   const hasVariants = variants.length > 0;
-  const hasVariantSpecs = specifications.some(spec => spec.variant_id);
-  const hasGeneralSpecs = specifications.some(spec => !spec.variant_id);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Specifications</CardTitle>
+        <CardTitle>Specifications: Standard Sizes (inside dimensions)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="border-collapse">
             <TableHeader>
               <TableRow>
-                <TableHead className="font-semibold">Specification</TableHead>
+                <TableHead className="border border-border bg-muted/50 font-semibold min-w-[120px]">
+                  Specification
+                </TableHead>
                 {hasVariants ? (
-                  variants.map((variant) => (
-                    <TableHead key={variant.id} className="text-center font-semibold">
-                      {formatVariantName(variant.variant_name)}
-                    </TableHead>
-                  ))
+                  variants.flatMap((variant) => {
+                    return Array.from({ length: maxSizeCount }).map((_, sizeIndex) => (
+                      <TableHead 
+                        key={`${variant.id}-${sizeIndex}`} 
+                        className={`border border-border bg-muted/50 text-center font-semibold min-w-[80px] ${
+                          sizeIndex === 0 ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
+                        }`}
+                      >
+                        {sizeIndex === 0 && (
+                          <div className="space-y-1">
+                            <div className="font-bold text-sm">Product No.</div>
+                            <div className="font-bold text-base">
+                              {formatVariantName(variant.variant_name)}
+                            </div>
+                            {variant.variant_description && (
+                              <div className="text-xs text-muted-foreground font-normal">
+                                {variant.variant_description}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </TableHead>
+                    ));
+                  })
                 ) : (
                   <TableHead className="text-center font-semibold">Value</TableHead>
                 )}
@@ -285,6 +337,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                       variants={variants}
                       hasVariants={hasVariants}
                       formatSizeValue={formatSizeValue}
+                      maxSizeCount={maxSizeCount}
                     />
                   ))}
                 </TableBody>
