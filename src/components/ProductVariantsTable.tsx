@@ -314,9 +314,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                     return Array.from({ length: maxSizeCount }).map((_, sizeIndex) => (
                       <TableHead 
                         key={`${variant.id}-${sizeIndex}`} 
-                        className={`border border-border bg-muted/50 text-center font-semibold min-w-[80px] ${
-                          sizeIndex === 0 ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
-                        }`}
+                        className="border border-border bg-muted/50 text-center font-semibold min-w-[80px]"
                       >
                         {sizeIndex === 0 && (
                           <div className="space-y-1">
