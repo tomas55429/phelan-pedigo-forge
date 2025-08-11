@@ -601,14 +601,35 @@ const AdminPage = () => {
     setCustomProductDescription('');
     setCustomProductMainImage(null);
     setCustomProductAdditionalImages([]);
+    setCustomProductImages([]);
     setEditingCustomProduct(null);
     setCustomProductDialogOpen(false);
   };
 
-  const handleEditCustomProduct = (customProduct: CustomProduct) => {
+  const handleEditCustomProduct = async (customProduct: CustomProduct) => {
     setCustomProductName(customProduct.name);
     setCustomProductDescription(customProduct.description || '');
     setEditingCustomProduct(customProduct);
+    
+    // Fetch existing images for this custom product
+    try {
+      const { data: existingImages, error } = await supabase
+        .from('custom_product_images')
+        .select('*')
+        .eq('custom_product_id', customProduct.id)
+        .order('sort_order');
+      
+      if (error) throw error;
+      setCustomProductImages(existingImages || []);
+    } catch (error: any) {
+      console.error('Error fetching custom product images:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load existing images",
+        variant: "destructive"
+      });
+    }
+    
     setCustomProductDialogOpen(true);
   };
 
@@ -2176,20 +2197,87 @@ const AdminPage = () => {
                           placeholder="Product description"
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="customProductMainImage">Main Image</Label>
-                        <Input
-                          id="customProductMainImage"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => setCustomProductMainImage(e.target.files?.[0] || null)}
-                        />
-                      </div>
-                      <div>
-                        <Label>Additional Images with Descriptions</Label>
-                        <p className="text-sm text-muted-foreground mb-3">
-                          Add multiple images with descriptions to showcase different views and details of your custom product.
-                        </p>
+                       <div>
+                         <Label htmlFor="customProductMainImage">Main Image</Label>
+                         {editingCustomProduct?.main_image_url && (
+                           <div className="mb-2">
+                             <img 
+                               src={editingCustomProduct.main_image_url} 
+                               alt="Current main image"
+                               className="w-20 h-20 object-cover rounded border"
+                             />
+                             <p className="text-xs text-muted-foreground mt-1">Current main image</p>
+                           </div>
+                         )}
+                         <Input
+                           id="customProductMainImage"
+                           type="file"
+                           accept="image/*"
+                           onChange={(e) => setCustomProductMainImage(e.target.files?.[0] || null)}
+                         />
+                         <p className="text-xs text-muted-foreground mt-1">
+                           {editingCustomProduct ? 'Upload a new image to replace the current one' : 'Upload main product image'}
+                         </p>
+                       </div>
+                       <div>
+                         <Label>Additional Images with Descriptions</Label>
+                         <p className="text-sm text-muted-foreground mb-3">
+                           Add multiple images with descriptions to showcase different views and details of your custom product.
+                         </p>
+                         
+                         {/* Show existing uploaded images when editing */}
+                         {editingCustomProduct && customProductImages.length > 0 && (
+                           <div className="mb-4">
+                             <Label className="text-sm font-medium">Current Images</Label>
+                             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
+                               {customProductImages.map((image) => (
+                                 <div key={image.id} className="relative border rounded-lg p-2">
+                                   <img 
+                                     src={image.image_url} 
+                                     alt={image.description || 'Product image'}
+                                     className="w-full h-20 object-cover rounded"
+                                   />
+                                   <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                     {image.description}
+                                   </p>
+                                   <Button
+                                     type="button"
+                                     size="sm"
+                                     variant="destructive"
+                                     className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                                     onClick={async () => {
+                                       try {
+                                         const { error } = await supabase
+                                           .from('custom_product_images')
+                                           .delete()
+                                           .eq('id', image.id);
+                                         
+                                         if (error) throw error;
+                                         
+                                         setCustomProductImages(prev => 
+                                           prev.filter(img => img.id !== image.id)
+                                         );
+                                         
+                                         toast({
+                                           title: "Success",
+                                           description: "Image deleted successfully"
+                                         });
+                                       } catch (error: any) {
+                                         toast({
+                                           title: "Error",
+                                           description: "Failed to delete image",
+                                           variant: "destructive"
+                                         });
+                                       }
+                                     }}
+                                   >
+                                     <X className="h-3 w-3" />
+                                   </Button>
+                                 </div>
+                               ))}
+                             </div>
+                           </div>
+                         )}
                         <div className="space-y-4">
                           {customProductAdditionalImages.map((item, index) => (
                             <Card key={index} className="p-4 border-2 border-dashed border-muted">

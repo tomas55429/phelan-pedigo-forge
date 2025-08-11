@@ -70,14 +70,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       try {
         setLoading(true);
 
-        // Fetch all data in parallel
-        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes] = await Promise.all([
+        // Fetch all data in parallel including custom products
+        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes] = await Promise.all([
           supabase.from('products').select('*').order('name'), 
           supabase.from('categories').select('*').order('name'), 
           supabase.from('product_variants').select('*'), 
           supabase.from('product_features').select('*'), 
           supabase.from('product_specifications').select('*'),
-          supabase.from('product_categories').select('*')
+          supabase.from('product_categories').select('*'),
+          supabase.from('custom_products').select('*').order('name')
         ]);
         if (productsRes.error) throw productsRes.error;
         if (categoriesRes.error) throw categoriesRes.error;
@@ -85,6 +86,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         if (featuresRes.error) throw featuresRes.error;
         if (specificationsRes.error) throw specificationsRes.error;
         if (productCategoriesRes.error) throw productCategoriesRes.error;
+        if (customProductsRes.error) throw customProductsRes.error;
         
         const products = productsRes.data || [];
         const categoriesData = categoriesRes.data || [];
@@ -92,10 +94,42 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         const features = featuresRes.data || [];
         const specifications = specificationsRes.data || [];
         const productCategories = productCategoriesRes.data || [];
+        const customProducts = customProductsRes.data || [];
+
+        // Find or create "Custom" category
+        let customCategory = categoriesData.find(cat => cat.name === 'Custom');
+        
+        // Convert custom products to regular products format and add to products array
+        const customProductsAsProducts = customProducts.map(customProduct => ({
+          id: `custom-${customProduct.id}`,
+          name: customProduct.name,
+          description: customProduct.description,
+          image_url: customProduct.main_image_url,
+          category_id: customCategory?.id || null,
+          featured: false,
+          created_at: customProduct.created_at,
+          updated_at: customProduct.updated_at,
+          special_notes: null,
+          model_3d_url: null
+        }));
+
+        const allProducts = [...products, ...customProductsAsProducts];
 
         // Group data by product
-        const productsWithDetailsData: ProductWithDetails[] = products.map(product => {
-          // Get categories for this product
+        const productsWithDetailsData: ProductWithDetails[] = allProducts.map(product => {
+          // Handle custom products differently
+          if (product.id.toString().startsWith('custom-')) {
+            const customCategoryArray = customCategory ? [customCategory] : [];
+            return {
+              product,
+              categories: customCategoryArray,
+              variants: [], // Custom products don't have variants
+              features: [], // Custom products don't have features
+              specifications: [] // Custom products don't have specifications
+            };
+          }
+
+          // Regular products
           const productCategoryIds = productCategories
             .filter(pc => pc.product_id === product.id)
             .map(pc => pc.category_id);
