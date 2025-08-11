@@ -228,7 +228,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     } = productWithDetails;
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
-          {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
+          {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" loading="lazy" decoding="async" sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
             </div>}
           {product.featured && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
@@ -296,13 +296,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                            <div className="space-y-2">
                              {deduplicatedAccessories.slice(0, 3).map(accessory => (
                                <div key={accessory.id} className="flex items-center space-x-2">
-                                 {accessory.image_url && (
-                                   <img 
-                                     src={accessory.image_url} 
-                                     alt={accessory.feature}
-                                     className="w-6 h-6 object-cover rounded border"
-                                   />
-                                 )}
+                                  {accessory.image_url && (
+                                    <img 
+                                      src={accessory.image_url} 
+                                      alt={accessory.feature}
+                                      className="w-6 h-6 object-cover rounded border"
+                                      loading="lazy"
+                                      decoding="async"
+                                      sizes="24px"
+                                    />
+                                  )}
                                  <span className="text-xs text-muted-foreground">{accessory.feature}</span>
                                </div>
                              ))}
@@ -355,7 +358,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
             <div className="relative">
-              {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" /> : <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
+              {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 25vw" /> : <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
                   <FileText className="h-8 w-8 text-muted-foreground" />
                 </div>}
               {product.featured && <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
@@ -439,7 +442,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   <h2 className="text-xl font-semibold mb-4">Product Image</h2>
                   <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
                     {selectedProduct.product.image_url ? <div className="relative group w-full">
-                        <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} />
+                        <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" />
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
                           <Button 
                             variant="outline" 
@@ -612,7 +615,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 width: imageZoom === 1 ? 'auto' : '100%',
                 height: imageZoom === 1 ? 'auto' : '100%',
                 objectFit: imageZoom === 1 ? 'contain' : 'cover'
-              }} draggable={false} />
+              }} draggable={false} loading="lazy" decoding="async" />
                 </div>
               </div>}
           </DialogContent>

@@ -51,6 +51,8 @@ const Products = () => {
           src={medicalEquipmentImage}
           alt="Medical equipment background"
           className="w-full h-full object-cover opacity-5"
+          loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-secondary/95"></div>
       </div>
@@ -72,6 +74,9 @@ const Products = () => {
               src={medicalEquipmentImage}
               alt="Phelan Manufacturing medical equipment"
               className="w-full h-[400px] object-cover"
+              loading="lazy"
+              decoding="async"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
             />
             <div className="absolute inset-0 bg-gradient-primary opacity-10"></div>
             <div className="absolute bottom-6 left-6 text-white">
@@ -107,6 +112,9 @@ const Products = () => {
                       src={category.image_url}
                       alt={category.name}
                       className="max-w-full max-h-[140px] object-contain hover:scale-105 transition-transform"
+                      loading="lazy"
+                      decoding="async"
+                      sizes="140px"
                     />
                   ) : (
                     <div className="w-32 h-32 bg-muted rounded flex items-center justify-center">

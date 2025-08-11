@@ -11,6 +11,9 @@ const Hero = () => {
           src={heroImage}
           alt="Phelan Manufacturing facility"
           className="w-full h-full object-cover opacity-40"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
         />
         <div className="absolute inset-0 bg-gradient-hero opacity-50"></div>
       </div>
@@ -24,6 +27,9 @@ const Hero = () => {
                 src="/lovable-uploads/6f1e269b-425a-431b-943f-9c14a9cab828.png" 
                 alt="Phelan Manufacturing Corporation Logo" 
                 className="h-20 md:h-24 lg:h-28 w-auto"
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
               />
             </div>
             <div className="text-2xl md:text-3xl font-bold mb-8 text-white drop-shadow-lg">
