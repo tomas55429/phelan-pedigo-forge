@@ -202,7 +202,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   });
 
   // Function to format size values with proper fraction symbols and smaller font
-  const formatSizeValue = (value: string) => {
+  const formatSizeValue = (value: string): JSX.Element | string => {
     if (!value || value === '-') return value;
     
     // Mapping of common fractions to Unicode symbols
@@ -230,7 +230,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       formattedValue = formattedValue.replace(new RegExp(fraction, 'g'), symbol);
     });
     
-    return <span className="text-sm font-medium">{formattedValue}</span>;
+    return <span className="text-sm font-medium" key={formattedValue}>{formattedValue}</span>;
   };
 
   // Use original specs without modification
