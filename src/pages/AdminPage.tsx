@@ -50,7 +50,9 @@ import {
   FolderOpen,
   Settings,
   Image as ImageIcon,
-  GripVertical
+  GripVertical,
+  X,
+  Camera
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -105,6 +107,24 @@ interface ProductVariant {
   model_3d_url?: string;
   created_at: string;
   updated_at: string;
+}
+
+interface CustomProduct {
+  id: string;
+  name: string;
+  description?: string;
+  main_image_url?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface CustomProductImage {
+  id: string;
+  custom_product_id: string;
+  image_url: string;
+  description?: string;
+  sort_order: number;
+  created_at: string;
 }
 
 // Helper function to format variant name - removes hyphens and everything after them
@@ -170,11 +190,22 @@ const AdminPage = () => {
     { key: 'depth', label: 'Depth', enabled: true }
   ]);
 
+  // State for custom products
+  const [customProducts, setCustomProducts] = useState<CustomProduct[]>([]);
+  const [customProductImages, setCustomProductImages] = useState<CustomProductImage[]>([]);
+  const [customProductName, setCustomProductName] = useState('');
+  const [customProductDescription, setCustomProductDescription] = useState('');
+  const [customProductMainImage, setCustomProductMainImage] = useState<File | null>(null);
+  const [customProductAdditionalImages, setCustomProductAdditionalImages] = useState<{file: File, description: string}[]>([]);
+  const [editingCustomProduct, setEditingCustomProduct] = useState<CustomProduct | null>(null);
+  const [customProductDialogOpen, setCustomProductDialogOpen] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchCategories();
     fetchProducts();
+    fetchCustomProducts();
   }, []);
 
   const fetchCategories = async () => {
@@ -211,6 +242,43 @@ const AdminPage = () => {
       toast({
         title: "Error",
         description: "Failed to fetch products",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchCustomProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('custom_products')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setCustomProducts(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch custom products",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const fetchCustomProductImages = async (customProductId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('custom_product_images')
+        .select('*')
+        .eq('custom_product_id', customProductId)
+        .order('sort_order');
+      
+      if (error) throw error;
+      setCustomProductImages(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch custom product images",
         variant: "destructive",
       });
     }
@@ -412,6 +480,133 @@ const AdminPage = () => {
         variant: "destructive",
       });
       return null;
+    }
+  };
+
+  const handleCustomProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customProductName.trim()) return;
+
+    setLoading(true);
+    try {
+      let mainImageUrl = editingCustomProduct?.main_image_url || null;
+      
+      if (customProductMainImage) {
+        const uploadedUrl = await uploadProductImage(customProductMainImage);
+        if (uploadedUrl) mainImageUrl = uploadedUrl;
+      }
+
+      const productData = {
+        name: customProductName,
+        description: customProductDescription || null,
+        main_image_url: mainImageUrl,
+      };
+
+      let customProductId: string;
+
+      if (editingCustomProduct) {
+        const { error } = await supabase
+          .from('custom_products')
+          .update(productData)
+          .eq('id', editingCustomProduct.id);
+        
+        if (error) throw error;
+        customProductId = editingCustomProduct.id;
+
+        // Delete existing additional images
+        await supabase
+          .from('custom_product_images')
+          .delete()
+          .eq('custom_product_id', customProductId);
+      } else {
+        const { data, error } = await supabase
+          .from('custom_products')
+          .insert([productData])
+          .select()
+          .single();
+        
+        if (error) throw error;
+        customProductId = data.id;
+      }
+
+      // Upload and insert additional images
+      if (customProductAdditionalImages.length > 0) {
+        const imagePromises = customProductAdditionalImages.map(async (item, index) => {
+          const uploadedUrl = await uploadProductImage(item.file);
+          if (uploadedUrl) {
+            return {
+              custom_product_id: customProductId,
+              image_url: uploadedUrl,
+              description: item.description || null,
+              sort_order: index
+            };
+          }
+          return null;
+        });
+
+        const imageData = (await Promise.all(imagePromises)).filter(Boolean);
+        
+        if (imageData.length > 0) {
+          const { error } = await supabase
+            .from('custom_product_images')
+            .insert(imageData);
+
+          if (error) throw error;
+        }
+      }
+
+      toast({ 
+        title: "Success", 
+        description: editingCustomProduct ? "Custom product updated successfully" : "Custom product created successfully" 
+      });
+
+      resetCustomProductForm();
+      fetchCustomProducts();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetCustomProductForm = () => {
+    setCustomProductName('');
+    setCustomProductDescription('');
+    setCustomProductMainImage(null);
+    setCustomProductAdditionalImages([]);
+    setEditingCustomProduct(null);
+    setCustomProductDialogOpen(false);
+  };
+
+  const handleEditCustomProduct = (customProduct: CustomProduct) => {
+    setCustomProductName(customProduct.name);
+    setCustomProductDescription(customProduct.description || '');
+    setEditingCustomProduct(customProduct);
+    setCustomProductDialogOpen(true);
+  };
+
+  const handleDeleteCustomProduct = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this custom product?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('custom_products')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+      toast({ title: "Success", description: "Custom product deleted successfully" });
+      fetchCustomProducts();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -951,7 +1146,7 @@ const AdminPage = () => {
 
         <div className="container mx-auto px-4 py-8">
           <Tabs defaultValue="categories" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="categories" className="flex items-center space-x-2">
                 <FolderOpen className="h-4 w-4" />
                 <span>Categories</span>
@@ -959,6 +1154,10 @@ const AdminPage = () => {
               <TabsTrigger value="products" className="flex items-center space-x-2">
                 <Package className="h-4 w-4" />
                 <span>Products</span>
+              </TabsTrigger>
+              <TabsTrigger value="custom-products" className="flex items-center space-x-2">
+                <Camera className="h-4 w-4" />
+                <span>Custom Products</span>
               </TabsTrigger>
               <TabsTrigger value="details" className="flex items-center space-x-2">
                 <Settings className="h-4 w-4" />
@@ -1810,6 +2009,155 @@ const AdminPage = () => {
                   </div>
                 </div>
               )}
+            </TabsContent>
+
+            {/* Custom Products Tab */}
+            <TabsContent value="custom-products" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Manage Custom Products</h2>
+                <Dialog open={customProductDialogOpen} onOpenChange={setCustomProductDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Custom Product
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>
+                        {editingCustomProduct ? 'Edit Custom Product' : 'Add New Custom Product'}
+                      </DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleCustomProductSubmit} className="space-y-4">
+                      <div>
+                        <Label htmlFor="customProductName">Product Name</Label>
+                        <Input
+                          id="customProductName"
+                          value={customProductName}
+                          onChange={(e) => setCustomProductName(e.target.value)}
+                          placeholder="Enter custom product name"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customProductDescription">Description</Label>
+                        <Textarea
+                          id="customProductDescription"
+                          value={customProductDescription}
+                          onChange={(e) => setCustomProductDescription(e.target.value)}
+                          placeholder="Product description"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="customProductMainImage">Main Image</Label>
+                        <Input
+                          id="customProductMainImage"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => setCustomProductMainImage(e.target.files?.[0] || null)}
+                        />
+                      </div>
+                      <div>
+                        <Label>Additional Images</Label>
+                        <div className="space-y-2">
+                          {customProductAdditionalImages.map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 p-2 border rounded">
+                              <span className="text-sm flex-1">{item.file.name}</span>
+                              <Input
+                                placeholder="Image description"
+                                value={item.description}
+                                onChange={(e) => {
+                                  const updated = [...customProductAdditionalImages];
+                                  updated[index].description = e.target.value;
+                                  setCustomProductAdditionalImages(updated);
+                                }}
+                                className="flex-1"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  setCustomProductAdditionalImages(prev =>
+                                    prev.filter((_, i) => i !== index)
+                                  );
+                                }}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          <div>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                const newImages = files.map(file => ({ file, description: '' }));
+                                setCustomProductAdditionalImages(prev => [...prev, ...newImages]);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button type="button" variant="outline" onClick={resetCustomProductForm}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" disabled={loading}>
+                          {loading ? 'Saving...' : editingCustomProduct ? 'Update' : 'Create'}
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
+
+              <div className="grid gap-4">
+                {customProducts.map((customProduct) => (
+                  <Card key={customProduct.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          {customProduct.main_image_url && (
+                            <img
+                              src={customProduct.main_image_url}
+                              alt={customProduct.name}
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div>
+                            <h3 className="font-medium">{customProduct.name}</h3>
+                            {customProduct.description && (
+                              <p className="text-sm text-muted-foreground">{customProduct.description}</p>
+                            )}
+                            <p className="text-xs text-muted-foreground">
+                              Created: {new Date(customProduct.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditCustomProduct(customProduct)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteCustomProduct(customProduct.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </TabsContent>
           </Tabs>
         </div>
