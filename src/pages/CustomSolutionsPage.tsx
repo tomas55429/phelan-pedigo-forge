@@ -7,18 +7,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Phone, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-type Product = Tables<'products'>;
-type Category = Tables<'categories'>;
+type CustomProduct = Tables<'custom_products'>;
+type CustomProductImage = Tables<'custom_product_images'>;
 
-interface ProductWithCategory {
-  product: Product;
-  category: Category | null;
+interface CustomProductWithImages {
+  customProduct: CustomProduct;
+  additionalImages: CustomProductImage[];
 }
 
 const CustomSolutionsPage = () => {
-  const [customProducts, setCustomProducts] = useState<ProductWithCategory[]>([]);
+  const [customProducts, setCustomProducts] = useState<CustomProductWithImages[]>([]);
   const [loading, setLoading] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [enlargedImageDescription, setEnlargedImageDescription] = useState<string | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
   const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -80,61 +81,41 @@ const CustomSolutionsPage = () => {
       try {
         setLoading(true);
 
-        // First, find the "Custom" category
-        const { data: customCategory, error: categoryError } = await supabase
-          .from('categories')
+        // Fetch custom products
+        const { data: customProductsData, error: customProductsError } = await supabase
+          .from('custom_products')
           .select('*')
-          .ilike('name', '%custom%')
-          .single();
+          .order('created_at', { ascending: false });
 
-        if (categoryError && categoryError.code !== 'PGRST116') {
-          console.error('Error fetching custom category:', categoryError);
+        if (customProductsError) {
+          console.error('Error fetching custom products:', customProductsError);
           return;
         }
 
-        if (!customCategory) {
-          console.log('No custom category found');
+        if (!customProductsData || customProductsData.length === 0) {
           setCustomProducts([]);
           return;
         }
 
-        // Then fetch products in the custom category
-        const { data: productCategories, error: pcError } = await supabase
-          .from('product_categories')
-          .select('product_id')
-          .eq('category_id', customCategory.id);
+        // Fetch additional images for each custom product
+        const customProductsWithImages = await Promise.all(
+          customProductsData.map(async (customProduct) => {
+            const { data: additionalImages, error: imagesError } = await supabase
+              .from('custom_product_images')
+              .select('*')
+              .eq('custom_product_id', customProduct.id)
+              .order('sort_order');
 
-        if (pcError) {
-          console.error('Error fetching product categories:', pcError);
-          return;
-        }
+            if (imagesError) {
+              console.error('Error fetching custom product images:', imagesError);
+              return { customProduct, additionalImages: [] };
+            }
 
-        if (!productCategories || productCategories.length === 0) {
-          setCustomProducts([]);
-          return;
-        }
+            return { customProduct, additionalImages: additionalImages || [] };
+          })
+        );
 
-        const productIds = productCategories.map(pc => pc.product_id);
-
-        // Fetch the actual products
-        const { data: products, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .in('id', productIds)
-          .not('image_url', 'is', null); // Only get products with images
-
-        if (productsError) {
-          console.error('Error fetching products:', productsError);
-          return;
-        }
-
-        // Combine products with category info
-        const productsWithCategory = (products || []).map(product => ({
-          product,
-          category: customCategory
-        }));
-
-        setCustomProducts(productsWithCategory);
+        setCustomProducts(customProductsWithImages);
       } catch (error) {
         console.error('Error fetching custom solutions:', error);
       } finally {
@@ -219,34 +200,66 @@ const CustomSolutionsPage = () => {
           ) : (
             <>
               {/* Photo Gallery */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-                {customProducts.map(({ product }) => (
-                  <Card key={product.id} className="professional-hover bg-card shadow-card overflow-hidden">
-                    <div className="relative">
-                      <img
-                        src={product.image_url!}
-                        alt={product.name}
-                        className="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => setEnlargedImage(product.image_url!)}
-                      />
-                    </div>
+              <div className="space-y-12">
+                {customProducts.map(({ customProduct, additionalImages }) => (
+                  <Card key={customProduct.id} className="professional-hover bg-card shadow-card overflow-hidden">
                     <CardContent className="p-6">
-                      <h3 className="text-xl font-semibold text-foreground mb-2">
-                        {product.name}
-                      </h3>
-                      {product.description && (
-                        <p className="text-muted-foreground mb-4">
-                          {product.description}
-                        </p>
-                      )}
-                      {product.special_notes && (
-                        <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
-                          <p className="text-sm font-medium text-warning-foreground mb-1">
-                            Special Notes:
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {product.special_notes}
-                          </p>
+                      <div className="grid md:grid-cols-2 gap-6 mb-6">
+                        {/* Main Image */}
+                        {customProduct.main_image_url && (
+                          <div className="relative">
+                            <img
+                              src={customProduct.main_image_url}
+                              alt={customProduct.name}
+                              className="w-full h-80 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => {
+                                setEnlargedImage(customProduct.main_image_url!);
+                                setEnlargedImageDescription(null);
+                              }}
+                            />
+                            <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-sm">
+                              Main Image
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Product Info */}
+                        <div>
+                          <h3 className="text-2xl font-semibold text-foreground mb-4">
+                            {customProduct.name}
+                          </h3>
+                          {customProduct.description && (
+                            <p className="text-muted-foreground text-lg leading-relaxed">
+                              {customProduct.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Additional Images */}
+                      {additionalImages.length > 0 && (
+                        <div>
+                          <h4 className="text-lg font-medium text-foreground mb-4">Additional Views</h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                            {additionalImages.map((image) => (
+                              <div key={image.id} className="relative group">
+                                <img
+                                  src={image.image_url}
+                                  alt={image.description || 'Additional view'}
+                                  className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => {
+                                    setEnlargedImage(image.image_url);
+                                    setEnlargedImageDescription(image.description || null);
+                                  }}
+                                />
+                                {image.description && (
+                                  <div className="absolute bottom-1 left-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs truncate">
+                                    {image.description}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </CardContent>
@@ -255,7 +268,7 @@ const CustomSolutionsPage = () => {
               </div>
 
               {/* Call to Action */}
-              <div className="text-center">
+              <div className="text-center mt-16">
                 <Card className="bg-primary/5 border border-primary/20 max-w-2xl mx-auto">
                   <CardContent className="p-8 text-center">
                     <h3 className="text-2xl font-bold text-foreground mb-4">
@@ -336,6 +349,17 @@ const CustomSolutionsPage = () => {
                 }}
                 draggable={false}
               />
+              
+              {/* Image description overlay */}
+              {enlargedImageDescription && (
+                <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20">
+                  <div className="bg-background/95 backdrop-blur-sm rounded-lg px-4 py-2 shadow-lg border max-w-md">
+                    <p className="text-sm text-foreground text-center">
+                      {enlargedImageDescription}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Instructions */}
