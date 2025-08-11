@@ -117,6 +117,19 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     ));
   };
 
+  const addCompleteSize = (variantId: string) => {
+    setSizeSpecs(prev => prev.map(spec => 
+      spec.variantId === variantId 
+        ? { 
+            ...spec, 
+            width: [...spec.width, ''],
+            length: [...spec.length, ''],
+            depth: [...spec.depth, '']
+          }
+        : spec
+    ));
+  };
+
   const removeSizeOption = async (variantId: string, dimension: 'width' | 'length' | 'depth', index: number) => {
     // Find the specification value to be deleted
     const spec = sizeSpecs.find(s => s.variantId === variantId);
@@ -348,17 +361,20 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                               )}
                             </div>
                           ))}
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addSizeOption(variant.id, dim.key as 'width' | 'length' | 'depth')}
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add {dim.label}
-                          </Button>
                         </div>
                       ))}
+                      <div className="col-span-full mt-4 pt-4 border-t">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => addCompleteSize(variant.id)}
+                          className="w-full"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Size ({dimensions.filter(d => d.enabled).map(d => d.label).join(', ')})
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 );
@@ -429,16 +445,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                                   )}
                                 </div>
                               ))}
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => addSizeOption(variant.id, dimensionKey)}
-                                className="w-full py-1 h-6 text-xs"
-                              >
-                                <Plus className="h-3 w-3 mr-1" />
-                                Add
-                              </Button>
+                              {index === dimensions.filter(dim => dim.enabled).length - 1 && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => addCompleteSize(variant.id)}
+                                  className="w-full py-1 h-6 text-xs"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Add Size
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         );
