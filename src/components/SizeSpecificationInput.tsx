@@ -30,7 +30,7 @@ interface SizeSpecificationInputProps {
   existingSpecifications?: any[];
   customDimensions?: DimensionConfig[];
   onDimensionsChange?: (dimensions: DimensionConfig[]) => void;
-  onSpecificationDelete?: (productId: string, variantId: string, specKey: string, specValue: string) => Promise<void>;
+  onSpecificationDelete?: (productId: string, variantId: string | null, specKey: string, specValue: string) => Promise<void>;
 }
 
 interface DimensionConfig {
@@ -167,8 +167,10 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       // If there's a value to delete and it exists in the database, delete it
       if (valueToDelete && valueToDelete.trim() && onSpecificationDelete) {
         const dimensionLabel = dimensions.find(d => d.key === dimension)?.label || dimension;
+        // Convert 'general' placeholder back to actual database variant_id (null)
+        const actualVariantId = variantId === 'general' ? null : variantId;
         try {
-          await onSpecificationDelete(productId, variantId, dimensionLabel, valueToDelete);
+          await onSpecificationDelete(productId, actualVariantId, dimensionLabel, valueToDelete);
           toast({
             title: "Success",
             description: "Specification deleted successfully"

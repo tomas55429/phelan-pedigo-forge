@@ -1636,13 +1636,21 @@ const AdminPage = () => {
                       });
                     }}
                     onSpecificationDelete={async (productId, variantId, specKey, specValue) => {
-                      const { error } = await supabase
+                      let query = supabase
                         .from('product_specifications')
                         .delete()
                         .eq('product_id', productId)
-                        .eq('variant_id', variantId)
                         .eq('specification_key', specKey)
                         .eq('specification_value', specValue);
+                      
+                      // Handle null variant_id properly for general specifications
+                      if (variantId === null) {
+                        query = query.is('variant_id', null);
+                      } else {
+                        query = query.eq('variant_id', variantId);
+                      }
+                      
+                      const { error } = await query;
 
                       if (error) {
                         throw new Error('Failed to delete specification from database');
