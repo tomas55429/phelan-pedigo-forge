@@ -142,12 +142,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 sort_order: img.sort_order
               }));
             
-            console.log('Custom product mapping:', {
+            console.log('CUSTOM PRODUCT DEBUG:', {
+              productName: product.name,
               productId: product.id,
               extractedCustomProductId: customProductId,
-              allCustomProductImages: customProductImages.map(img => ({ id: img.id, custom_product_id: img.custom_product_id })),
-              matchingImages: additionalImages.length,
-              additionalImages
+              totalCustomProductImages: customProductImages.length,
+              customProductImageIds: customProductImages.map(img => ({ id: img.id, custom_product_id: img.custom_product_id })),
+              filteredAdditionalImages: additionalImages,
+              additionalImagesCount: additionalImages.length
             });
             
             return {
