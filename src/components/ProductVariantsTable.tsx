@@ -121,16 +121,19 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
       ) : (
         // Non-size specifications with single column per variant (no separators)
         hasVariants ? (
-          variants.map((variant) => {
+          variants.map((variant, variantIndex) => {
             const values = processedSpecs[specKey]?.values?.[variant.id] || [];
             const value = values.length > 0 ? values[0].value : '';
             const generalValue = processedSpecs[specKey]?.generalValue;
             const displayValue = value || generalValue || '-';
+            const isFirstVariant = variantIndex === 0;
             
             return (
               <TableCell 
                 key={variant.id} 
-                className="text-center border-t border-r border-b border-border"
+                className={`text-center border-t border-r border-b border-border ${
+                  isFirstVariant ? '' : 'border-l-0'
+                }`}
                 colSpan={maxSizeCount}
               >
                 {displayValue}
