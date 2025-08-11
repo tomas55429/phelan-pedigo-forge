@@ -1601,6 +1601,22 @@ const AdminPage = () => {
                         description: "Dimension configuration updated"
                       });
                     }}
+                    onSpecificationDelete={async (productId, variantId, specKey, specValue) => {
+                      const { error } = await supabase
+                        .from('product_specifications')
+                        .delete()
+                        .eq('product_id', productId)
+                        .eq('variant_id', variantId)
+                        .eq('specification_key', specKey)
+                        .eq('specification_value', specValue);
+
+                      if (error) {
+                        throw new Error('Failed to delete specification from database');
+                      }
+                      
+                      // Refresh specifications after successful deletion
+                      fetchProductDetails(selectedProduct.id);
+                    }}
                   />
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

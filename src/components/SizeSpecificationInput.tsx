@@ -30,6 +30,7 @@ interface SizeSpecificationInputProps {
   existingSpecifications?: any[];
   customDimensions?: DimensionConfig[];
   onDimensionsChange?: (dimensions: DimensionConfig[]) => void;
+  onSpecificationDelete?: (productId: string, variantId: string, specKey: string, specValue: string) => Promise<void>;
 }
 
 interface DimensionConfig {
@@ -44,7 +45,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   onSpecificationsChange,
   existingSpecifications = [],
   customDimensions,
-  onDimensionsChange
+  onDimensionsChange,
+  onSpecificationDelete
 }) => {
   const [isVertical, setIsVertical] = useState(false);
   const [sizeSpecs, setSizeSpecs] = useState<SizeSpecification[]>([]);
@@ -115,12 +117,43 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     ));
   };
 
-  const removeSizeOption = (variantId: string, dimension: 'width' | 'length' | 'depth', index: number) => {
-    setSizeSpecs(prev => prev.map(spec => 
-      spec.variantId === variantId && spec[dimension].length > 1
-        ? { ...spec, [dimension]: spec[dimension].filter((_, i) => i !== index) }
-        : spec
-    ));
+  const removeSizeOption = async (variantId: string, dimension: 'width' | 'length' | 'depth', index: number) => {
+    // Find the specification value to be deleted
+    const spec = sizeSpecs.find(s => s.variantId === variantId);
+    if (!spec) return;
+    
+    const dimensionKey = dimension as keyof SizeSpecification;
+    const values = spec[dimensionKey] as string[];
+    const valueToDelete = values[index];
+    
+    // Only proceed if there's more than one value and the value to delete is not empty
+    if (values.length > 1) {
+      // If there's a value to delete and it exists in the database, delete it
+      if (valueToDelete && valueToDelete.trim() && onSpecificationDelete) {
+        const dimensionLabel = dimensions.find(d => d.key === dimension)?.label || dimension;
+        try {
+          await onSpecificationDelete(productId, variantId, dimensionLabel, valueToDelete);
+          toast({
+            title: "Success",
+            description: "Specification deleted successfully"
+          });
+        } catch (error) {
+          toast({
+            title: "Error", 
+            description: "Failed to delete specification",
+            variant: "destructive"
+          });
+          return; // Don't update local state if database deletion failed
+        }
+      }
+      
+      // Update local state
+      setSizeSpecs(prev => prev.map(s => 
+        s.variantId === variantId
+          ? { ...s, [dimension]: s[dimension].filter((_, i) => i !== index) }
+          : s
+      ));
+    }
   };
 
   const toggleDimension = (dimensionKey: string) => {
