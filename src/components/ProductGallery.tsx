@@ -345,6 +345,11 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       allImages: allImages.length,
       allImagesData: allImages
     });
+    
+    const displayDescription = (product.description || '')
+      .replace(/\[Custom Product ID:\s*([^\]]+)\]/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
 
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
@@ -401,7 +406,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         </CardHeader>
         <CardContent className="pt-0">
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {product.description || 'No description available'}
+            {displayDescription || 'No description available'}
           </p>
           
           {/* Product Details Accordion */}
