@@ -193,37 +193,38 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     return variantName.split('-')[0].trim();
   };
 
-  const generateSpecifications = () => {
+  const generateSpecificationsForVariant = (variantId: string) => {
     const newSpecifications: any[] = [];
     
     // Find the highest existing sort order to ensure new specs are added after existing ones
     const maxSortOrder = Math.max(...existingSpecifications.map(spec => spec.sort_order || 0), 0);
     let nextSortOrder = maxSortOrder + 1;
     
-    sizeSpecs.forEach(spec => {
-      dimensions.forEach((dim, dimIndex) => {
-        if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
-          const values = spec[dim.key as keyof SizeSpecification] as string[];
-          values.forEach((value, valueIndex) => {
-            if (value.trim()) {
-              // Accept all dimensions as entered without matching existing data
-              newSpecifications.push({
-                product_id: productId,
-                variant_id: spec.variantId,
-                specification_key: dim.label,
-                specification_value: value,
-                sort_order: nextSortOrder++
-              });
-            }
-          });
-        }
-      });
+    const spec = sizeSpecs.find(s => s.variantId === variantId);
+    if (!spec) return;
+    
+    dimensions.forEach((dim, dimIndex) => {
+      if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
+        const values = spec[dim.key as keyof SizeSpecification] as string[];
+        values.forEach((value, valueIndex) => {
+          if (value.trim()) {
+            // Accept all dimensions as entered without matching existing data
+            newSpecifications.push({
+              product_id: productId,
+              variant_id: spec.variantId,
+              specification_key: dim.label,
+              specification_value: value,
+              sort_order: nextSortOrder++
+            });
+          }
+        });
+      }
     });
 
     if (newSpecifications.length === 0) {
       toast({
         title: "Info",
-        description: "No new specifications to add"
+        description: "No new specifications to add for this variant"
       });
       return;
     }
@@ -231,7 +232,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     onSpecificationsChange(newSpecifications);
     toast({
       title: "Success",
-      description: `${newSpecifications.length} new size specifications added`
+      description: `${newSpecifications.length} new size specifications added for variant`
     });
   };
 
@@ -322,10 +323,9 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={generateSpecifications} className="flex items-center space-x-2">
-            <Plus className="h-4 w-4" />
-            <span>Apply to Specifications</span>
-          </Button>
+          <p className="text-sm text-muted-foreground">
+            Use the "Apply Specifications" button for each variant individually to avoid duplicate entries.
+          </p>
         </div>
       </CardHeader>
       <CardContent>
@@ -408,7 +408,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                            </div>
                         </div>
                       ))}
-                      <div className="col-span-full mt-4 pt-4 border-t">
+                      <div className="col-span-full mt-4 pt-4 border-t space-y-2">
                         <Button
                           type="button"
                           variant="outline"
@@ -418,6 +418,15 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Add Size ({dimensions.filter(d => d.enabled).map(d => d.label).join(', ')})
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => generateSpecificationsForVariant(variant.id)}
+                          className="w-full"
+                          size="sm"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Apply Specifications for this Variant
                         </Button>
                       </div>
                     </CardContent>
@@ -501,17 +510,28 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                                  );
                                })}
                                {index === dimensions.filter(dim => dim.enabled).length - 1 && (
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => addCompleteSize(variant.id)}
-                                   className="w-full py-1 h-6 text-xs mt-2"
-                                 >
-                                   <Plus className="h-3 w-3 mr-1" />
-                                   Add Size
-                                 </Button>
-                               )}
+                                  <div className="space-y-1">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => addCompleteSize(variant.id)}
+                                      className="w-full py-1 h-6 text-xs"
+                                    >
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      Add Size
+                                    </Button>
+                                    <Button
+                                      type="button"
+                                      onClick={() => generateSpecificationsForVariant(variant.id)}
+                                      className="w-full py-1 h-6 text-xs"
+                                      size="sm"
+                                    >
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      Apply Specs
+                                    </Button>
+                                  </div>
+                                )}
                              </div>
                           </TableCell>
                         );
