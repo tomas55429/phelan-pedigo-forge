@@ -26,7 +26,7 @@ const Hero = () => {
               <img 
                 src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" 
                 alt="Phelan Manufacturing Corporation Logo"
-                className="h-20 md:h-24 lg:h-28 w-auto"
+                className="h-30 md:h-36 lg:h-42 w-auto"
                 loading="eager"
                 decoding="async"
                 fetchPriority="high"
