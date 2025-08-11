@@ -145,58 +145,64 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
         // Group data by product
         const productsWithDetailsData: ProductWithDetails[] = allProducts.map(product => {
-          console.log('🔍 Processing product:', product.id, 'name:', product.name, 'startsWithCustom:', product.id.toString().startsWith('custom-'));
-          // Handle custom products differently
-          if (product.id.toString().startsWith('custom-')) {
-            const customCategoryArray = customCategory ? [customCategory] : [];
-            // Extract the original custom product ID by removing the 'custom-' prefix
-            const customProductId = product.id.toString().replace('custom-', '');
-            const additionalImages = customProductImages
-              .filter(img => img.custom_product_id === customProductId)
-              .map(img => ({
-                id: img.id,
-                image_url: img.image_url,
-                description: img.description,
-                sort_order: img.sort_order
-              }));
-            
-            const allImageData = [
-              { url: product.image_url || '', description: 'Main Image' },
-              ...customProductImages
+          // Determine if this is a custom product and extract the custom product ID
+          const isPrefixedCustom = product.id.toString().startsWith('custom-');
+          const customProductIdFromPrefix = isPrefixedCustom
+            ? product.id.toString().replace('custom-', '')
+            : null;
+          const customProductIdFromDescription = product.description
+            ? (product.description.match(/\[Custom Product ID:\s*([^\]]+)\]/i)?.[1] || null)
+            : null;
+          const customProductId = customProductIdFromPrefix || customProductIdFromDescription;
+
+          // Collect additional images if this is (or references) a custom product
+          const additionalImages = customProductId
+            ? customProductImages
                 .filter(img => img.custom_product_id === customProductId)
-                .map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-            ].filter(img => img.url);
-            
-            console.log('CUSTOM PRODUCT DEBUG:', {
-              productName: product.name,
-              productId: product.id,
-              extractedCustomProductId: customProductId,
-              totalCustomProductImages: customProductImages.length,
-              customProductImageIds: customProductImages.map(img => ({ id: img.id, custom_product_id: img.custom_product_id })),
-              filteredAdditionalImages: additionalImages,
-              additionalImagesCount: additionalImages.length,
-              allImageData: allImageData
-            });
-            
+                .map(img => ({
+                  id: img.id,
+                  image_url: img.image_url,
+                  description: img.description,
+                  sort_order: img.sort_order,
+                }))
+            : [];
+
+          // Build all images list (main + additional)
+          const allImageData = [
+            { url: product.image_url || '', description: 'Main Image' },
+            ...additionalImages.map(img => ({ url: img.image_url, description: img.description || 'Additional Image' })),
+          ].filter(img => img.url);
+
+          console.log('CUSTOM IMAGE MAP DEBUG:', {
+            productId: product.id,
+            productName: product.name,
+            isPrefixedCustom,
+            customProductIdFromPrefix,
+            customProductIdFromDescription,
+            resolvedCustomProductId: customProductId,
+            additionalImagesCount: additionalImages.length,
+          });
+
+          if (isPrefixedCustom || customProductIdFromDescription) {
+            // Ensure custom category for custom items
+            const customCategoryArray = customCategory ? [customCategory] : [];
             return {
               product,
-              categories: customCategoryArray,
-              variants: [], // Custom products don't have variants
-              features: [], // Custom products don't have features
-              specifications: [], // Custom products don't have specifications
+              categories: isPrefixedCustom ? customCategoryArray : categoriesData.filter(cat => cat.id === product.category_id),
+              variants: [],
+              features: [],
+              specifications: [],
               additionalImages,
               allImages: allImageData.length,
-              allImagesData: allImageData
+              allImagesData: allImageData,
             };
           }
 
-          // Regular products
+          // Regular products (no custom images)
           const productCategoryIds = productCategories
             .filter(pc => pc.product_id === product.id)
             .map(pc => pc.category_id);
-          const productCategoriesData = categoriesData.filter(cat => 
-            productCategoryIds.includes(cat.id)
-          );
+          const productCategoriesData = categoriesData.filter(cat => productCategoryIds.includes(cat.id));
 
           return {
             product,
@@ -204,7 +210,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             variants: variants.filter(variant => variant.product_id === product.id),
             features: features.filter(feature => feature.product_id === product.id),
             specifications: specifications.filter(spec => spec.product_id === product.id),
-            additionalImages: [] // Regular products don't have additional images for now
+            additionalImages: [],
           };
         });
         setProductsWithDetails(productsWithDetailsData);
