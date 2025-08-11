@@ -93,21 +93,28 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
         hasVariants ? (
           variants.flatMap((variant) => {
             const values = processedSpecs[specKey]?.values?.[variant.id] || [];
-            return Array.from({ length: maxSizeCount }).map((_, sizeIndex) => {
+            const generalValue = processedSpecs[specKey]?.generalValue;
+            const actualSizeCount = Math.max(values.length, generalValue ? 1 : 0);
+            
+            // Only render columns if there's actual data
+            if (actualSizeCount === 0) {
+              return [];
+            }
+            
+            return Array.from({ length: actualSizeCount }).map((_, sizeIndex) => {
               const valueData = values[sizeIndex];
               const isFirstOfVariant = sizeIndex === 0;
               const hasValue = valueData && valueData.value.trim();
-              const generalValue = processedSpecs[specKey]?.generalValue;
               
               return (
                 <TableCell 
                   key={`${variant.id}-${sizeIndex}`} 
                   className={`text-center border border-border text-sm ${
                     isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
-                  } ${!hasValue && !generalValue ? 'bg-muted/20' : ''}`}
+                  }`}
                 >
                   {hasValue ? formatSizeValue(valueData.value) : 
-                   generalValue ? formatSizeValue(generalValue) : '-'}
+                   generalValue ? formatSizeValue(generalValue) : ''}
                 </TableCell>
               );
             });
@@ -115,7 +122,7 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
         ) : (
           <TableCell className="text-center border border-border">
             {processedSpecs[specKey]?.generalValue ? 
-              formatSizeValue(processedSpecs[specKey].generalValue || '-') : '-'}
+              formatSizeValue(processedSpecs[specKey].generalValue || '') : ''}
           </TableCell>
         )
       ) : (
@@ -128,13 +135,23 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             const displayValue = value || generalValue || '-';
             const isFirstVariant = variantIndex === 0;
             
+            // Calculate column span for this variant
+            const variantColumnSpan = Math.max(1, ...Object.values(processedSpecs)
+              .filter(spec => {
+                const hasValues = spec.values[variant.id]?.length > 0;
+                const hasGeneral = spec.generalValue;
+                return hasValues || hasGeneral;
+              })
+              .map(spec => Math.max(spec.values[variant.id]?.length || 0, spec.generalValue ? 1 : 0))
+            );
+            
             return (
               <TableCell 
                 key={variant.id} 
                 className={`text-center border-t border-r border-b border-border ${
                   isFirstVariant ? '' : 'border-l-0'
                 }`}
-                colSpan={maxSizeCount}
+                colSpan={variantColumnSpan}
               >
                 {displayValue}
               </TableCell>
@@ -323,25 +340,37 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                   Specification
                 </TableHead>
                 {hasVariants ? (
-                  variants.map((variant) => (
-                    <TableHead 
-                      key={variant.id} 
-                      className="border border-border bg-muted/50 text-center font-semibold min-w-[80px]"
-                      colSpan={maxSizeCount}
-                    >
-                      <div className="space-y-1">
-                        <div className="font-bold text-sm">Product No.</div>
-                        <div className="font-bold text-base">
-                          {formatVariantName(variant.variant_name)}
-                        </div>
-                        {variant.variant_description && (
-                          <div className="text-xs text-muted-foreground font-normal">
-                            {variant.variant_description}
+                  variants.map((variant) => {
+                    // Calculate actual column span for this variant based on size specifications
+                    const variantColumnSpan = Math.max(1, ...Object.values(processedSpecs)
+                      .filter(spec => {
+                        const hasValues = spec.values[variant.id]?.length > 0;
+                        const hasGeneral = spec.generalValue;
+                        return hasValues || hasGeneral;
+                      })
+                      .map(spec => Math.max(spec.values[variant.id]?.length || 0, spec.generalValue ? 1 : 0))
+                    );
+                    
+                    return (
+                      <TableHead 
+                        key={variant.id} 
+                        className="border border-border bg-muted/50 text-center font-semibold min-w-[80px]"
+                        colSpan={variantColumnSpan}
+                      >
+                        <div className="space-y-1">
+                          <div className="font-bold text-sm">Product No.</div>
+                          <div className="font-bold text-base">
+                            {formatVariantName(variant.variant_name)}
                           </div>
-                        )}
-                      </div>
-                    </TableHead>
-                  ))
+                          {variant.variant_description && (
+                            <div className="text-xs text-muted-foreground font-normal">
+                              {variant.variant_description}
+                            </div>
+                          )}
+                        </div>
+                      </TableHead>
+                    );
+                  })
                 ) : (
                   <TableHead className="text-center font-semibold">Value</TableHead>
                 )}
