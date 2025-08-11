@@ -22,6 +22,7 @@ interface ProductWithDetails {
   variants: ProductVariant[];
   features: ProductFeature[];
   specifications: ProductSpecification[];
+  additionalImages?: { id: string; image_url: string; description?: string; sort_order?: number; }[];
 }
 interface ProductGalleryProps {
   selectedCategoryId?: string | null;
@@ -71,14 +72,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         setLoading(true);
 
         // Fetch all data in parallel including custom products
-        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes] = await Promise.all([
+        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes, customProductImagesRes] = await Promise.all([
           supabase.from('products').select('*').order('name'), 
           supabase.from('categories').select('*').order('name'), 
           supabase.from('product_variants').select('*'), 
           supabase.from('product_features').select('*'), 
           supabase.from('product_specifications').select('*'),
           supabase.from('product_categories').select('*'),
-          supabase.from('custom_products').select('*').order('name')
+          supabase.from('custom_products').select('*').order('name'),
+          supabase.from('custom_product_images').select('*').order('sort_order')
         ]);
         if (productsRes.error) throw productsRes.error;
         if (categoriesRes.error) throw categoriesRes.error;
@@ -87,6 +89,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         if (specificationsRes.error) throw specificationsRes.error;
         if (productCategoriesRes.error) throw productCategoriesRes.error;
         if (customProductsRes.error) throw customProductsRes.error;
+        if (customProductImagesRes.error) throw customProductImagesRes.error;
         
         const products = productsRes.data || [];
         const categoriesData = categoriesRes.data || [];
@@ -95,6 +98,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         const specifications = specificationsRes.data || [];
         const productCategories = productCategoriesRes.data || [];
         const customProducts = customProductsRes.data || [];
+        const customProductImages = customProductImagesRes.data || [];
 
         // Find or create "Custom" category
         let customCategory = categoriesData.find(cat => cat.name === 'Custom');
@@ -120,12 +124,23 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           // Handle custom products differently
           if (product.id.toString().startsWith('custom-')) {
             const customCategoryArray = customCategory ? [customCategory] : [];
+            const customProductId = product.id.toString().replace('custom-', '');
+            const additionalImages = customProductImages
+              .filter(img => img.custom_product_id === customProductId)
+              .map(img => ({
+                id: img.id,
+                image_url: img.image_url,
+                description: img.description,
+                sort_order: img.sort_order
+              }));
+            
             return {
               product,
               categories: customCategoryArray,
               variants: [], // Custom products don't have variants
               features: [], // Custom products don't have features
-              specifications: [] // Custom products don't have specifications
+              specifications: [], // Custom products don't have specifications
+              additionalImages
             };
           }
 
@@ -142,7 +157,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             categories: productCategoriesData,
             variants: variants.filter(variant => variant.product_id === product.id),
             features: features.filter(feature => feature.product_id === product.id),
-            specifications: specifications.filter(spec => spec.product_id === product.id)
+            specifications: specifications.filter(spec => spec.product_id === product.id),
+            additionalImages: [] // Regular products don't have additional images for now
           };
         });
         setProductsWithDetails(productsWithDetailsData);
@@ -258,13 +274,54 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       product,
       categories,
       variants,
-      features
+      features,
+      additionalImages
     } = productWithDetails;
+    
+    const allImages = [
+      ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : []),
+      ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+    ];
+
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
-          {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" loading="lazy" decoding="async" sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
+          {allImages.length > 0 ? (
+            allImages.length === 1 ? (
+              <img 
+                src={allImages[0].url} 
+                alt={product.name} 
+                className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" 
+                loading="lazy" 
+                decoding="async" 
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" 
+              />
+            ) : (
+              <div className="relative">
+                <div className="grid grid-cols-2 gap-1">
+                  {allImages.slice(0, 4).map((image, index) => (
+                    <div key={index} className={`relative ${index === 0 ? 'col-span-2' : ''}`}>
+                      <img 
+                        src={image.url} 
+                        alt={`${product.name} - ${image.description}`}
+                        className={`w-full object-cover ${index === 0 ? 'h-40 sm:h-36 md:h-40' : 'h-20 sm:h-18 md:h-20'}`}
+                        loading="lazy" 
+                        decoding="async"
+                      />
+                      {index === 3 && allImages.length > 4 && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <span className="text-white font-semibold">+{allImages.length - 4}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          ) : (
+            <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
-            </div>}
+            </div>
+          )}
           {product.featured && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
               <Star className="h-3 w-3 mr-1" />
               Featured
@@ -386,15 +443,54 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       product,
       categories,
       variants,
-      features
+      features,
+      additionalImages
     } = productWithDetails;
+    
+    const allImages = [
+      ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : []),
+      ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+    ];
+
     return <Card className="professional-hover bg-card shadow-card">
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
             <div className="relative">
-              {product.image_url ? <img src={product.image_url} alt={product.name} className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 25vw" /> : <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
+              {allImages.length > 0 ? (
+                allImages.length === 1 ? (
+                  <img 
+                    src={allImages[0].url} 
+                    alt={product.name} 
+                    className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" 
+                    loading="lazy" 
+                    decoding="async" 
+                    sizes="(max-width: 768px) 100vw, 25vw" 
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 gap-1 rounded overflow-hidden">
+                    {allImages.slice(0, 4).map((image, index) => (
+                      <div key={index} className="relative">
+                        <img 
+                          src={image.url} 
+                          alt={`${product.name} - ${image.description}`}
+                          className="w-full h-20 object-cover"
+                          loading="lazy" 
+                          decoding="async"
+                        />
+                        {index === 3 && allImages.length > 4 && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <span className="text-white text-xs font-semibold">+{allImages.length - 4}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )
+              ) : (
+                <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
                   <FileText className="h-8 w-8 text-muted-foreground" />
-                </div>}
+                </div>
+              )}
               {product.featured && <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
                   <Star className="h-3 w-3 mr-1" />
                   Featured
@@ -471,33 +567,69 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               </div>
               
               <div className="grid lg:grid-cols-2 gap-12">
-                {/* Left Column - Product Image */}
+                {/* Left Column - Product Images */}
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">Product Image</h2>
-                  <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                    {selectedProduct.product.image_url ? <div className="relative group w-full">
-                        <img src={selectedProduct.product.image_url} alt={selectedProduct.product.name} className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(selectedProduct.product.image_url!)} loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="bg-background/90 backdrop-blur-sm pointer-events-auto"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEnlargedImage(selectedProduct.product.image_url!);
-                            }}
-                          >
-                            <ZoomIn className="h-4 w-4 mr-2" />
-                            Enlarge
-                          </Button>
+                  <h2 className="text-xl font-semibold mb-4">
+                    {selectedProduct.additionalImages && selectedProduct.additionalImages.length > 0 ? 'Product Images' : 'Product Image'}
+                  </h2>
+                  <div className="space-y-4">
+                    {(() => {
+                      const allImages = [
+                        ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
+                        ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+                      ];
+
+                      if (allImages.length === 0) {
+                        return (
+                          <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
+                            <div className="text-center text-muted-foreground">
+                              <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                              <p>No image available</p>
+                              <p className="text-sm mt-2">
+                                {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return allImages.map((image, index) => (
+                        <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
+                          <div className="relative group w-full">
+                            <img 
+                              src={image.url} 
+                              alt={`${selectedProduct.product.name} - ${image.description}`}
+                              className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
+                              onClick={() => setEnlargedImage(image.url)} 
+                              loading="lazy" 
+                              decoding="async" 
+                              sizes="(max-width: 768px) 100vw, 50vw" 
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="bg-background/90 backdrop-blur-sm pointer-events-auto"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEnlargedImage(image.url);
+                                }}
+                              >
+                                <ZoomIn className="h-4 w-4 mr-2" />
+                                Enlarge
+                              </Button>
+                            </div>
+                            {image.description && image.description !== 'Main Image' && (
+                              <div className="mt-2 text-center">
+                                <p className="text-sm text-muted-foreground bg-background/80 rounded px-2 py-1">
+                                  {image.description}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div> : <div className="text-center text-muted-foreground">
-                        <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                        <p>No image available</p>
-                        <p className="text-sm mt-2">
-                          {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
-                        </p>
-                      </div>}
+                      ));
+                    })()}
                   </div>
                 </div>
                 
