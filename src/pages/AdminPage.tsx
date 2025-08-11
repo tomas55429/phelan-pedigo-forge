@@ -529,29 +529,52 @@ const AdminPage = () => {
         customProductId = data.id;
       }
 
-      // Upload and insert additional images
+      // Upload and insert additional images with proper error handling
       if (customProductAdditionalImages.length > 0) {
-        const imagePromises = customProductAdditionalImages.map(async (item, index) => {
-          const uploadedUrl = await uploadProductImage(item.file);
-          if (uploadedUrl) {
-            return {
+        const imageData = [];
+        
+        for (let index = 0; index < customProductAdditionalImages.length; index++) {
+          const item = customProductAdditionalImages[index];
+          try {
+            // Create unique filename with index to prevent conflicts
+            const fileExt = item.file.name.split('.').pop();
+            const uniqueTimestamp = Date.now() + index; // Add index to ensure uniqueness
+            const fileName = `custom-${uniqueTimestamp}.${fileExt}`;
+            
+            const { error: uploadError } = await supabase.storage
+              .from('product-images')
+              .upload(fileName, item.file);
+
+            if (uploadError) {
+              console.error(`Upload error for image ${index}:`, uploadError);
+              continue; // Skip this image and continue with others
+            }
+
+            const { data: urlData } = supabase.storage
+              .from('product-images')
+              .getPublicUrl(fileName);
+
+            imageData.push({
               custom_product_id: customProductId,
-              image_url: uploadedUrl,
+              image_url: urlData.publicUrl,
               description: item.description || null,
               sort_order: index
-            };
+            });
+          } catch (error) {
+            console.error(`Error processing image ${index}:`, error);
+            // Continue with other images
           }
-          return null;
-        });
-
-        const imageData = (await Promise.all(imagePromises)).filter(Boolean);
+        }
         
         if (imageData.length > 0) {
           const { error } = await supabase
             .from('custom_product_images')
             .insert(imageData);
 
-          if (error) throw error;
+          if (error) {
+            console.error('Error inserting image records:', error);
+            throw error;
+          }
         }
       }
 
