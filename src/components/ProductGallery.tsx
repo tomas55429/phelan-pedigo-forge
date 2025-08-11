@@ -127,6 +127,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         console.log('🚀 BEFORE MERGE - Custom products:', customProducts.length);
         console.log('🚀 BEFORE MERGE - Regular products:', products.length);
         console.log('🚀 BEFORE MERGE - Custom product images:', customProductImages.length);
+        console.log('🚀 CUSTOM PRODUCT IMAGES DATA:', customProductImages);
 
         const allProducts = [...products, ...customProductsAsProducts];
         console.log('🚀 AFTER MERGE - All products:', allProducts.length);
