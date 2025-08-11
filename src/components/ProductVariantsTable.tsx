@@ -314,7 +314,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
           <Table className="border-collapse">
             <TableHeader>
               <TableRow>
-                <TableHead className="border-t border-r border-b border-border bg-muted/50 font-semibold min-w-[120px]">
+                <TableHead className="border-t border-b border-border bg-muted/50 font-semibold min-w-[120px]">
                   Specification
                 </TableHead>
                 {hasVariants ? (
