@@ -59,16 +59,12 @@ const Header = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="hidden md:flex w-full max-w-md">
+          <div className="flex w-full max-w-md mx-4">
             <GlobalSearch />
           </div>
 
-          {/* Phone Number and Auth Section */}
+          {/* Auth Section - Desktop Only */}
           <div className="hidden lg:flex items-center space-x-6">
-            <div className="flex items-center space-x-2 text-primary">
-              <Phone className="h-4 w-4" />
-              <span className="font-semibold">1-800-328-2358</span>
-            </div>
             
             {user ? <div className="flex items-center space-x-2">
                 {isAdmin && <Link to="/admin">
