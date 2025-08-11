@@ -67,7 +67,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     }
   }, [customDimensions]);
 
-  // Initialize with existing specifications or create empty entries for each variant
+  // Initialize with existing specifications or create empty entries for each variant or general product
   useEffect(() => {
     if (variants.length > 0) {
       const initialSpecs = variants.map(variant => {
@@ -95,6 +95,29 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         };
       });
       setSizeSpecs(initialSpecs);
+    } else {
+      // No variants - create general product specification
+      const existingWidth = existingSpecifications
+        .filter(spec => spec.variant_id === null && spec.specification_key === 'Width')
+        .map(spec => spec.specification_value)
+        .filter(val => val);
+      
+      const existingLength = existingSpecifications
+        .filter(spec => spec.variant_id === null && spec.specification_key === 'Length')
+        .map(spec => spec.specification_value)
+        .filter(val => val);
+      
+      const existingDepth = existingSpecifications
+        .filter(spec => spec.variant_id === null && spec.specification_key === 'Depth')
+        .map(spec => spec.specification_value)
+        .filter(val => val);
+
+      setSizeSpecs([{
+        variantId: 'general', // Use 'general' as placeholder for product-level specs
+        width: existingWidth.length > 0 ? existingWidth : [''],
+        length: existingLength.length > 0 ? existingLength : [''],
+        depth: existingDepth.length > 0 ? existingDepth : ['']
+      }]);
     }
   }, [variants, existingSpecifications]);
 
@@ -217,7 +240,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
               if (!existingSpec) {
                 newSpecifications.push({
                   product_id: productId,
-                  variant_id: spec.variantId,
+                  variant_id: spec.variantId === 'general' ? null : spec.variantId,
                   specification_key: dim.label,
                   specification_value: value,
                   sort_order: nextSortOrder++
@@ -253,18 +276,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     })));
   };
 
-  if (variants.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Size Specifications</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Please add product variants first to configure size specifications.</p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Render the form regardless of variant count
 
   return (
     <Card>
@@ -340,10 +352,96 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       <CardContent>
         <div className="space-y-4">
           <Badge variant="secondary" className="mb-4">
-            Configure dimensions for each product variant
+            {variants.length > 0 ? 
+              "Configure dimensions for each product variant" : 
+              "Configure general product dimensions"}
           </Badge>
           
-          {isVertical ? (
+          {variants.length === 0 ? (
+            // General product dimensions (no variants)
+            <div className="space-y-6">
+              {sizeSpecs.map((spec) => (
+                <Card key={spec.variantId} className="border-l-4 border-l-primary">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">
+                      General Product Dimensions
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Define size specifications for this product
+                    </p>
+                  </CardHeader>
+                  <CardContent className={`grid gap-4 ${dimensions.filter(d => d.enabled).length === 3 ? 'grid-cols-3' : dimensions.filter(d => d.enabled).length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {dimensions.filter(dim => dim.enabled).map((dim) => (
+                      <div key={dim.key} className="space-y-2">
+                        <Label htmlFor={`${dim.key}-general`}>{dim.label}</Label>
+                         <div className="space-y-3">
+                           {Array.from({ length: Math.max(...dimensions.filter(d => d.enabled).map(d => 
+                             (spec?.[d.key as keyof SizeSpecification] as string[])?.length || 0
+                           )) }).map((_, sizeIndex) => {
+                             const hasAnyValue = dimensions.filter(d => d.enabled).some(d => 
+                               (spec?.[d.key as keyof SizeSpecification] as string[])?.[sizeIndex]?.trim()
+                             );
+                             
+                             if (!hasAnyValue && sizeIndex > 0) return null;
+                             
+                             return (
+                               <div key={sizeIndex} className={`relative ${sizeIndex > 0 ? 'border-l-2 border-primary/30 pl-4 ml-2' : ''}`}>
+                                 {sizeIndex > 0 && (
+                                   <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rounded-full"></div>
+                                 )}
+                                 <div className="grid gap-3">
+                                   {dimensions.filter(d => d.enabled).map((d) => {
+                                     const values = spec?.[d.key as keyof SizeSpecification] as string[] || [];
+                                     const value = values[sizeIndex] || '';
+                                     
+                                     return (
+                                       <div key={`${d.key}-${sizeIndex}`} className="space-y-1">
+                                         <Label className="text-xs text-muted-foreground">{d.label}</Label>
+                                         <div className="flex items-center space-x-2">
+                                           <Input
+                                             value={value}
+                                             onChange={(e) => handleSpecChange('general', d.key as 'width' | 'length' | 'depth', sizeIndex, e.target.value)}
+                                             placeholder={`e.g., 12″, 15¼″`}
+                                             className="text-sm"
+                                           />
+                                           {values.length > 1 && (
+                                             <Button
+                                               type="button"
+                                               variant="outline"
+                                               size="sm"
+                                               onClick={() => removeSizeOption('general', d.key as 'width' | 'length' | 'depth', sizeIndex)}
+                                             >
+                                               <Trash2 className="h-4 w-4" />
+                                             </Button>
+                                           )}
+                                         </div>
+                                       </div>
+                                     );
+                                   })}
+                                 </div>
+                               </div>
+                             );
+                           })}
+                         </div>
+                      </div>
+                    ))}
+                    <div className="col-span-full mt-4 pt-4 border-t">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => addCompleteSize('general')}
+                        className="w-full"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Size ({dimensions.filter(d => d.enabled).map(d => d.label).join(', ')})
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : isVertical ? (
             // Vertical Layout
             <div className="space-y-6">
               {variants.map((variant) => {
