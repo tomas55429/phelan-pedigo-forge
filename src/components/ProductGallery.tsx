@@ -111,18 +111,22 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         let customCategory = categoriesData.find(cat => cat.name === 'Custom');
         
         // Convert custom products to regular products format and add to products array
-        const customProductsAsProducts = customProducts.map(customProduct => ({
-          id: `custom-${customProduct.id}`,
-          name: customProduct.name,
-          description: customProduct.description,
-          image_url: customProduct.main_image_url,
-          category_id: customCategory?.id || null,
-          featured: false,
-          created_at: customProduct.created_at,
-          updated_at: customProduct.updated_at,
-          special_notes: null,
-          model_3d_url: null
-        }));
+        const customProductsAsProducts = customProducts.map(customProduct => {
+          console.log('Converting custom product:', customProduct.id, 'to custom-' + customProduct.id);
+          return {
+            id: `custom-${customProduct.id}`,
+            name: customProduct.name,
+            description: customProduct.description,
+            image_url: customProduct.main_image_url,
+            category_id: customCategory?.id || null,
+            featured: false,
+            created_at: customProduct.created_at,
+            updated_at: customProduct.updated_at,
+            special_notes: null,
+            model_3d_url: null,
+            _customProductId: customProduct.id // Store original ID for image mapping
+          };
+        });
 
         const allProducts = [...products, ...customProductsAsProducts];
 
@@ -131,7 +135,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           // Handle custom products differently
           if (product.id.toString().startsWith('custom-')) {
             const customCategoryArray = customCategory ? [customCategory] : [];
-            const customProductId = product.id.toString().replace('custom-', '');
+            // Use the stored original custom product ID for image mapping
+            const customProductId = (product as any)._customProductId || product.id.toString().replace('custom-', '');
             const additionalImages = customProductImages
               .filter(img => img.custom_product_id === customProductId)
               .map(img => ({
@@ -143,8 +148,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             
             console.log('Custom product mapping:', {
               productId: product.id,
+              storedCustomProductId: (product as any)._customProductId,
               customProductId,
               availableImages: customProductImages.length,
+              availableImageIds: customProductImages.map(img => img.custom_product_id),
               filteredImages: additionalImages.length,
               additionalImages
             });
