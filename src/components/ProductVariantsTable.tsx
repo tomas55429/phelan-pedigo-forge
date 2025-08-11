@@ -267,11 +267,30 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   // Use original specs without modification
   const processedSpecs = { ...specsByKey };
 
-  // Calculate maximum number of sizes across all variants and specifications
+  // Filter variants to only include those with size specifications
+  const variantsWithSizeData = variants.filter(variant => {
+    return Object.keys(processedSpecs).some(specKey => {
+      const isSizeSpec = ['width', 'length', 'depth', 'height'].some(sizeType => 
+        specKey.toLowerCase().includes(sizeType)
+      );
+      if (!isSizeSpec) return false;
+      
+      const hasVariantData = processedSpecs[specKey]?.values?.[variant.id]?.length > 0;
+      const hasGeneralData = processedSpecs[specKey]?.generalValue;
+      return hasVariantData || hasGeneralData;
+    });
+  });
+
+  // Calculate maximum number of sizes across all variants and specifications (only for variants with size data)
   const maxSizeCount = Math.max(
     1,
     ...Object.values(processedSpecs).flatMap(spec => 
-      Object.values(spec.values).map(values => values.length)
+      Object.values(spec.values)
+        .filter((_, index) => {
+          const variantId = Object.keys(spec.values)[index];
+          return variantsWithSizeData.some(v => v.id === variantId);
+        })
+        .map(values => values.length)
     )
   );
 
@@ -345,8 +364,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                 <TableHead className="border-t border-b border-border bg-muted/50 font-semibold min-w-[120px]">
                   Specification
                 </TableHead>
-                {hasVariants ? (
-                  variants.map((variant) => {
+                {variantsWithSizeData.length > 0 ? (
+                  variantsWithSizeData.map((variant) => {
                     // Calculate actual column span for this variant based on size specifications
                     const variantColumnSpan = Math.max(1, ...Object.values(processedSpecs)
                       .filter(spec => {
@@ -391,16 +410,16 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                 <SortableContext items={specificationKeys} strategy={verticalListSortingStrategy}>
                   <TableBody>
                     {specificationKeys.map((specKey) => (
-                      <SortableRow
-                        key={specKey}
-                        specKey={specKey}
-                        processedSpecs={processedSpecs}
-                        variants={variants}
-                        hasVariants={hasVariants}
-                        formatSizeValue={formatSizeValue}
-                        maxSizeCount={maxSizeCount}
-                        isAdmin={isAdmin}
-                      />
+                       <SortableRow
+                         key={specKey}
+                         specKey={specKey}
+                         processedSpecs={processedSpecs}
+                         variants={variantsWithSizeData}
+                         hasVariants={variantsWithSizeData.length > 0}
+                         formatSizeValue={formatSizeValue}
+                         maxSizeCount={maxSizeCount}
+                         isAdmin={isAdmin}
+                       />
                     ))}
                   </TableBody>
                 </SortableContext>
@@ -412,8 +431,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                     key={specKey}
                     specKey={specKey}
                     processedSpecs={processedSpecs}
-                    variants={variants}
-                    hasVariants={hasVariants}
+                    variants={variantsWithSizeData}
+                    hasVariants={variantsWithSizeData.length > 0}
                     formatSizeValue={formatSizeValue}
                     maxSizeCount={maxSizeCount}
                     isAdmin={isAdmin}
