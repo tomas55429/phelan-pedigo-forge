@@ -88,38 +88,55 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           <span>{specKey}</span>
         </div>
       </TableCell>
-      {hasVariants ? (
-        variants.flatMap((variant) => {
-          const values = processedSpecs[specKey]?.values?.[variant.id] || [];
-          return Array.from({ length: maxSizeCount }).map((_, sizeIndex) => {
-            const valueData = values[sizeIndex];
-            const isFirstOfVariant = sizeIndex === 0;
-            const hasValue = valueData && valueData.value.trim();
-            
+      {isSizeSpecification(specKey) ? (
+        // Size specifications with multiple columns and separators
+        hasVariants ? (
+          variants.flatMap((variant) => {
+            const values = processedSpecs[specKey]?.values?.[variant.id] || [];
+            return Array.from({ length: maxSizeCount }).map((_, sizeIndex) => {
+              const valueData = values[sizeIndex];
+              const isFirstOfVariant = sizeIndex === 0;
+              const hasValue = valueData && valueData.value.trim();
+              
+              return (
+                <TableCell 
+                  key={`${variant.id}-${sizeIndex}`} 
+                  className={`text-center border border-border text-sm ${
+                    isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
+                  } ${!hasValue ? 'bg-muted/20' : ''}`}
+                >
+                  {hasValue ? formatSizeValue(valueData.value) : '-'}
+                </TableCell>
+              );
+            });
+          })
+        ) : (
+          <TableCell className="text-center border border-border">
+            {processedSpecs[specKey]?.generalValue ? 
+              formatSizeValue(processedSpecs[specKey].generalValue || '-') : '-'}
+          </TableCell>
+        )
+      ) : (
+        // Non-size specifications with single column per variant
+        hasVariants ? (
+          variants.map((variant) => {
+            const values = processedSpecs[specKey]?.values?.[variant.id] || [];
+            const value = values.length > 0 ? values[0].value : '';
             return (
               <TableCell 
-                key={`${variant.id}-${sizeIndex}`} 
-                className={`text-center border border-border text-sm ${
-                  isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
-                } ${!hasValue ? 'bg-muted/20' : ''}`}
+                key={variant.id} 
+                className="text-center border border-border"
+                colSpan={maxSizeCount}
               >
-                {hasValue ? (
-                  isSizeSpecification(specKey) 
-                    ? formatSizeValue(valueData.value)
-                    : valueData.value
-                ) : '-'}
+                {value || '-'}
               </TableCell>
             );
-          });
-        })
-      ) : (
-        <TableCell className="text-center border border-border">
-          {processedSpecs[specKey]?.generalValue ? (
-            isSizeSpecification(specKey) 
-              ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
-              : (processedSpecs[specKey].generalValue || '-')
-          ) : '-'}
-        </TableCell>
+          })
+        ) : (
+          <TableCell className="text-center border border-border">
+            {processedSpecs[specKey]?.generalValue || '-'}
+          </TableCell>
+        )
       )}
     </TableRow>
   );
