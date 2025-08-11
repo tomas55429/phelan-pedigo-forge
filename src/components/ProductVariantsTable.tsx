@@ -51,7 +51,8 @@ interface SortableRowProps {
   processedSpecs: Record<string, { 
     values: Record<string, {value: string, sort_order: number}[]>, 
     sort_order: number, 
-    generalValue: string | null 
+    generalValue: string | null,
+    generalValues: { value: string, sort_order: number }[]
   }>;
   variants: ProductVariant[];
   hasVariants: boolean;
@@ -79,6 +80,9 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
     return lowerKey.includes('width') || lowerKey.includes('length') || 
            lowerKey.includes('depth') || lowerKey.includes('height');
   };
+
+  const generalValuesForKey = processedSpecs[specKey]?.generalValues || [];
+  const generalActualSizeCount = Math.max(generalValuesForKey.length, processedSpecs[specKey]?.generalValue ? 1 : 0);
 
   return (
     <TableRow ref={setNodeRef} style={style} {...attributes}>
@@ -124,10 +128,34 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             });
           })
         ) : (
-          <TableCell className="text-center border border-border">
-            {processedSpecs[specKey]?.generalValue ? 
-              formatSizeValue(processedSpecs[specKey].generalValue || '') : ''}
-          </TableCell>
+          <>
+            {generalActualSizeCount === 0 ? (
+              <TableCell className="text-center border border-border">
+                {/* Empty cell to keep table structure */}
+              </TableCell>
+            ) : (
+              Array.from({ length: generalActualSizeCount }).map((_, sizeIndex) => {
+                const valueData = generalValuesForKey[sizeIndex];
+                const isFirst = sizeIndex === 0;
+                const hasValue = !!(valueData && valueData.value.trim());
+                return (
+                  <TableCell 
+                    key={`general-${sizeIndex}`} 
+                    className={`text-center border border-border text-sm ${
+                      isFirst ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
+                    }`}
+                  >
+                    {hasValue
+                      ? formatSizeValue(valueData.value)
+                      : processedSpecs[specKey]?.generalValue
+                      ? formatSizeValue(processedSpecs[specKey]?.generalValue || '')
+                      : ''}
+                  </TableCell>
+                );
+              })
+            )}
+          </>
+
         )
       ) : (
         // Non-size specifications with single column per variant (no separators)
@@ -204,7 +232,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       acc[spec.specification_key] = {
         values: {},
         sort_order: spec.sort_order || 0,
-        generalValue: null
+        generalValue: null,
+        generalValues: []
       };
     }
     if (spec.variant_id) {
@@ -216,13 +245,22 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
         sort_order: spec.sort_order || 0
       });
     } else {
-      acc[spec.specification_key].generalValue = spec.specification_value;
+      // Collect multiple general (no-variant) values, preserving order
+      acc[spec.specification_key].generalValues.push({
+        value: spec.specification_value,
+        sort_order: spec.sort_order || 0
+      });
+      // Use the first general value as the default fallback for variants
+      if (!acc[spec.specification_key].generalValue) {
+        acc[spec.specification_key].generalValue = spec.specification_value;
+      }
     }
     return acc;
   }, {} as Record<string, { 
     values: Record<string, {value: string, sort_order: number}[]>, 
     sort_order: number, 
-    generalValue: string | null 
+    generalValue: string | null,
+    generalValues: { value: string, sort_order: number }[]
   }>);
 
   // Sort values within each specification key by sort_order
@@ -230,6 +268,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     Object.keys(specsByKey[key].values).forEach(variantId => {
       specsByKey[key].values[variantId].sort((a, b) => a.sort_order - b.sort_order);
     });
+    specsByKey[key].generalValues?.sort((a, b) => a.sort_order - b.sort_order);
   });
 
   // Function to format size values with proper fraction symbols and smaller font
@@ -293,12 +332,20 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
         .map(values => values.length)
     )
   );
+  // Calculate max number of size sets for general (no variant) specs
+  const generalMaxColumnSpan = Math.max(
+    1,
+    ...Object.values(processedSpecs).map(spec => {
+      const count = spec.generalValues?.length ?? 0;
+      return Math.max(count, spec.generalValue ? 1 : 0);
+    })
+  );
 
-  // Debug logging to check maxSizeCount and data
-  console.log('Debug - maxSizeCount:', maxSizeCount);
+  // Debug logging to check counts and data
+  console.log('Debug - maxSizeCount (variants):', maxSizeCount);
+  console.log('Debug - generalMaxColumnSpan (no variants):', generalMaxColumnSpan);
   console.log('Debug - processedSpecs:', processedSpecs);
   console.log('Debug - specifications input:', specifications);
-
   // Custom ordering: Description first, then Width, Length, Depth, then others
   const getSpecOrder = (key: string) => {
     const lowerKey = key.toLowerCase();
@@ -397,7 +444,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                     );
                   })
                 ) : (
-                  <TableHead className="text-center font-semibold">Value</TableHead>
+                  <TableHead className="text-center font-semibold" colSpan={generalMaxColumnSpan}>Value</TableHead>
                 )}
               </TableRow>
             </TableHeader>
