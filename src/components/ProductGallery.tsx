@@ -123,8 +123,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           special_notes: null,
           model_3d_url: null
         }));
+        
+        console.log('🚀 BEFORE MERGE - Custom products:', customProducts.length);
+        console.log('🚀 BEFORE MERGE - Regular products:', products.length);
+        console.log('🚀 BEFORE MERGE - Custom product images:', customProductImages.length);
 
         const allProducts = [...products, ...customProductsAsProducts];
+        console.log('🚀 AFTER MERGE - All products:', allProducts.length);
+        console.log('🚀 AFTER MERGE - Products with custom- prefix:', allProducts.filter(p => p.id.toString().startsWith('custom-')).length);
 
         // Group data by product
         const productsWithDetailsData: ProductWithDetails[] = allProducts.map(product => {
