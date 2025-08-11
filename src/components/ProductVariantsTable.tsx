@@ -47,7 +47,7 @@ interface ProductVariantsTableProps {
 
 interface SortableRowProps {
   specKey: string;
-  processedSpecs: Record<string, { values: Record<string, string>, sort_order: number, generalValue: string | null }>;
+  processedSpecs: Record<string, { values: Record<string, string[]>, sort_order: number, generalValue: string | null }>;
   variants: ProductVariant[];
   hasVariants: boolean;
   formatSizeValue: (value: string) => JSX.Element | string;
@@ -85,22 +85,29 @@ const SortableRow: React.FC<SortableRowProps> = ({ specKey, processedSpecs, vari
       </TableCell>
       {hasVariants ? (
         variants.map((variant) => (
-           <TableCell key={variant.id} className="text-center">
-             {processedSpecs[specKey] ? (
-               specKey.toLowerCase().includes('size') 
-                 ? formatSizeValue(processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
-                 : (processedSpecs[specKey].values[variant.id] || processedSpecs[specKey].generalValue || '-')
-             ) : '-'}
-           </TableCell>
+          <TableCell key={variant.id} className="text-center border border-border">
+            {processedSpecs[specKey]?.values?.[variant.id] ? (
+              <div className="space-y-1">
+                {processedSpecs[specKey].values[variant.id].map((value: string, index: number) => (
+                  <div key={index} className="text-sm">
+                    {specKey.toLowerCase().includes('width') || specKey.toLowerCase().includes('length') || specKey.toLowerCase().includes('depth') || specKey.toLowerCase().includes('height')
+                      ? formatSizeValue(value || '-')
+                      : (value || '-')
+                    }
+                  </div>
+                ))}
+              </div>
+            ) : '-'}
+          </TableCell>
         ))
       ) : (
-         <TableCell className="text-center">
-           {processedSpecs[specKey] ? (
-             specKey.toLowerCase().includes('size')
-               ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
-               : (processedSpecs[specKey].generalValue || '-')
-           ) : '-'}
-         </TableCell>
+        <TableCell className="text-center border border-border">
+          {processedSpecs[specKey]?.generalValue ? (
+            specKey.toLowerCase().includes('width') || specKey.toLowerCase().includes('length') || specKey.toLowerCase().includes('depth') || specKey.toLowerCase().includes('height')
+              ? formatSizeValue(processedSpecs[specKey].generalValue || '-')
+              : (processedSpecs[specKey].generalValue || '-')
+          ) : '-'}
+        </TableCell>
       )}
     </TableRow>
   );
@@ -130,7 +137,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     return cleanName;
   };
 
-  // Group specifications by key and variant
+  // Group specifications by key and variant, handling multiple values
   const specsByKey = specifications.reduce((acc, spec) => {
     if (!acc[spec.specification_key]) {
       acc[spec.specification_key] = {
@@ -140,13 +147,17 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       };
     }
     if (spec.variant_id) {
-      acc[spec.specification_key].values[spec.variant_id] = spec.specification_value;
+      // Handle multiple values for the same specification key and variant
+      if (!acc[spec.specification_key].values[spec.variant_id]) {
+        acc[spec.specification_key].values[spec.variant_id] = [];
+      }
+      acc[spec.specification_key].values[spec.variant_id].push(spec.specification_value);
     } else {
       // General specification (not tied to a variant)
       acc[spec.specification_key].generalValue = spec.specification_value;
     }
     return acc;
-  }, {} as Record<string, { values: Record<string, string>, sort_order: number, generalValue: string | null }>);
+  }, {} as Record<string, { values: Record<string, string[]>, sort_order: number, generalValue: string | null }>);
 
   // Function to format size values with proper fraction symbols and smaller font
   const formatSizeValue = (value: string) => {
@@ -206,8 +217,15 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
       }
       return a.localeCompare(b);
     });
-    setSpecificationKeys(keys);
-  }, [processedSpecs]);
+    
+    // Only update if keys have actually changed to prevent infinite loops
+    setSpecificationKeys(prev => {
+      if (JSON.stringify(prev) !== JSON.stringify(keys)) {
+        return keys;
+      }
+      return prev;
+    });
+  }, [Object.keys(processedSpecs).join(',')]);  // Use string comparison for dependency
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
