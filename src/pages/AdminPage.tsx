@@ -1636,21 +1636,13 @@ const AdminPage = () => {
                       });
                     }}
                     onSpecificationDelete={async (productId, variantId, specKey, specValue) => {
-                      let query = supabase
+                      const { error } = await supabase
                         .from('product_specifications')
                         .delete()
                         .eq('product_id', productId)
+                        .eq('variant_id', variantId)
                         .eq('specification_key', specKey)
                         .eq('specification_value', specValue);
-                      
-                      // Handle null variant_id properly for general specifications
-                      if (variantId === null) {
-                        query = query.is('variant_id', null);
-                      } else {
-                        query = query.eq('variant_id', variantId);
-                      }
-                      
-                      const { error } = await query;
 
                       if (error) {
                         throw new Error('Failed to delete specification from database');
@@ -1735,9 +1727,7 @@ const AdminPage = () => {
                       <CardHeader>
                         <CardTitle>Other Specifications</CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          Add general product specifications or variant-specific details.<br />
-                          <strong>For general product specs:</strong> Select "Product (General)"<br />
-                          <strong>For variant-specific specs:</strong> Select a specific variant
+                          For non-dimension specifications (e.g., Weight, Material, etc.)
                         </p>
                       </CardHeader>
                       <CardContent className="space-y-4">
