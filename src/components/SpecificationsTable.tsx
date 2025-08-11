@@ -109,10 +109,22 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
     return a.localeCompare(b);
   });
 
-  // Separate dimension specs from others and ensure proper order
+  // Separate dimension specs from others and group them horizontally
   const dimensionSpecs = ['Width', 'Length', 'Depth'];
+  const dimensionSpecsInData = dimensionSpecs.filter(key => specificationKeys.includes(key));
   const otherSpecs = specificationKeys.filter(key => !dimensionSpecs.includes(key));
-  const orderedSpecs = [...dimensionSpecs.filter(key => specificationKeys.includes(key)), ...otherSpecs];
+  
+  // Helper function to format combined size specifications
+  const formatCombinedSizes = (variant: ProductVariant) => {
+    const sizes = dimensionSpecsInData.map(dimKey => {
+      const value = specsByKey[dimKey]?.values[variant.id] || 
+                   specsByKey[dimKey]?.generalValue || 
+                   '-';
+      return dimensionSpecs.includes(dimKey) ? formatSizeValue(value) : value;
+    });
+    
+    return sizes.join(' × ');
+  };
 
   return (
     <Card className="w-full">
@@ -156,48 +168,93 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {orderedSpecs.map((specKey, index) => (
-                <TableRow key={specKey} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+              {/* Combined Size Row (if dimension specs exist) */}
+              {dimensionSpecsInData.length > 0 && (
+                <TableRow className="bg-background">
+                  <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
+                    Size ({dimensionSpecsInData.join(' × ')})
+                  </TableCell>
+                  {variants.length > 0 ? (
+                    variants.map((variant) => {
+                      // Get all dimension spec IDs for this variant for deletion
+                      const dimensionSpecIds = dimensionSpecsInData
+                        .map(dimKey => specsByKey[dimKey]?.ids[variant.id] || specsByKey[dimKey]?.generalId)
+                        .filter(Boolean);
+                      
+                      return (
+                        <TableCell 
+                          key={variant.id} 
+                          className="border border-r-2 border-r-primary/30 border-l border-t border-b border-border text-center px-3 py-3 text-sm"
+                        >
+                          <div className="flex items-center justify-center space-x-2">
+                            <span>{formatCombinedSizes(variant)}</span>
+                            {isAdminView && onDelete && dimensionSpecIds.length > 0 && (
+                              <div className="flex space-x-1">
+                                {dimensionSpecIds.map((specId, index) => (
+                                  <Button
+                                    key={specId}
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => onDelete(specId)}
+                                    className="h-6 w-6 p-0 hover:bg-destructive/10"
+                                    title={`Delete ${dimensionSpecsInData[index]}`}
+                                  >
+                                    <Trash2 className="h-3 w-3 text-destructive" />
+                                  </Button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                      );
+                    })
+                  ) : (
+                    <TableCell className="border border-border text-center px-4 py-3 text-sm">
+                      {dimensionSpecsInData.map(dimKey => {
+                        const value = specsByKey[dimKey]?.generalValue || '-';
+                        return formatSizeValue(value);
+                      }).join(' × ')}
+                    </TableCell>
+                  )}
+                </TableRow>
+              )}
+              
+              {/* Other specifications (non-dimension) */}
+              {otherSpecs.map((specKey, index) => (
+                <TableRow key={specKey} className={index % 2 === 0 ? 'bg-muted/20' : 'bg-background'}>
                   <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
                     {specKey}
                   </TableCell>
                   {variants.length > 0 ? (
-                     variants.map((variant) => {
-                       const value = specsByKey[specKey].values[variant.id] || 
-                                    specsByKey[specKey].generalValue || 
-                                    '-';
-                       const specId = specsByKey[specKey].ids[variant.id] || specsByKey[specKey].generalId;
-                       return (
-                         <TableCell 
-                           key={variant.id} 
-                           className={`border text-center px-3 py-3 text-sm ${
-                             dimensionSpecs.includes(specKey) 
-                               ? 'border-r-2 border-r-primary/30 border-l border-t border-b border-border' 
-                               : 'border-border'
-                           }`}
-                         >
-                           <div className="flex items-center justify-center space-x-2">
-                             <span>{dimensionSpecs.includes(specKey) ? formatSizeValue(value) : value}</span>
-                             {isAdminView && onDelete && value !== '-' && specId && (
-                               <Button
-                                 variant="ghost"
-                                 size="sm"
-                                 onClick={() => onDelete(specId)}
-                                 className="h-6 w-6 p-0 hover:bg-destructive/10"
-                               >
-                                 <Trash2 className="h-3 w-3 text-destructive" />
-                               </Button>
-                             )}
-                           </div>
-                         </TableCell>
-                       );
-                     })
+                    variants.map((variant) => {
+                      const value = specsByKey[specKey].values[variant.id] || 
+                                   specsByKey[specKey].generalValue || 
+                                   '-';
+                      const specId = specsByKey[specKey].ids[variant.id] || specsByKey[specKey].generalId;
+                      return (
+                        <TableCell 
+                          key={variant.id} 
+                          className="border border-border text-center px-3 py-3 text-sm"
+                        >
+                          <div className="flex items-center justify-center space-x-2">
+                            <span>{value}</span>
+                            {isAdminView && onDelete && value !== '-' && specId && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => onDelete(specId)}
+                                className="h-6 w-6 p-0 hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-3 w-3 text-destructive" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      );
+                    })
                   ) : (
                     <TableCell className="border border-border text-center px-4 py-3 text-sm">
-                      {dimensionSpecs.includes(specKey) 
-                        ? formatSizeValue(specsByKey[specKey].generalValue || '-')
-                        : (specsByKey[specKey].generalValue || '-')
-                      }
+                      {specsByKey[specKey].generalValue || '-'}
                     </TableCell>
                   )}
                 </TableRow>
