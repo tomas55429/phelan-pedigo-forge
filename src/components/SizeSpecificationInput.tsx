@@ -67,18 +67,36 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     }
   }, [customDimensions]);
 
-  // Initialize with empty entries for each variant (don't populate with existing specs)
+  // Initialize with existing specifications or create empty entries for each variant
   useEffect(() => {
     if (variants.length > 0) {
-      const initialSpecs = variants.map(variant => ({
-        variantId: variant.id,
-        width: [''],
-        length: [''],
-        depth: ['']
-      }));
+      const initialSpecs = variants.map(variant => {
+        // Find existing specs for this variant and group by dimension
+        const existingWidth = existingSpecifications
+          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Width')
+          .map(spec => spec.specification_value)
+          .filter(val => val);
+        
+        const existingLength = existingSpecifications
+          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Length')
+          .map(spec => spec.specification_value)
+          .filter(val => val);
+        
+        const existingDepth = existingSpecifications
+          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Depth')
+          .map(spec => spec.specification_value)
+          .filter(val => val);
+
+        return {
+          variantId: variant.id,
+          width: existingWidth.length > 0 ? existingWidth : [''],
+          length: existingLength.length > 0 ? existingLength : [''],
+          depth: existingDepth.length > 0 ? existingDepth : ['']
+        };
+      });
       setSizeSpecs(initialSpecs);
     }
-  }, [variants]);
+  }, [variants, existingSpecifications]);
 
   const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth', index: number, value: string) => {
     setSizeSpecs(prev => prev.map(spec => 
@@ -175,64 +193,46 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     return variantName.split('-')[0].trim();
   };
 
-  const generateSpecificationsForVariant = (variantId: string) => {
+  const generateSpecifications = () => {
     const newSpecifications: any[] = [];
     
     // Find the highest existing sort order to ensure new specs are added after existing ones
     const maxSortOrder = Math.max(...existingSpecifications.map(spec => spec.sort_order || 0), 0);
     let nextSortOrder = maxSortOrder + 1;
     
-    const spec = sizeSpecs.find(s => s.variantId === variantId);
-    if (!spec) {
-      console.log('Debug - No spec found for variant:', variantId);
-      return;
-    }
-    
-    console.log('Debug - Current spec for variant:', variantId, spec);
-    console.log('Debug - Current dimensions:', dimensions);
-    console.log('Debug - Existing specifications for this variant:', existingSpecifications.filter(s => s.variant_id === variantId));
-    
-    dimensions.forEach((dim, dimIndex) => {
-      if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
-        const values = spec[dim.key as keyof SizeSpecification] as string[];
-        console.log(`Debug - Processing dimension ${dim.label} (key: ${dim.key}) with values:`, values);
-        
-        values.forEach((value, valueIndex) => {
-          if (value.trim()) {
-            // Check if this exact specification already exists in the database
-            const existingSpec = existingSpecifications.find(existing => 
-              existing.variant_id === variantId &&
-              existing.specification_key === dim.label &&
-              existing.specification_value === value.trim()
-            );
-            
-            if (!existingSpec) {
-              console.log(`Debug - Adding new specification: ${dim.label} = ${value} for variant ${variantId}`);
-              newSpecifications.push({
-                product_id: productId,
-                variant_id: variantId,
-                specification_key: dim.label,
-                specification_value: value.trim(),
-                sort_order: nextSortOrder++
-              });
-            } else {
-              console.log(`Debug - Skipping duplicate specification: ${dim.label} = ${value} for variant ${variantId} (already exists with ID: ${existingSpec.id})`);
+    sizeSpecs.forEach(spec => {
+      dimensions.forEach((dim, dimIndex) => {
+        if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
+          const values = spec[dim.key as keyof SizeSpecification] as string[];
+          values.forEach((value, valueIndex) => {
+            if (value.trim()) {
+              // Check if this specification already exists
+              const existingSpec = existingSpecifications.find(existing => 
+                existing.variant_id === spec.variantId &&
+                existing.specification_key === dim.label &&
+                existing.specification_value === value
+              );
+              
+              // Only add if it doesn't already exist
+              if (!existingSpec) {
+                newSpecifications.push({
+                  product_id: productId,
+                  variant_id: spec.variantId,
+                  specification_key: dim.label,
+                  specification_value: value,
+                  sort_order: nextSortOrder++
+                });
+              }
             }
-          } else {
-            console.log(`Debug - Skipping empty value for dimension ${dim.label}`);
-          }
-        });
-      } else {
-        console.log(`Debug - Skipping dimension ${dim.label} (enabled: ${dim.enabled}, hasValues: ${!!spec[dim.key as keyof SizeSpecification]})`);
-      }
+          });
+        }
+      });
     });
-
-    console.log('Debug - New specifications to be added:', newSpecifications);
 
     if (newSpecifications.length === 0) {
       toast({
         title: "Info",
-        description: "No new specifications to add for this variant (duplicates skipped)"
+        description: "No new specifications to add"
       });
       return;
     }
@@ -240,7 +240,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     onSpecificationsChange(newSpecifications);
     toast({
       title: "Success",
-      description: `${newSpecifications.length} new size specifications added for variant`
+      description: `${newSpecifications.length} new size specifications added`
     });
   };
 
@@ -331,9 +331,10 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           </div>
         </div>
         <div className="flex space-x-2">
-          <p className="text-sm text-muted-foreground">
-            Use the "Apply Specifications" button for each variant individually to avoid duplicate entries.
-          </p>
+          <Button onClick={generateSpecifications} className="flex items-center space-x-2">
+            <Plus className="h-4 w-4" />
+            <span>Apply to Specifications</span>
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -363,40 +364,60 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                       {dimensions.filter(dim => dim.enabled).map((dim) => (
                         <div key={dim.key} className="space-y-2">
                           <Label htmlFor={`${dim.key}-${variant.id}`}>{dim.label}</Label>
-                           {/* Show input fields only for the current dimension */}
-                           <div className="space-y-2">
-                             {((spec?.[dim.key as keyof SizeSpecification] as string[]) || ['']).map((value, index) => (
-                               <div key={index} className="flex items-center space-x-2">
-                                 <Input
-                                   value={value}
-                                   onChange={(e) => handleSpecChange(variant.id, dim.key as 'width' | 'length' | 'depth', index, e.target.value)}
-                                   placeholder={`e.g., 12″, 15¼″`}
-                                   className="text-sm"
-                                 />
-                                 <Button
-                                   type="button"
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => addSizeOption(variant.id, dim.key as 'width' | 'length' | 'depth')}
-                                 >
-                                   <Plus className="h-4 w-4" />
-                                 </Button>
-                                 {((spec?.[dim.key as keyof SizeSpecification] as string[]) || []).length > 1 && (
-                                   <Button
-                                     type="button"
-                                     variant="outline"
-                                     size="sm"
-                                     onClick={() => removeSizeOption(variant.id, dim.key as 'width' | 'length' | 'depth', index)}
-                                   >
-                                     <Trash2 className="h-4 w-4" />
-                                   </Button>
-                                 )}
-                               </div>
-                             ))}
+                           {/* Group related size dimensions with visual dividers */}
+                           <div className="space-y-3">
+                             {/* Determine the maximum number of size sets */}
+                             {Array.from({ length: Math.max(...dimensions.filter(d => d.enabled).map(d => 
+                               (spec?.[d.key as keyof SizeSpecification] as string[])?.length || 0
+                             )) }).map((_, sizeIndex) => {
+                               const hasAnyValue = dimensions.filter(d => d.enabled).some(d => 
+                                 (spec?.[d.key as keyof SizeSpecification] as string[])?.[sizeIndex]?.trim()
+                               );
+                               
+                               if (!hasAnyValue && sizeIndex > 0) return null;
+                               
+                               return (
+                                 <div key={sizeIndex} className={`relative ${sizeIndex > 0 ? 'border-l-2 border-primary/30 pl-4 ml-2' : ''}`}>
+                                   {sizeIndex > 0 && (
+                                     <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rounded-full"></div>
+                                   )}
+                                   <div className="grid gap-3">
+                                     {dimensions.filter(d => d.enabled).map((d) => {
+                                       const values = spec?.[d.key as keyof SizeSpecification] as string[] || [];
+                                       const value = values[sizeIndex] || '';
+                                       
+                                       return (
+                                         <div key={`${d.key}-${sizeIndex}`} className="space-y-1">
+                                           <Label className="text-xs text-muted-foreground">{d.label}</Label>
+                                           <div className="flex items-center space-x-2">
+                                             <Input
+                                               value={value}
+                                               onChange={(e) => handleSpecChange(variant.id, d.key as 'width' | 'length' | 'depth', sizeIndex, e.target.value)}
+                                               placeholder={`e.g., 12″, 15¼″`}
+                                               className="text-sm"
+                                             />
+                                             {values.length > 1 && (
+                                               <Button
+                                                 type="button"
+                                                 variant="outline"
+                                                 size="sm"
+                                                 onClick={() => removeSizeOption(variant.id, d.key as 'width' | 'length' | 'depth', sizeIndex)}
+                                               >
+                                                 <Trash2 className="h-4 w-4" />
+                                               </Button>
+                                             )}
+                                           </div>
+                                         </div>
+                                       );
+                                     })}
+                                   </div>
+                                 </div>
+                               );
+                             })}
                            </div>
                         </div>
                       ))}
-                      <div className="col-span-full mt-4 pt-4 border-t space-y-2">
+                      <div className="col-span-full mt-4 pt-4 border-t">
                         <Button
                           type="button"
                           variant="outline"
@@ -406,15 +427,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                         >
                           <Plus className="h-4 w-4 mr-2" />
                           Add Size ({dimensions.filter(d => d.enabled).map(d => d.label).join(', ')})
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => generateSpecificationsForVariant(variant.id)}
-                          className="w-full"
-                          size="sm"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          Apply Specifications for this Variant
                         </Button>
                       </div>
                     </CardContent>
@@ -498,28 +510,17 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                                  );
                                })}
                                {index === dimensions.filter(dim => dim.enabled).length - 1 && (
-                                  <div className="space-y-1">
-                                    <Button
-                                      type="button"
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => addCompleteSize(variant.id)}
-                                      className="w-full py-1 h-6 text-xs"
-                                    >
-                                      <Plus className="h-3 w-3 mr-1" />
-                                      Add Size
-                                    </Button>
-                                    <Button
-                                      type="button"
-                                      onClick={() => generateSpecificationsForVariant(variant.id)}
-                                      className="w-full py-1 h-6 text-xs"
-                                      size="sm"
-                                    >
-                                      <Plus className="h-3 w-3 mr-1" />
-                                      Apply Specs
-                                    </Button>
-                                  </div>
-                                )}
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => addCompleteSize(variant.id)}
+                                   className="w-full py-1 h-6 text-xs mt-2"
+                                 >
+                                   <Plus className="h-3 w-3 mr-1" />
+                                   Add Size
+                                 </Button>
+                               )}
                              </div>
                           </TableCell>
                         );
