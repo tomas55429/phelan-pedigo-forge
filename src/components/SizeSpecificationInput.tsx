@@ -9,7 +9,6 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProductVariant {
   id: string;
@@ -60,10 +59,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     ]
   );
   const { toast } = useToast();
-
-  const [copySourceVariantId, setCopySourceVariantId] = useState<string>('');
-  const [copyTargetVariantId, setCopyTargetVariantId] = useState<string>('');
-  const [appendCopy, setAppendCopy] = useState(true);
 
   // Update dimensions when customDimensions prop changes
   useEffect(() => {
@@ -226,45 +221,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     }
   };
 
-  const copySizesFromVariant = () => {
-    if (!copySourceVariantId || !copyTargetVariantId) {
-      toast({ title: 'Select variants', description: 'Choose both source and target variants' });
-      return;
-    }
-    if (copySourceVariantId === copyTargetVariantId) {
-      toast({ title: 'Invalid selection', description: 'Source and target must be different', variant: 'destructive' });
-      return;
-    }
-
-    setSizeSpecs(prev => {
-      const source = prev.find(s => s.variantId === copySourceVariantId);
-      const target = prev.find(s => s.variantId === copyTargetVariantId);
-      if (!source || !target) {
-        toast({ title: 'Error', description: 'Could not find selected variants', variant: 'destructive' });
-        return prev;
-      }
-
-      const updated = prev.map(s => {
-        if (s.variantId !== copyTargetVariantId) return s;
-        const next = { ...s } as SizeSpecification;
-        if (appendCopy) {
-          next.width = [...(s.width || []), ...(source.width || [])];
-          next.length = [...(s.length || []), ...(source.length || [])];
-          next.depth = [...(s.depth || []), ...(source.depth || [])];
-        } else {
-          next.width = [...(source.width || [])];
-          next.length = [...(source.length || [])];
-          next.depth = [...(source.depth || [])];
-        }
-        return next;
-      });
-
-      return updated;
-    });
-
-    toast({ title: 'Copied', description: 'Sizes copied from source to target variant' });
-  };
-
   const formatVariantName = (variantName: string) => {
     return variantName.split('-')[0].trim();
   };
@@ -403,30 +359,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
               <RotateCcw className="h-4 w-4 mr-2" />
               Clear All
             </Button>
-            <div className="hidden md:flex items-center space-x-2">
-              <Label className="text-sm">Copy sizes</Label>
-              <Select value={copySourceVariantId} onValueChange={(v) => setCopySourceVariantId(v)}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="From variant" /></SelectTrigger>
-                <SelectContent>
-                  {variants.map(v => (
-                    <SelectItem key={v.id} value={v.id}>{formatVariantName(v.variant_name)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={copyTargetVariantId} onValueChange={(v) => setCopyTargetVariantId(v)}>
-                <SelectTrigger className="w-[160px]"><SelectValue placeholder="To variant" /></SelectTrigger>
-                <SelectContent>
-                  {variants.map(v => (
-                    <SelectItem key={v.id} value={v.id}>{formatVariantName(v.variant_name)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="flex items-center space-x-1">
-                <Checkbox id="append-copy" checked={appendCopy} onCheckedChange={(c) => setAppendCopy(!!c)} />
-                <Label htmlFor="append-copy" className="text-xs">Append</Label>
-              </div>
-              <Button size="sm" onClick={copySizesFromVariant}>Copy</Button>
-            </div>
           </div>
         </div>
         
