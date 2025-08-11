@@ -16,6 +16,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProductVariantsTable from '@/components/ProductVariantsTable';
+import SpecificationsTable from '@/components/SpecificationsTable';
 import SizeSpecificationInput from '@/components/SizeSpecificationInput';
 interface Category {
   id: string;
@@ -1591,6 +1592,37 @@ const AdminPage = () => {
                 // Refresh specifications after successful deletion
                 fetchProductDetails(selectedProduct.id);
               }} />
+
+              {/* Specifications Display with Delete Functionality */}
+              <SpecificationsTable 
+                variants={variants} 
+                specifications={specifications}
+                title="Current Saved Specifications"
+                isAdminView={true}
+                onDelete={async (specificationId: string) => {
+                  const { error } = await supabase
+                    .from('product_specifications')
+                    .delete()
+                    .eq('id', specificationId);
+                  
+                  if (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to delete specification",
+                      variant: "destructive"
+                    });
+                    throw error;
+                  }
+                  
+                  toast({
+                    title: "Success",
+                    description: "Specification deleted successfully"
+                  });
+                  
+                  // Refresh specifications after successful deletion
+                  fetchProductDetails(selectedProduct.id);
+                }}
+              />
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Features */}
