@@ -67,36 +67,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     }
   }, [customDimensions]);
 
-  // Initialize with existing specifications or create empty entries for each variant
+  // Initialize with empty entries for each variant (don't populate with existing specs)
   useEffect(() => {
     if (variants.length > 0) {
-      const initialSpecs = variants.map(variant => {
-        // Find existing specs for this variant and group by dimension
-        const existingWidth = existingSpecifications
-          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Width')
-          .map(spec => spec.specification_value)
-          .filter(val => val);
-        
-        const existingLength = existingSpecifications
-          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Length')
-          .map(spec => spec.specification_value)
-          .filter(val => val);
-        
-        const existingDepth = existingSpecifications
-          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Depth')
-          .map(spec => spec.specification_value)
-          .filter(val => val);
-
-        return {
-          variantId: variant.id,
-          width: existingWidth.length > 0 ? existingWidth : [''],
-          length: existingLength.length > 0 ? existingLength : [''],
-          depth: existingDepth.length > 0 ? existingDepth : ['']
-        };
-      });
+      const initialSpecs = variants.map(variant => ({
+        variantId: variant.id,
+        width: [''],
+        length: [''],
+        depth: ['']
+      }));
       setSizeSpecs(initialSpecs);
     }
-  }, [variants, existingSpecifications]);
+  }, [variants]);
 
   const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth', index: number, value: string) => {
     setSizeSpecs(prev => prev.map(spec => 
@@ -201,30 +183,51 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     let nextSortOrder = maxSortOrder + 1;
     
     const spec = sizeSpecs.find(s => s.variantId === variantId);
-    if (!spec) return;
+    if (!spec) {
+      console.log('Debug - No spec found for variant:', variantId);
+      return;
+    }
+    
+    console.log('Debug - Current spec for variant:', variantId, spec);
+    console.log('Debug - Existing specifications:', existingSpecifications.filter(s => s.variant_id === variantId));
     
     dimensions.forEach((dim, dimIndex) => {
       if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
         const values = spec[dim.key as keyof SizeSpecification] as string[];
+        console.log(`Debug - Processing dimension ${dim.label} with values:`, values);
+        
         values.forEach((value, valueIndex) => {
           if (value.trim()) {
-            // Accept all dimensions as entered without matching existing data
-            newSpecifications.push({
-              product_id: productId,
-              variant_id: spec.variantId,
-              specification_key: dim.label,
-              specification_value: value,
-              sort_order: nextSortOrder++
-            });
+            // Check if this exact specification already exists in the database
+            const existingSpec = existingSpecifications.find(existing => 
+              existing.variant_id === variantId &&
+              existing.specification_key === dim.label &&
+              existing.specification_value === value.trim()
+            );
+            
+            if (!existingSpec) {
+              console.log(`Debug - Adding new specification: ${dim.label} = ${value} for variant ${variantId}`);
+              newSpecifications.push({
+                product_id: productId,
+                variant_id: variantId,
+                specification_key: dim.label,
+                specification_value: value.trim(),
+                sort_order: nextSortOrder++
+              });
+            } else {
+              console.log(`Debug - Skipping duplicate specification: ${dim.label} = ${value} for variant ${variantId}`);
+            }
           }
         });
       }
     });
 
+    console.log('Debug - New specifications to be added:', newSpecifications);
+
     if (newSpecifications.length === 0) {
       toast({
         title: "Info",
-        description: "No new specifications to add for this variant"
+        description: "No new specifications to add for this variant (duplicates skipped)"
       });
       return;
     }
