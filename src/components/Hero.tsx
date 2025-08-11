@@ -19,9 +19,13 @@ const Hero = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl text-center mx-auto text-white">
           <div className="animate-fade-in">
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 font-aptos">
-              Phelan Manufacturing
-            </h1>
+            <div className="flex justify-center mb-6">
+              <img 
+                src="/lovable-uploads/6f1e269b-425a-431b-943f-9c14a9cab828.png" 
+                alt="Phelan Manufacturing Corporation Logo" 
+                className="h-20 md:h-24 lg:h-28 w-auto"
+              />
+            </div>
             <div className="text-2xl md:text-3xl font-bold mb-8 text-white drop-shadow-lg">
               Made in the <span className="text-red-500">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
             </div>
