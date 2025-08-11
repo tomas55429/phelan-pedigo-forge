@@ -119,7 +119,7 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           </TableCell>
         )
       ) : (
-        // Non-size specifications with single column per variant
+        // Non-size specifications with single column per variant (no separators)
         hasVariants ? (
           variants.map((variant) => {
             const values = processedSpecs[specKey]?.values?.[variant.id] || [];
@@ -130,7 +130,7 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             return (
               <TableCell 
                 key={variant.id} 
-                className="text-center border border-border"
+                className="text-center border-t border-r border-b border-border"
                 colSpan={maxSizeCount}
               >
                 {displayValue}
