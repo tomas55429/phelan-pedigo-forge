@@ -87,11 +87,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           .map(spec => spec.specification_value)
           .filter(val => val);
 
+        // Normalize arrays so each size set stays aligned across dimensions
+        const maxLen = Math.max(existingWidth.length, existingLength.length, existingDepth.length, 1);
+        const pad = (arr: string[]) => arr.length >= maxLen ? arr : [...arr, ...Array(maxLen - arr.length).fill('')];
+        const widthArr = pad(existingWidth);
+        const lengthArr = pad(existingLength);
+        const depthArr = pad(existingDepth);
+
         return {
           variantId: variant.id,
-          width: existingWidth.length > 0 ? existingWidth : [''],
-          length: existingLength.length > 0 ? existingLength : [''],
-          depth: existingDepth.length > 0 ? existingDepth : ['']
+          width: widthArr,
+          length: lengthArr,
+          depth: depthArr
         };
       });
       setSizeSpecs(initialSpecs);
@@ -99,14 +106,19 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   }, [variants, existingSpecifications]);
 
   const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth', index: number, value: string) => {
-    setSizeSpecs(prev => prev.map(spec => 
-      spec.variantId === variantId 
-        ? { 
-            ...spec, 
-            [dimension]: spec[dimension].map((val, i) => i === index ? value : val)
-          }
-        : spec
-    ));
+    setSizeSpecs(prev => prev.map(spec => {
+      if (spec.variantId !== variantId) return spec;
+      const current = [...(spec[dimension] as string[])];
+      if (index >= current.length) {
+        const toAdd = index - current.length + 1;
+        current.push(...Array(toAdd).fill(''));
+      }
+      current[index] = value;
+      return { 
+        ...spec, 
+        [dimension]: current
+      };
+    }));
   };
 
   const addSizeOption = (variantId: string, dimension: 'width' | 'length' | 'depth') => {
@@ -131,41 +143,61 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   };
 
   const removeSizeOption = async (variantId: string, dimension: 'width' | 'length' | 'depth', index: number) => {
-    // Find the specification value to be deleted
     const spec = sizeSpecs.find(s => s.variantId === variantId);
     if (!spec) return;
-    
-    const dimensionKey = dimension as keyof SizeSpecification;
-    const values = spec[dimensionKey] as string[];
-    const valueToDelete = values[index];
-    
-    // Only proceed if there's more than one value and the value to delete is not empty
-    if (values.length > 1) {
-      // If there's a value to delete and it exists in the database, delete it
-      if (valueToDelete && valueToDelete.trim() && onSpecificationDelete) {
-        const dimensionLabel = dimensions.find(d => d.key === dimension)?.label || dimension;
-        try {
-          await onSpecificationDelete(productId, variantId, dimensionLabel, valueToDelete);
-          toast({
-            title: "Success",
-            description: "Specification deleted successfully"
-          });
-        } catch (error) {
-          toast({
-            title: "Error", 
-            description: "Failed to delete specification",
-            variant: "destructive"
-          });
-          return; // Don't update local state if database deletion failed
+
+    // Helper to delete a single spec from DB
+    const deleteFromDB = async (dimKey: 'width' | 'length' | 'depth', value: string) => {
+      if (!value || !value.trim() || !onSpecificationDelete) return;
+      const label = dimensions.find(d => d.key === dimKey)?.label || dimKey;
+      await onSpecificationDelete(productId, variantId, label, value);
+    };
+
+    try {
+      if (isVertical) {
+        // In vertical mode we treat each sizeIndex as a complete set across all dimensions
+        // Attempt DB deletion for each enabled dimension value at this index
+        const enabledDims = dimensions.filter(d => d.enabled).map(d => d.key as 'width' | 'length' | 'depth');
+        for (const dimKey of enabledDims) {
+          const arr = (spec[dimKey] as string[]) || [];
+          const val = arr[index];
+          if (val) {
+            await deleteFromDB(dimKey, val);
+          }
         }
+        // Update local state by removing the index from ALL dimensions, ensuring arrays don't become empty
+        setSizeSpecs(prev => prev.map(s => {
+          if (s.variantId !== variantId) return s;
+          const nextWidth = (s.width || []).filter((_, i) => i !== index);
+          const nextLength = (s.length || []).filter((_, i) => i !== index);
+          const nextDepth = (s.depth || []).filter((_, i) => i !== index);
+          return {
+            ...s,
+            width: nextWidth.length ? nextWidth : [''],
+            length: nextLength.length ? nextLength : [''],
+            depth: nextDepth.length ? nextDepth : [''],
+          };
+        }));
+        toast({ title: 'Success', description: 'Size set removed' });
+        return;
       }
-      
-      // Update local state
-      setSizeSpecs(prev => prev.map(s => 
-        s.variantId === variantId
-          ? { ...s, [dimension]: s[dimension].filter((_, i) => i !== index) }
-          : s
-      ));
+
+      // Horizontal mode: remove only from the specific dimension (original behavior)
+      const values = spec[dimension] as string[];
+      const valueToDelete = values[index];
+      if (values.length > 1) {
+        if (valueToDelete && valueToDelete.trim()) {
+          await deleteFromDB(dimension, valueToDelete);
+        }
+        setSizeSpecs(prev => prev.map(s => 
+          s.variantId === variantId
+            ? { ...s, [dimension]: (s[dimension] as string[]).filter((_, i) => i !== index) }
+            : s
+        ));
+        toast({ title: 'Success', description: 'Specification deleted successfully' });
+      }
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to delete specification', variant: 'destructive' });
     }
   };
 
