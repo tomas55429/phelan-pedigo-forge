@@ -39,25 +39,23 @@ const Header = () => {
   }];
   return <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
-        {/* Top Bar with Logo */}
-        <div className="flex items-center justify-start py-3">
-          {/* Logo */}
-          <div className="flex items-center">
+        <div className="flex items-center justify-between py-3">
+          {/* Logo and Desktop Navigation */}
+          <div className="flex items-center space-x-8">
+            {/* Logo */}
             <Link to="/">
-              <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-12' : 'h-24'}`} />
+              <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-12' : 'h-16'}`} />
             </Link>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-8">
+              {navigation.map(item => item.href.startsWith('#') ? <a key={item.name} href={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                    {item.name}
+                  </a> : <Link key={item.name} to={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                    {item.name}
+                  </Link>)}
+            </nav>
           </div>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map(item => item.href.startsWith('#') ? <a key={item.name} href={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
-                  {item.name}
-                </a> : <Link key={item.name} to={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
-                  {item.name}
-                </Link>)}
-          </nav>
 
           {/* Search Bar */}
           <div className="flex-1 max-w-md mx-8">
