@@ -80,6 +80,68 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_product_images: {
+        Row: {
+          created_at: string
+          custom_product_id: string
+          description: string | null
+          id: string
+          image_url: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          custom_product_id: string
+          description?: string | null
+          id?: string
+          image_url: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          custom_product_id?: string
+          description?: string | null
+          id?: string
+          image_url?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_product_images_custom_product_id_fkey"
+            columns: ["custom_product_id"]
+            isOneToOne: false
+            referencedRelation: "custom_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_products: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          main_image_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          main_image_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          main_image_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_categories: {
         Row: {
           category_id: string
