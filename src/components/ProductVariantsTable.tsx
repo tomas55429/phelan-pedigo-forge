@@ -252,6 +252,11 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     )
   );
 
+  // Debug logging to check maxSizeCount and data
+  console.log('Debug - maxSizeCount:', maxSizeCount);
+  console.log('Debug - processedSpecs:', processedSpecs);
+  console.log('Debug - specifications input:', specifications);
+
   // Custom ordering: Description first, then Width, Length, Depth, then others
   const getSpecOrder = (key: string) => {
     const lowerKey = key.toLowerCase();
