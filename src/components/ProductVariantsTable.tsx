@@ -318,28 +318,25 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                   Specification
                 </TableHead>
                 {hasVariants ? (
-                  variants.flatMap((variant) => {
-                    return Array.from({ length: maxSizeCount }).map((_, sizeIndex) => (
-                      <TableHead 
-                        key={`${variant.id}-${sizeIndex}`} 
-                        className="border border-border bg-muted/50 text-center font-semibold min-w-[80px]"
-                      >
-                        {sizeIndex === 0 && (
-                          <div className="space-y-1">
-                            <div className="font-bold text-sm">Product No.</div>
-                            <div className="font-bold text-base">
-                              {formatVariantName(variant.variant_name)}
-                            </div>
-                            {variant.variant_description && (
-                              <div className="text-xs text-muted-foreground font-normal">
-                                {variant.variant_description}
-                              </div>
-                            )}
+                  variants.map((variant) => (
+                    <TableHead 
+                      key={variant.id} 
+                      className="border border-border bg-muted/50 text-center font-semibold min-w-[80px]"
+                      colSpan={maxSizeCount}
+                    >
+                      <div className="space-y-1">
+                        <div className="font-bold text-sm">Product No.</div>
+                        <div className="font-bold text-base">
+                          {formatVariantName(variant.variant_name)}
+                        </div>
+                        {variant.variant_description && (
+                          <div className="text-xs text-muted-foreground font-normal">
+                            {variant.variant_description}
                           </div>
                         )}
-                      </TableHead>
-                    ));
-                  })
+                      </div>
+                    </TableHead>
+                  ))
                 ) : (
                   <TableHead className="text-center font-semibold">Value</TableHead>
                 )}
