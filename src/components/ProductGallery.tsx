@@ -304,6 +304,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
     ];
 
+    console.log('ProductCard images for', product.name, ':', {
+      productImageUrl: product.image_url,
+      additionalImages: additionalImages,
+      allImages: allImages.length,
+      allImagesData: allImages
+    });
+
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
           {allImages.length > 0 ? (
@@ -599,6 +606,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                         ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
                         ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
                       ];
+
+                      console.log('Detail view images for', selectedProduct.product.name, ':', {
+                        productImageUrl: selectedProduct.product.image_url,
+                        additionalImages: selectedProduct.additionalImages,
+                        allImages: allImages.length,
+                        allImagesData: allImages
+                      });
 
                       if (allImages.length === 0) {
                         return (
