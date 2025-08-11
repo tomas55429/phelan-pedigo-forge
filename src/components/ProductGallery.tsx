@@ -143,6 +143,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 sort_order: img.sort_order
               }));
             
+            const allImageData = [
+              { url: product.image_url || '', description: 'Main Image' },
+              ...customProductImages
+                .filter(img => img.custom_product_id === customProductId)
+                .map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+            ].filter(img => img.url);
+            
             console.log('CUSTOM PRODUCT DEBUG:', {
               productName: product.name,
               productId: product.id,
@@ -150,7 +157,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               totalCustomProductImages: customProductImages.length,
               customProductImageIds: customProductImages.map(img => ({ id: img.id, custom_product_id: img.custom_product_id })),
               filteredAdditionalImages: additionalImages,
-              additionalImagesCount: additionalImages.length
+              additionalImagesCount: additionalImages.length,
+              allImageData: allImageData
             });
             
             return {
@@ -159,7 +167,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               variants: [], // Custom products don't have variants
               features: [], // Custom products don't have features
               specifications: [], // Custom products don't have specifications
-              additionalImages
+              additionalImages,
+              allImages: allImageData.length,
+              allImagesData: allImageData
             };
           }
 
