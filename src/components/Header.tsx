@@ -39,13 +39,6 @@ const Header = () => {
   }];
   return <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       <div className="container mx-auto px-4">
-        {/* Search Bar */}
-        <div className="flex justify-center py-3 border-b border-border">
-          <div className="w-full max-w-md">
-            <GlobalSearch />
-          </div>
-        </div>
-        
         {/* Main Navigation Row */}
         <div className="flex items-center justify-between py-3">
           {/* Logo and Desktop Navigation */}
@@ -63,6 +56,11 @@ const Header = () => {
                     {item.name}
                   </Link>)}
             </nav>
+          </div>
+
+          {/* Search Bar */}
+          <div className="hidden md:flex w-full max-w-md">
+            <GlobalSearch />
           </div>
 
           {/* Phone Number and Auth Section */}
