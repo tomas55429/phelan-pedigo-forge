@@ -234,6 +234,11 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       features,
       specifications
     }) => {
+      // Filter out uncategorized products
+      if (categories.length === 0) {
+        return false;
+      }
+
       // Enhanced search that includes product name, description, features, and specifications
       const searchLower = searchTerm.toLowerCase();
       const nameMatch = product.name?.toLowerCase().includes(searchLower);
