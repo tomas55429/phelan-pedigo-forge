@@ -128,34 +128,31 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             });
           })
         ) : (
-          <>
-            {generalActualSizeCount === 0 ? (
-              <TableCell className="text-center border border-border">
-                {/* Empty cell to keep table structure */}
-              </TableCell>
-            ) : (
-              Array.from({ length: generalActualSizeCount }).map((_, sizeIndex) => {
-                const valueData = generalValuesForKey[sizeIndex];
-                const isFirst = sizeIndex === 0;
-                const hasValue = !!(valueData && valueData.value.trim());
-                return (
-                  <TableCell 
-                    key={`general-${sizeIndex}`} 
-                    className={`text-center border border-border text-sm ${
-                      isFirst ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
-                    }`}
-                  >
-                    {hasValue
-                      ? formatSizeValue(valueData.value)
-                      : processedSpecs[specKey]?.generalValue
-                      ? formatSizeValue(processedSpecs[specKey]?.generalValue || '')
-                      : ''}
-                  </TableCell>
-                );
-              })
-            )}
-          </>
-
+          generalActualSizeCount === 0 ? (
+            <TableCell className="text-center border border-border" />
+          ) : (
+            <TableCell className="text-center border border-border">
+              <div className="inline-flex items-center">
+                {Array.from({ length: generalActualSizeCount }).map((_, sizeIndex) => {
+                  const valueData = generalValuesForKey[sizeIndex];
+                  const hasValue = !!(valueData && valueData.value.trim());
+                  const content = hasValue
+                    ? formatSizeValue(valueData.value)
+                    : processedSpecs[specKey]?.generalValue
+                    ? formatSizeValue(processedSpecs[specKey]?.generalValue || '')
+                    : '';
+                  return (
+                    <span
+                      key={`general-${sizeIndex}`}
+                      className={`${sizeIndex > 0 ? 'border-l border-l-muted-foreground/30' : ''} px-2`}
+                    >
+                      {content}
+                    </span>
+                  );
+                })}
+              </div>
+            </TableCell>
+          )
         )
       ) : (
         // Non-size specifications with single column per variant (no separators)
@@ -444,7 +441,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                     );
                   })
                 ) : (
-                  <TableHead className="text-center font-semibold" colSpan={generalMaxColumnSpan}>Value</TableHead>
+                  <TableHead className="text-center font-semibold" colSpan={1}>Value</TableHead>
                 )}
               </TableRow>
             </TableHeader>
