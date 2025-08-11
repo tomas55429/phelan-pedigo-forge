@@ -189,12 +189,13 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     }
     
     console.log('Debug - Current spec for variant:', variantId, spec);
-    console.log('Debug - Existing specifications:', existingSpecifications.filter(s => s.variant_id === variantId));
+    console.log('Debug - Current dimensions:', dimensions);
+    console.log('Debug - Existing specifications for this variant:', existingSpecifications.filter(s => s.variant_id === variantId));
     
     dimensions.forEach((dim, dimIndex) => {
       if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
         const values = spec[dim.key as keyof SizeSpecification] as string[];
-        console.log(`Debug - Processing dimension ${dim.label} with values:`, values);
+        console.log(`Debug - Processing dimension ${dim.label} (key: ${dim.key}) with values:`, values);
         
         values.forEach((value, valueIndex) => {
           if (value.trim()) {
@@ -215,10 +216,14 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                 sort_order: nextSortOrder++
               });
             } else {
-              console.log(`Debug - Skipping duplicate specification: ${dim.label} = ${value} for variant ${variantId}`);
+              console.log(`Debug - Skipping duplicate specification: ${dim.label} = ${value} for variant ${variantId} (already exists with ID: ${existingSpec.id})`);
             }
+          } else {
+            console.log(`Debug - Skipping empty value for dimension ${dim.label}`);
           }
         });
+      } else {
+        console.log(`Debug - Skipping dimension ${dim.label} (enabled: ${dim.enabled}, hasValues: ${!!spec[dim.key as keyof SizeSpecification]})`);
       }
     });
 
