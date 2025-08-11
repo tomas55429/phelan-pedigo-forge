@@ -2038,13 +2038,24 @@ const AdminPage = () => {
             <TabsContent value="custom-products" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Manage Custom Products</h2>
-                <Dialog open={customProductDialogOpen} onOpenChange={setCustomProductDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Custom Product
-                    </Button>
-                  </DialogTrigger>
+                <div className="flex space-x-2">
+                  <Button
+                    variant="outline"
+                    onClick={syncCustomProductsToProducts}
+                    disabled={loading}
+                  >
+                    {loading ? "Syncing..." : "Sync to Products Page"}
+                  </Button>
+                  <Dialog open={customProductDialogOpen} onOpenChange={setCustomProductDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Custom Product
+                      </Button>
+                    </DialogTrigger>
+                  </Dialog>
+                </div>
+              </div>
                   <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>
