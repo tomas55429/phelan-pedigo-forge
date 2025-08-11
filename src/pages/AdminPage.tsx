@@ -4,62 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Upload, 
-  ArrowLeft,
-  Package,
-  FolderOpen,
-  Settings,
-  Image as ImageIcon,
-  GripVertical,
-  X,
-  Camera
-} from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, ArrowLeft, Package, FolderOpen, Settings, Image as ImageIcon, GripVertical, X, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProductVariantsTable from '@/components/ProductVariantsTable';
 import SizeSpecificationInput from '@/components/SizeSpecificationInput';
-
 interface Category {
   id: string;
   name: string;
@@ -67,7 +24,6 @@ interface Category {
   image_url: string | null;
   show_on_homepage: boolean;
 }
-
 interface Product {
   id: string;
   name: string;
@@ -77,9 +33,10 @@ interface Product {
   image_url: string | null;
   model_3d_url: string | null;
   featured: boolean;
-  categories?: { name: string };
+  categories?: {
+    name: string;
+  };
 }
-
 interface ProductFeature {
   id: string;
   product_id: string;
@@ -88,7 +45,6 @@ interface ProductFeature {
   is_optional?: boolean;
   image_url?: string;
 }
-
 interface ProductSpecification {
   id: string;
   product_id: string;
@@ -97,7 +53,6 @@ interface ProductSpecification {
   specification_value: string;
   sort_order?: number;
 }
-
 interface ProductVariant {
   id: string;
   product_id: string;
@@ -108,7 +63,6 @@ interface ProductVariant {
   created_at: string;
   updated_at: string;
 }
-
 interface CustomProduct {
   id: string;
   name: string;
@@ -117,7 +71,6 @@ interface CustomProduct {
   created_at: string;
   updated_at: string;
 }
-
 interface CustomProductImage {
   id: string;
   custom_product_id: string;
@@ -134,11 +87,14 @@ const formatVariantName = (variantName: string) => {
   const cleanName = name.split('-')[0].trim();
   return cleanName;
 };
-
 const AdminPage = () => {
-  const { signOut } = useAuth();
-  const { toast } = useToast();
-  
+  const {
+    signOut
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
+
   // State for categories
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryName, setCategoryName] = useState('');
@@ -157,7 +113,6 @@ const AdminPage = () => {
   const [productFeatured, setProductFeatured] = useState(false);
   const [productImage, setProductImage] = useState<File | null>(null);
   const [product3DModel, setProduct3DModel] = useState<File | null>(null);
-  
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
 
@@ -182,13 +137,25 @@ const AdminPage = () => {
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null);
   const [variantDialogOpen, setVariantDialogOpen] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
-  
+
   // State for product dimensions configuration
-  const [productDimensions, setProductDimensions] = useState<{key: string, label: string, enabled: boolean}[]>([
-    { key: 'width', label: 'Width', enabled: true },
-    { key: 'length', label: 'Length', enabled: true },
-    { key: 'depth', label: 'Depth', enabled: true }
-  ]);
+  const [productDimensions, setProductDimensions] = useState<{
+    key: string;
+    label: string;
+    enabled: boolean;
+  }[]>([{
+    key: 'width',
+    label: 'Width',
+    enabled: true
+  }, {
+    key: 'length',
+    label: 'Length',
+    enabled: true
+  }, {
+    key: 'depth',
+    label: 'Depth',
+    enabled: true
+  }]);
 
   // State for custom products
   const [customProducts, setCustomProducts] = useState<CustomProduct[]>([]);
@@ -196,120 +163,99 @@ const AdminPage = () => {
   const [customProductName, setCustomProductName] = useState('');
   const [customProductDescription, setCustomProductDescription] = useState('');
   const [customProductMainImage, setCustomProductMainImage] = useState<File | null>(null);
-  const [customProductAdditionalImages, setCustomProductAdditionalImages] = useState<{file: File, description: string}[]>([]);
+  const [customProductAdditionalImages, setCustomProductAdditionalImages] = useState<{
+    file: File;
+    description: string;
+  }[]>([]);
   const [editingCustomProduct, setEditingCustomProduct] = useState<CustomProduct | null>(null);
   const [customProductDialogOpen, setCustomProductDialogOpen] = useState(false);
-
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     fetchCategories();
     fetchProducts();
     fetchCustomProducts();
   }, []);
-
   const fetchCategories = async () => {
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name');
-      
+      const {
+        data,
+        error
+      } = await supabase.from('categories').select('*').order('name');
       if (error) throw error;
       setCategories(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to fetch categories",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const fetchProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
+      const {
+        data,
+        error
+      } = await supabase.from('products').select(`
           *,
           categories:category_id(name)
-        `)
-        .order('name');
-      
+        `).order('name');
       if (error) throw error;
       setProducts(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to fetch products",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const fetchCustomProducts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('custom_products')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
+      const {
+        data,
+        error
+      } = await supabase.from('custom_products').select('*').order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
       setCustomProducts(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to fetch custom products",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const fetchCustomProductImages = async (customProductId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('custom_product_images')
-        .select('*')
-        .eq('custom_product_id', customProductId)
-        .order('sort_order');
-      
+      const {
+        data,
+        error
+      } = await supabase.from('custom_product_images').select('*').eq('custom_product_id', customProductId).order('sort_order');
       if (error) throw error;
       setCustomProductImages(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to fetch custom product images",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const fetchProductDetails = async (productId: string) => {
     try {
-      const [featuresRes, specsRes, variantsRes] = await Promise.all([
-        supabase
-          .from('product_features')
-          .select('*')
-          .eq('product_id', productId)
-          .order('is_optional', { ascending: true })
-          .order('feature'),
-        supabase
-          .from('product_specifications')
-          .select('*')
-          .eq('product_id', productId)
-          .order('sort_order', { ascending: true })
-          .order('specification_key', { ascending: true }),
-        supabase
-          .from('product_variants')
-          .select('*')
-          .eq('product_id', productId)
-          .order('variant_name')
-      ]);
-
+      const [featuresRes, specsRes, variantsRes] = await Promise.all([supabase.from('product_features').select('*').eq('product_id', productId).order('is_optional', {
+        ascending: true
+      }).order('feature'), supabase.from('product_specifications').select('*').eq('product_id', productId).order('sort_order', {
+        ascending: true
+      }).order('specification_key', {
+        ascending: true
+      }), supabase.from('product_variants').select('*').eq('product_id', productId).order('variant_name')]);
       if (featuresRes.error) throw featuresRes.error;
       if (specsRes.error) throw specsRes.error;
       if (variantsRes.error) throw variantsRes.error;
-
       setFeatures(featuresRes.data || []);
       setSpecifications(specsRes.data || []);
       setVariants(variantsRes.data || []);
@@ -317,15 +263,13 @@ const AdminPage = () => {
       toast({
         title: "Error",
         description: "Failed to fetch product details",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryName.trim()) return;
-
     setLoading(true);
     try {
       let imageUrl = null;
@@ -333,39 +277,38 @@ const AdminPage = () => {
         imageUrl = await uploadCategoryImage(categoryImage);
         if (!imageUrl) return;
       }
-
       if (editingCategory) {
         const updateData: any = {
           name: categoryName,
           description: categoryDescription || null,
-          show_on_homepage: categoryShowOnHomepage,
+          show_on_homepage: categoryShowOnHomepage
         };
-        
         if (imageUrl) {
           updateData.image_url = imageUrl;
         }
-
-        const { error } = await supabase
-          .from('categories')
-          .update(updateData)
-          .eq('id', editingCategory.id);
-        
+        const {
+          error
+        } = await supabase.from('categories').update(updateData).eq('id', editingCategory.id);
         if (error) throw error;
-        toast({ title: "Success", description: "Category updated successfully" });
+        toast({
+          title: "Success",
+          description: "Category updated successfully"
+        });
       } else {
-        const { error } = await supabase
-          .from('categories')
-          .insert([{
-            name: categoryName,
-            description: categoryDescription || null,
-            image_url: imageUrl,
-            show_on_homepage: categoryShowOnHomepage,
-          }]);
-        
+        const {
+          error
+        } = await supabase.from('categories').insert([{
+          name: categoryName,
+          description: categoryDescription || null,
+          image_url: imageUrl,
+          show_on_homepage: categoryShowOnHomepage
+        }]);
         if (error) throw error;
-        toast({ title: "Success", description: "Category created successfully" });
+        toast({
+          title: "Success",
+          description: "Category created successfully"
+        });
       }
-
       setCategoryName('');
       setCategoryDescription('');
       setCategoryShowOnHomepage(true);
@@ -377,154 +320,125 @@ const AdminPage = () => {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleDeleteCategory = async (id: string) => {
     if (!confirm('Are you sure you want to delete this category?')) return;
-
     try {
-      const { error } = await supabase
-        .from('categories')
-        .delete()
-        .eq('id', id);
-      
+      const {
+        error
+      } = await supabase.from('categories').delete().eq('id', id);
       if (error) throw error;
-      toast({ title: "Success", description: "Category deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Category deleted successfully"
+      });
       fetchCategories();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const uploadCategoryImage = async (file: File): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file);
-
+      const {
+        error: uploadError
+      } = await supabase.storage.from('product-images').upload(fileName, file);
       if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
-
+      const {
+        data
+      } = supabase.storage.from('product-images').getPublicUrl(fileName);
       return data.publicUrl;
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to upload category image",
-        variant: "destructive",
+        variant: "destructive"
       });
       return null;
     }
   };
-
   const uploadProductImage = async (file: File): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file);
-
+      const {
+        error: uploadError
+      } = await supabase.storage.from('product-images').upload(fileName, file);
       if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
-
+      const {
+        data
+      } = supabase.storage.from('product-images').getPublicUrl(fileName);
       return data.publicUrl;
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to upload image",
-        variant: "destructive",
+        variant: "destructive"
       });
       return null;
     }
   };
-
   const upload3DModel = async (file: File): Promise<string | null> => {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('product-3d-models')
-        .upload(fileName, file);
-
+      const {
+        error: uploadError
+      } = await supabase.storage.from('product-3d-models').upload(fileName, file);
       if (uploadError) throw uploadError;
-
-      const { data } = supabase.storage
-        .from('product-3d-models')
-        .getPublicUrl(fileName);
-
+      const {
+        data
+      } = supabase.storage.from('product-3d-models').getPublicUrl(fileName);
       return data.publicUrl;
     } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to upload 3D model",
-        variant: "destructive",
+        variant: "destructive"
       });
       return null;
     }
   };
-
   const handleCustomProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customProductName.trim()) return;
-
     setLoading(true);
     try {
       let mainImageUrl = editingCustomProduct?.main_image_url || null;
-      
       if (customProductMainImage) {
         const uploadedUrl = await uploadProductImage(customProductMainImage);
         if (uploadedUrl) mainImageUrl = uploadedUrl;
       }
-
       const productData = {
         name: customProductName,
         description: customProductDescription || null,
-        main_image_url: mainImageUrl,
+        main_image_url: mainImageUrl
       };
-
       let customProductId: string;
-
       if (editingCustomProduct) {
-        const { error } = await supabase
-          .from('custom_products')
-          .update(productData)
-          .eq('id', editingCustomProduct.id);
-        
+        const {
+          error
+        } = await supabase.from('custom_products').update(productData).eq('id', editingCustomProduct.id);
         if (error) throw error;
         customProductId = editingCustomProduct.id;
 
         // Delete existing additional images
-        await supabase
-          .from('custom_product_images')
-          .delete()
-          .eq('custom_product_id', customProductId);
+        await supabase.from('custom_product_images').delete().eq('custom_product_id', customProductId);
       } else {
-        const { data, error } = await supabase
-          .from('custom_products')
-          .insert([productData])
-          .select()
-          .single();
-        
+        const {
+          data,
+          error
+        } = await supabase.from('custom_products').insert([productData]).select().single();
         if (error) throw error;
         customProductId = data.id;
       }
@@ -532,7 +446,6 @@ const AdminPage = () => {
       // Upload and insert additional images with proper error handling
       if (customProductAdditionalImages.length > 0) {
         const imageData = [];
-        
         for (let index = 0; index < customProductAdditionalImages.length; index++) {
           const item = customProductAdditionalImages[index];
           try {
@@ -540,20 +453,16 @@ const AdminPage = () => {
             const fileExt = item.file.name.split('.').pop();
             const uniqueTimestamp = Date.now() + index; // Add index to ensure uniqueness
             const fileName = `custom-${uniqueTimestamp}.${fileExt}`;
-            
-            const { error: uploadError } = await supabase.storage
-              .from('product-images')
-              .upload(fileName, item.file);
-
+            const {
+              error: uploadError
+            } = await supabase.storage.from('product-images').upload(fileName, item.file);
             if (uploadError) {
               console.error(`Upload error for image ${index}:`, uploadError);
               continue; // Skip this image and continue with others
             }
-
-            const { data: urlData } = supabase.storage
-              .from('product-images')
-              .getPublicUrl(fileName);
-
+            const {
+              data: urlData
+            } = supabase.storage.from('product-images').getPublicUrl(fileName);
             imageData.push({
               custom_product_id: customProductId,
               image_url: urlData.publicUrl,
@@ -565,37 +474,32 @@ const AdminPage = () => {
             // Continue with other images
           }
         }
-        
         if (imageData.length > 0) {
-          const { error } = await supabase
-            .from('custom_product_images')
-            .insert(imageData);
-
+          const {
+            error
+          } = await supabase.from('custom_product_images').insert(imageData);
           if (error) {
             console.error('Error inserting image records:', error);
             throw error;
           }
         }
       }
-
-      toast({ 
-        title: "Success", 
-        description: editingCustomProduct ? "Custom product updated successfully" : "Custom product created successfully" 
+      toast({
+        title: "Success",
+        description: editingCustomProduct ? "Custom product updated successfully" : "Custom product created successfully"
       });
-
       resetCustomProductForm();
       fetchCustomProducts();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const resetCustomProductForm = () => {
     setCustomProductName('');
     setCustomProductDescription('');
@@ -605,20 +509,17 @@ const AdminPage = () => {
     setEditingCustomProduct(null);
     setCustomProductDialogOpen(false);
   };
-
   const handleEditCustomProduct = async (customProduct: CustomProduct) => {
     setCustomProductName(customProduct.name);
     setCustomProductDescription(customProduct.description || '');
     setEditingCustomProduct(customProduct);
-    
+
     // Fetch existing images for this custom product
     try {
-      const { data: existingImages, error } = await supabase
-        .from('custom_product_images')
-        .select('*')
-        .eq('custom_product_id', customProduct.id)
-        .order('sort_order');
-      
+      const {
+        data: existingImages,
+        error
+      } = await supabase.from('custom_product_images').select('*').eq('custom_product_id', customProduct.id).order('sort_order');
       if (error) throw error;
       setCustomProductImages(existingImages || []);
     } catch (error: any) {
@@ -629,74 +530,63 @@ const AdminPage = () => {
         variant: "destructive"
       });
     }
-    
     setCustomProductDialogOpen(true);
   };
-
   const handleDeleteCustomProduct = async (id: string) => {
     if (!confirm('Are you sure you want to delete this custom product?')) return;
-
     try {
-      const { error } = await supabase
-        .from('custom_products')
-        .delete()
-        .eq('id', id);
-      
+      const {
+        error
+      } = await supabase.from('custom_products').delete().eq('id', id);
       if (error) throw error;
-      toast({ title: "Success", description: "Custom product deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Custom product deleted successfully"
+      });
       fetchCustomProducts();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const syncCustomProductsToProducts = async () => {
     try {
       setLoading(true);
-      
-      // Find the Custom Category
-      const { data: customCategory, error: categoryError } = await supabase
-        .from('categories')
-        .select('*')
-        .ilike('name', '%custom%')
-        .single();
 
+      // Find the Custom Category
+      const {
+        data: customCategory,
+        error: categoryError
+      } = await supabase.from('categories').select('*').ilike('name', '%custom%').single();
       if (categoryError || !customCategory) {
         toast({
           title: "Error",
           description: "Custom Category not found. Please create a category with 'Custom' in the name first.",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
 
       // Get all custom products
-      const { data: customProducts, error: customProductsError } = await supabase
-        .from('custom_products')
-        .select('*');
-
+      const {
+        data: customProducts,
+        error: customProductsError
+      } = await supabase.from('custom_products').select('*');
       if (customProductsError) throw customProductsError;
 
       // Get existing regular products that are linked to custom products
-      const { data: existingProducts, error: existingError } = await supabase
-        .from('products')
-        .select('*')
-        .like('description', '%[Custom Product%');
-
+      const {
+        data: existingProducts,
+        error: existingError
+      } = await supabase.from('products').select('*').like('description', '%[Custom Product%');
       if (existingError) throw existingError;
-
       let syncedCount = 0;
-
       for (const customProduct of customProducts || []) {
         // Check if this custom product already has a corresponding regular product
-        const existingProduct = existingProducts?.find(p => 
-          p.description?.includes(`[Custom Product ID: ${customProduct.id}]`)
-        );
-
+        const existingProduct = existingProducts?.find(p => p.description?.includes(`[Custom Product ID: ${customProduct.id}]`));
         if (!existingProduct) {
           // Create a new regular product for this custom product
           const productData = {
@@ -706,70 +596,58 @@ const AdminPage = () => {
             category_id: customCategory.id,
             featured: false
           };
-
-          const { data: newProduct, error: productError } = await supabase
-            .from('products')
-            .insert([productData])
-            .select()
-            .single();
-
+          const {
+            data: newProduct,
+            error: productError
+          } = await supabase.from('products').insert([productData]).select().single();
           if (productError) {
             console.error('Error creating product for custom product:', customProduct.id, productError);
             continue;
           }
 
           // Link to custom category
-          const { error: linkError } = await supabase
-            .from('product_categories')
-            .insert([{
-              product_id: newProduct.id,
-              category_id: customCategory.id
-            }]);
-
+          const {
+            error: linkError
+          } = await supabase.from('product_categories').insert([{
+            product_id: newProduct.id,
+            category_id: customCategory.id
+          }]);
           if (linkError) {
             console.error('Error linking product to category:', linkError);
           }
-
           syncedCount++;
         }
       }
-
       toast({
         title: "Success",
-        description: `Synced ${syncedCount} custom products to the products page.`,
+        description: `Synced ${syncedCount} custom products to the products page.`
       });
-
       fetchProducts();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productName.trim()) return;
-
     setLoading(true);
     try {
       let imageUrl = editingProduct?.image_url || null;
       let model3DUrl = editingProduct?.model_3d_url || null;
-      
       if (productImage) {
         const uploadedUrl = await uploadProductImage(productImage);
         if (uploadedUrl) imageUrl = uploadedUrl;
       }
-
       if (product3DModel) {
         const uploaded3DUrl = await upload3DModel(product3DModel);
         if (uploaded3DUrl) model3DUrl = uploaded3DUrl;
       }
-
       const productData = {
         name: productName,
         // Keep the old category_id for backward compatibility for now
@@ -778,32 +656,23 @@ const AdminPage = () => {
         special_notes: productSpecialNotes || null,
         image_url: imageUrl,
         model_3d_url: model3DUrl,
-        featured: productFeatured,
+        featured: productFeatured
       };
-
       let productId: string;
-
       if (editingProduct) {
-        const { error } = await supabase
-          .from('products')
-          .update(productData)
-          .eq('id', editingProduct.id);
-        
+        const {
+          error
+        } = await supabase.from('products').update(productData).eq('id', editingProduct.id);
         if (error) throw error;
         productId = editingProduct.id;
 
         // Delete existing category relationships
-        await supabase
-          .from('product_categories')
-          .delete()
-          .eq('product_id', productId);
+        await supabase.from('product_categories').delete().eq('product_id', productId);
       } else {
-        const { data, error } = await supabase
-          .from('products')
-          .insert([productData])
-          .select()
-          .single();
-        
+        const {
+          data,
+          error
+        } = await supabase.from('products').insert([productData]).select().single();
         if (error) throw error;
         productId = data.id;
       }
@@ -814,32 +683,27 @@ const AdminPage = () => {
           product_id: productId,
           category_id: categoryId
         }));
-
-        const { error } = await supabase
-          .from('product_categories')
-          .insert(categoryRelations);
-
+        const {
+          error
+        } = await supabase.from('product_categories').insert(categoryRelations);
         if (error) throw error;
       }
-
-      toast({ 
-        title: "Success", 
-        description: editingProduct ? "Product updated successfully" : "Product created successfully" 
+      toast({
+        title: "Success",
+        description: editingProduct ? "Product updated successfully" : "Product created successfully"
       });
-
       resetProductForm();
       fetchProducts();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const resetProductForm = () => {
     setProductName('');
     setProductCategoryIds([]);
@@ -848,39 +712,36 @@ const AdminPage = () => {
     setProductFeatured(false);
     setProductImage(null);
     setProduct3DModel(null);
-    
     setEditingProduct(null);
     setProductDialogOpen(false);
   };
-
   const handleDeleteProduct = async (id: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
-
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', id);
-      
+      const {
+        error
+      } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
-      toast({ title: "Success", description: "Product deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Product deleted successfully"
+      });
       fetchProducts();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleAddFeature = async (isOptional: boolean = false) => {
     const featureText = isOptional ? newOptionalFeature : newFeature;
     if (!selectedProduct || !featureText.trim()) {
       toast({
         title: "Error",
         description: "Please select a product and enter a feature",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
@@ -890,11 +751,10 @@ const AdminPage = () => {
       toast({
         title: "Error",
         description: "Please select a variant to add features to",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     try {
       let imageUrl = null;
 
@@ -903,30 +763,26 @@ const AdminPage = () => {
         const fileExt = accessoryImage.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, accessoryImage);
-
+        const {
+          error: uploadError
+        } = await supabase.storage.from('product-images').upload(filePath, accessoryImage);
         if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
-        
+        const {
+          data: {
+            publicUrl
+          }
+        } = supabase.storage.from('product-images').getPublicUrl(filePath);
         imageUrl = publicUrl;
       }
-
-      const { error } = await supabase
-        .from('product_features')
-        .insert([{
-          product_id: selectedProduct.id,
-          variant_id: selectedVariant.id,
-          feature: featureText,
-          is_optional: isOptional,
-          image_url: imageUrl,
-        }]);
-      
+      const {
+        error
+      } = await supabase.from('product_features').insert([{
+        product_id: selectedProduct.id,
+        variant_id: selectedVariant.id,
+        feature: featureText,
+        is_optional: isOptional,
+        image_url: imageUrl
+      }]);
       if (error) throw error;
       if (isOptional) {
         setNewOptionalFeature('');
@@ -935,206 +791,179 @@ const AdminPage = () => {
         setNewFeature('');
       }
       fetchProductDetails(selectedProduct.id);
-      toast({ 
-        title: "Success", 
-        description: `${isOptional ? 'Accessory' : 'Feature'} added to ${formatVariantName(selectedVariant.variant_name)}` 
+      toast({
+        title: "Success",
+        description: `${isOptional ? 'Accessory' : 'Feature'} added to ${formatVariantName(selectedVariant.variant_name)}`
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleAddProductAccessory = async () => {
     if (!newOptionalFeature.trim() || !editingProduct) return;
-
     try {
       let imageUrl = null;
-      
+
       // Upload image for accessories if provided
       if (accessoryImage) {
         const fileExt = accessoryImage.name.split('.').pop();
         const filePath = `accessory-${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(filePath, accessoryImage);
-
+        const {
+          error: uploadError
+        } = await supabase.storage.from('product-images').upload(filePath, accessoryImage);
         if (uploadError) throw uploadError;
-
-        const { data } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(filePath);
-        
+        const {
+          data
+        } = supabase.storage.from('product-images').getPublicUrl(filePath);
         imageUrl = data.publicUrl;
       }
 
       // Since accessories are now product-level, we need a default variant or create one
       let defaultVariant = variants.find(v => v.variant_name.toLowerCase().includes('default')) || variants[0];
-      
       if (!defaultVariant && variants.length === 0) {
         // Create a default variant if none exists
-        const { data: newVariantData, error: variantError } = await supabase
-          .from('product_variants')
-          .insert([{
-            product_id: editingProduct.id,
-            variant_name: 'Standard',
-            variant_description: 'Standard configuration'
-          }])
-          .select()
-          .single();
-
+        const {
+          data: newVariantData,
+          error: variantError
+        } = await supabase.from('product_variants').insert([{
+          product_id: editingProduct.id,
+          variant_name: 'Standard',
+          variant_description: 'Standard configuration'
+        }]).select().single();
         if (variantError) throw variantError;
         defaultVariant = newVariantData;
         setVariants([...variants, defaultVariant]);
       }
-
-      const { error } = await supabase
-        .from('product_features')
-        .insert([{
-          product_id: editingProduct.id,
-          variant_id: defaultVariant!.id,
-          feature: newOptionalFeature,
-          is_optional: true,
-          image_url: imageUrl
-        }]);
-      
+      const {
+        error
+      } = await supabase.from('product_features').insert([{
+        product_id: editingProduct.id,
+        variant_id: defaultVariant!.id,
+        feature: newOptionalFeature,
+        is_optional: true,
+        image_url: imageUrl
+      }]);
       if (error) throw error;
-      
       setNewOptionalFeature('');
       setAccessoryImage(null);
       fetchProductDetails(editingProduct.id);
-      
-      toast({ 
-        title: "Success", 
-        description: "Accessory added to product" 
+      toast({
+        title: "Success",
+        description: "Accessory added to product"
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleDeleteFeature = async (id: string) => {
     if (!confirm('Are you sure you want to delete this feature?')) return;
-
     try {
-      const { error } = await supabase
-        .from('product_features')
-        .delete()
-        .eq('id', id);
-      
+      const {
+        error
+      } = await supabase.from('product_features').delete().eq('id', id);
       if (error) throw error;
       if (selectedProduct) fetchProductDetails(selectedProduct.id);
-      toast({ title: "Success", description: "Feature deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Feature deleted successfully"
+      });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
-
   const handleAddSpecification = async () => {
     if (!selectedProduct || !newSpecKey.trim() || !newSpecValue.trim()) return;
-
     try {
       // Get the highest sort_order for this product and add 1
-      const { data: existingSpecs } = await supabase
-        .from('product_specifications')
-        .select('sort_order')
-        .eq('product_id', selectedProduct.id)
-        .order('sort_order', { ascending: false })
-        .limit(1);
-
-      const nextSortOrder = existingSpecs && existingSpecs.length > 0 
-        ? (existingSpecs[0].sort_order || 0) + 1 
-        : 0;
-
+      const {
+        data: existingSpecs
+      } = await supabase.from('product_specifications').select('sort_order').eq('product_id', selectedProduct.id).order('sort_order', {
+        ascending: false
+      }).limit(1);
+      const nextSortOrder = existingSpecs && existingSpecs.length > 0 ? (existingSpecs[0].sort_order || 0) + 1 : 0;
       const specData = {
         product_id: selectedProduct.id,
         specification_key: newSpecKey,
         specification_value: newSpecValue,
         variant_id: selectedVariant?.id || null,
-        sort_order: nextSortOrder,
+        sort_order: nextSortOrder
       };
-
-      const { error } = await supabase
-        .from('product_specifications')
-        .insert([specData]);
-      
+      const {
+        error
+      } = await supabase.from('product_specifications').insert([specData]);
       if (error) throw error;
       setNewSpecKey('');
       setNewSpecValue('');
       setSelectedVariant(null);
       fetchProductDetails(selectedProduct.id);
-      toast({ title: "Success", description: "Specification added successfully" });
+      toast({
+        title: "Success",
+        description: "Specification added successfully"
+      });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleDeleteSpecification = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('product_specifications')
-        .delete()
-        .eq('id', id);
-      
+      const {
+        error
+      } = await supabase.from('product_specifications').delete().eq('id', id);
       if (error) throw error;
       if (selectedProduct) fetchProductDetails(selectedProduct.id);
-      toast({ title: "Success", description: "Specification deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Specification deleted successfully"
+      });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleDragStart = (e: React.DragEvent, specId: string) => {
     setDraggedSpecId(specId);
     e.dataTransfer.effectAllowed = 'move';
   };
-
   const handleDragOver = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setDragOverIndex(index);
   };
-
   const handleDragLeave = () => {
     setDragOverIndex(null);
   };
-
   const handleDrop = async (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
     if (!draggedSpecId || !selectedProduct) return;
-
     try {
       // Get current specifications ordered by sort_order
-      const { data: allSpecs, error: fetchError } = await supabase
-        .from('product_specifications')
-        .select('*')
-        .eq('product_id', selectedProduct.id)
-        .order('sort_order', { ascending: true });
-
+      const {
+        data: allSpecs,
+        error: fetchError
+      } = await supabase.from('product_specifications').select('*').eq('product_id', selectedProduct.id).order('sort_order', {
+        ascending: true
+      });
       if (fetchError) throw fetchError;
       if (!allSpecs) return;
-
       const draggedIndex = allSpecs.findIndex(spec => spec.id === draggedSpecId);
       if (draggedIndex === -1 || draggedIndex === dropIndex) return;
 
@@ -1151,22 +980,25 @@ const AdminPage = () => {
 
       // Execute updates
       for (const update of updates) {
-        const { error } = await supabase
-          .from('product_specifications')
-          .update({ sort_order: update.sort_order })
-          .eq('id', update.id);
-        
+        const {
+          error
+        } = await supabase.from('product_specifications').update({
+          sort_order: update.sort_order
+        }).eq('id', update.id);
         if (error) throw error;
       }
 
       // Refresh the data
       fetchProductDetails(selectedProduct.id);
-      toast({ title: "Success", description: "Specification order updated" });
+      toast({
+        title: "Success",
+        description: "Specification order updated"
+      });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setDraggedSpecId(null);
@@ -1178,60 +1010,56 @@ const AdminPage = () => {
   const handleVariantSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProduct || !variantName.trim()) return;
-
     setLoading(true);
     try {
       let imageUrl = editingVariant?.image_url || null;
       let model3DUrl = editingVariant?.model_3d_url || null;
-      
       if (variantImage) {
         const uploadedUrl = await uploadProductImage(variantImage);
         if (uploadedUrl) imageUrl = uploadedUrl;
       }
-
       if (variant3DModel) {
         const uploaded3DUrl = await upload3DModel(variant3DModel);
         if (uploaded3DUrl) model3DUrl = uploaded3DUrl;
       }
-
       const variantData = {
         product_id: selectedProduct.id,
         variant_name: variantName,
         variant_description: variantDescription || null,
         image_url: imageUrl,
-        model_3d_url: model3DUrl,
+        model_3d_url: model3DUrl
       };
-
       if (editingVariant) {
-        const { error } = await supabase
-          .from('product_variants')
-          .update(variantData)
-          .eq('id', editingVariant.id);
-        
+        const {
+          error
+        } = await supabase.from('product_variants').update(variantData).eq('id', editingVariant.id);
         if (error) throw error;
-        toast({ title: "Success", description: "Variant updated successfully" });
+        toast({
+          title: "Success",
+          description: "Variant updated successfully"
+        });
       } else {
-        const { error } = await supabase
-          .from('product_variants')
-          .insert([variantData]);
-        
+        const {
+          error
+        } = await supabase.from('product_variants').insert([variantData]);
         if (error) throw error;
-        toast({ title: "Success", description: "Variant created successfully" });
+        toast({
+          title: "Success",
+          description: "Variant created successfully"
+        });
       }
-
       resetVariantForm();
       fetchProductDetails(selectedProduct.id);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const resetVariantForm = () => {
     setVariantName('');
     setVariantDescription('');
@@ -1240,30 +1068,27 @@ const AdminPage = () => {
     setEditingVariant(null);
     setVariantDialogOpen(false);
   };
-
   const handleDeleteVariant = async (id: string) => {
     if (!confirm('Are you sure you want to delete this variant?')) return;
-
     try {
-      const { error } = await supabase
-        .from('product_variants')
-        .delete()
-        .eq('id', id);
-      
+      const {
+        error
+      } = await supabase.from('product_variants').delete().eq('id', id);
       if (error) throw error;
       if (selectedProduct) fetchProductDetails(selectedProduct.id);
-      toast({ title: "Success", description: "Variant deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Variant deleted successfully"
+      });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
-  return (
-    <ProtectedRoute adminOnly>
+  return <ProtectedRoute adminOnly>
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="border-b border-border">
@@ -1326,60 +1151,34 @@ const AdminPage = () => {
                     <form onSubmit={handleCategorySubmit} className="space-y-4">
                       <div>
                         <Label htmlFor="categoryName">Category Name</Label>
-                        <Input
-                          id="categoryName"
-                          value={categoryName}
-                          onChange={(e) => setCategoryName(e.target.value)}
-                          placeholder="Enter category name"
-                          required
-                        />
+                        <Input id="categoryName" value={categoryName} onChange={e => setCategoryName(e.target.value)} placeholder="Enter category name" required />
                       </div>
                       <div>
                         <Label htmlFor="categoryDescription">Description</Label>
-                        <Textarea
-                          id="categoryDescription"
-                          value={categoryDescription}
-                          onChange={(e) => setCategoryDescription(e.target.value)}
-                          placeholder="Enter category description"
-                        />
+                        <Textarea id="categoryDescription" value={categoryDescription} onChange={e => setCategoryDescription(e.target.value)} placeholder="Enter category description" />
                       </div>
                       <div>
                         <Label htmlFor="categoryImage">Category Image</Label>
-                        <Input
-                          id="categoryImage"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => setCategoryImage(e.target.files?.[0] || null)}
-                        />
-                        {categoryImage && (
-                          <p className="text-sm text-muted-foreground mt-1">
+                        <Input id="categoryImage" type="file" accept="image/*" onChange={e => setCategoryImage(e.target.files?.[0] || null)} />
+                        {categoryImage && <p className="text-sm text-muted-foreground mt-1">
                             Selected: {categoryImage.name}
-                          </p>
-                        )}
+                          </p>}
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="categoryShowOnHomepage"
-                          checked={categoryShowOnHomepage}
-                          onCheckedChange={(checked) => setCategoryShowOnHomepage(checked as boolean)}
-                        />
+                        <Checkbox id="categoryShowOnHomepage" checked={categoryShowOnHomepage} onCheckedChange={checked => setCategoryShowOnHomepage(checked as boolean)} />
                         <Label htmlFor="categoryShowOnHomepage" className="text-sm">
                           Show on homepage categories section
                         </Label>
                       </div>
                       <div className="flex justify-end space-x-2">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={() => {
-                            setCategoryDialogOpen(false);
-                            setEditingCategory(null);
-                            setCategoryName('');
-                            setCategoryDescription('');
-                            setCategoryShowOnHomepage(true);
-                            setCategoryImage(null);
-                          }}
-                        >
+                        <Button type="button" variant="outline" onClick={() => {
+                        setCategoryDialogOpen(false);
+                        setEditingCategory(null);
+                        setCategoryName('');
+                        setCategoryDescription('');
+                        setCategoryShowOnHomepage(true);
+                        setCategoryImage(null);
+                      }}>
                           Cancel
                         </Button>
                         <Button type="submit" disabled={loading}>
@@ -1404,54 +1203,34 @@ const AdminPage = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {categories.map((category) => (
-                        <TableRow key={category.id}>
+                      {categories.map(category => <TableRow key={category.id}>
                           <TableCell className="font-medium">{category.name}</TableCell>
                           <TableCell>{category.description || '-'}</TableCell>
                           <TableCell>
-                            {category.image_url ? (
-                              <img 
-                                src={category.image_url} 
-                                alt={category.name}
-                                className="w-12 h-12 object-cover rounded"
-                              />
-                            ) : '-'}
+                            {category.image_url ? <img src={category.image_url} alt={category.name} className="w-12 h-12 object-cover rounded" /> : '-'}
                           </TableCell>
                           <TableCell>
-                            <span className={`px-2 py-1 rounded-full text-xs ${
-                              category.show_on_homepage 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span className={`px-2 py-1 rounded-full text-xs ${category.show_on_homepage ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                               {category.show_on_homepage ? 'Visible' : 'Hidden'}
                             </span>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                onClick={() => {
-                  setEditingCategory(category);
-                  setCategoryName(category.name);
-                  setCategoryDescription(category.description || '');
-                  setCategoryShowOnHomepage(category.show_on_homepage);
-                  setCategoryDialogOpen(true);
-                }}
-                              >
+                              <Button size="sm" variant="outline" onClick={() => {
+                            setEditingCategory(category);
+                            setCategoryName(category.name);
+                            setCategoryDescription(category.description || '');
+                            setCategoryShowOnHomepage(category.show_on_homepage);
+                            setCategoryDialogOpen(true);
+                          }}>
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteCategory(category.id)}
-                              >
+                              <Button size="sm" variant="destructive" onClick={() => handleDeleteCategory(category.id)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
-                        </TableRow>
-                      ))}
+                        </TableRow>)}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -1462,18 +1241,18 @@ const AdminPage = () => {
             <TabsContent value="products" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Manage Products</h2>
-                <Dialog open={productDialogOpen} onOpenChange={(open) => {
-                  if (!open) {
-                    resetProductForm(); // Reset form when dialog closes
-                  }
-                  setProductDialogOpen(open);
-                }}>
+                <Dialog open={productDialogOpen} onOpenChange={open => {
+                if (!open) {
+                  resetProductForm(); // Reset form when dialog closes
+                }
+                setProductDialogOpen(open);
+              }}>
                   <DialogTrigger asChild>
                     <Button onClick={() => {
-                      // Reset form when Add Product is clicked
-                      resetProductForm();
-                      setProductDialogOpen(true);
-                    }}>
+                    // Reset form when Add Product is clicked
+                    resetProductForm();
+                    setProductDialogOpen(true);
+                  }}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Product
                     </Button>
@@ -1487,93 +1266,51 @@ const AdminPage = () => {
                     <form onSubmit={handleProductSubmit} className="space-y-4">
                       <div>
                         <Label htmlFor="productName">Product Name</Label>
-                        <Input
-                          id="productName"
-                          value={productName}
-                          onChange={(e) => setProductName(e.target.value)}
-                          placeholder="Enter product name"
-                          required
-                        />
+                        <Input id="productName" value={productName} onChange={e => setProductName(e.target.value)} placeholder="Enter product name" required />
                       </div>
                       <div>
                         <Label htmlFor="productCategories">Categories</Label>
                         <div className="space-y-2">
-                          {categories.map((category) => (
-                            <div key={category.id} className="flex items-center space-x-2">
-                              <input
-                                type="checkbox"
-                                id={`category-${category.id}`}
-                                checked={productCategoryIds.includes(category.id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setProductCategoryIds([...productCategoryIds, category.id]);
-                                  } else {
-                                    setProductCategoryIds(productCategoryIds.filter(id => id !== category.id));
-                                  }
-                                }}
-                                className="rounded border-gray-300"
-                              />
+                          {categories.map(category => <div key={category.id} className="flex items-center space-x-2">
+                              <input type="checkbox" id={`category-${category.id}`} checked={productCategoryIds.includes(category.id)} onChange={e => {
+                            if (e.target.checked) {
+                              setProductCategoryIds([...productCategoryIds, category.id]);
+                            } else {
+                              setProductCategoryIds(productCategoryIds.filter(id => id !== category.id));
+                            }
+                          }} className="rounded border-gray-300" />
                               <label htmlFor={`category-${category.id}`} className="text-sm">
                                 {category.name}
                               </label>
-                            </div>
-                          ))}
+                            </div>)}
                         </div>
                       </div>
                       <div>
                         <Label htmlFor="productDescription">Description</Label>
-                        <Textarea
-                          id="productDescription"
-                          value={productDescription}
-                          onChange={(e) => setProductDescription(e.target.value)}
-                          placeholder="Enter product description"
-                        />
+                        <Textarea id="productDescription" value={productDescription} onChange={e => setProductDescription(e.target.value)} placeholder="Enter product description" />
                       </div>
                       <div>
                         <Label htmlFor="productSpecialNotes">Special Notes / Disclaimer</Label>
-                        <Textarea
-                          id="productSpecialNotes"
-                          value={productSpecialNotes}
-                          onChange={(e) => setProductSpecialNotes(e.target.value)}
-                          placeholder="Enter special notes or disclaimers for this product"
-                          rows={3}
-                        />
+                        <Textarea id="productSpecialNotes" value={productSpecialNotes} onChange={e => setProductSpecialNotes(e.target.value)} placeholder="Enter special notes or disclaimers for this product" rows={3} />
                       </div>
                       <div>
                         <Label htmlFor="productImage">Product Image</Label>
-                        <Input
-                          id="productImage"
-                          type="file"
-                          accept="image/*"
-                          onChange={(e) => setProductImage(e.target.files?.[0] || null)}
-                        />
+                        <Input id="productImage" type="file" accept="image/*" onChange={e => setProductImage(e.target.files?.[0] || null)} />
                       </div>
                       <div>
                         <Label htmlFor="product3DModel">3D Model (GLB/GLTF)</Label>
-                        <Input
-                          id="product3DModel"
-                          type="file"
-                          accept=".glb,.gltf"
-                          onChange={(e) => setProduct3DModel(e.target.files?.[0] || null)}
-                        />
+                        <Input id="product3DModel" type="file" accept=".glb,.gltf" onChange={e => setProduct3DModel(e.target.files?.[0] || null)} />
                         <p className="text-sm text-muted-foreground mt-1">
                           Upload a 3D model file in GLB or GLTF format for interactive viewing
                         </p>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <input
-                          id="productFeatured"
-                          type="checkbox"
-                          checked={productFeatured}
-                          onChange={(e) => setProductFeatured(e.target.checked)}
-                          className="rounded border-border"
-                        />
+                        <input id="productFeatured" type="checkbox" checked={productFeatured} onChange={e => setProductFeatured(e.target.checked)} className="rounded border-border" />
                          <Label htmlFor="productFeatured">Featured Product</Label>
                        </div>
                        
                        {/* Accessories Section - Only show when editing */}
-                       {editingProduct && (
-                         <div className="space-y-4 border-t pt-4">
+                       {editingProduct && <div className="space-y-4 border-t pt-4">
                            <div>
                              <Label className="text-base font-semibold">Product Accessories</Label>
                              <p className="text-sm text-muted-foreground">
@@ -1583,60 +1320,28 @@ const AdminPage = () => {
                            
                            <div className="space-y-3">
                              <div className="flex space-x-2">
-                               <Input
-                                 value={newOptionalFeature}
-                                 onChange={(e) => setNewOptionalFeature(e.target.value)}
-                                 placeholder="Add accessory name"
-                                 className="flex-1"
-                               />
-                               <Input
-                                 type="file"
-                                 accept="image/*"
-                                 onChange={(e) => setAccessoryImage(e.target.files?.[0] || null)}
-                                 className="flex-1"
-                               />
-                               <Button 
-                                 type="button"
-                                 onClick={() => handleAddProductAccessory()}
-                                 size="sm"
-                               >
+                               <Input value={newOptionalFeature} onChange={e => setNewOptionalFeature(e.target.value)} placeholder="Add accessory name" className="flex-1" />
+                               <Input type="file" accept="image/*" onChange={e => setAccessoryImage(e.target.files?.[0] || null)} className="flex-1" />
+                               <Button type="button" onClick={() => handleAddProductAccessory()} size="sm">
                                  Add
                                </Button>
                              </div>
                              
                              <div className="space-y-2 max-h-40 overflow-y-auto">
-                               {features.filter(f => f.is_optional).map((accessory) => (
-                                 <div key={accessory.id} className="flex items-center justify-between p-3 bg-muted rounded">
+                               {features.filter(f => f.is_optional).map(accessory => <div key={accessory.id} className="flex items-center justify-between p-3 bg-muted rounded">
                                    <div className="flex items-center space-x-3 flex-1">
-                                     {accessory.image_url && (
-                                       <img 
-                                         src={accessory.image_url} 
-                                         alt={accessory.feature}
-                                         className="w-8 h-8 object-cover rounded"
-                                       />
-                                     )}
+                                     {accessory.image_url && <img src={accessory.image_url} alt={accessory.feature} className="w-8 h-8 object-cover rounded" />}
                                      <span className="flex-1">{accessory.feature}</span>
                                    </div>
-                                   <Button
-                                     type="button"
-                                     size="sm"
-                                     variant="destructive"
-                                     onClick={() => handleDeleteFeature(accessory.id)}
-                                   >
+                                   <Button type="button" size="sm" variant="destructive" onClick={() => handleDeleteFeature(accessory.id)}>
                                      <Trash2 className="h-4 w-4" />
                                    </Button>
-                                 </div>
-                               ))}
+                                 </div>)}
                              </div>
                            </div>
-                         </div>
-                       )}
+                         </div>}
                       <div className="flex justify-end space-x-2">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          onClick={resetProductForm}
-                        >
+                        <Button type="button" variant="outline" onClick={resetProductForm}>
                           Cancel
                         </Button>
                         <Button type="submit" disabled={loading}>
@@ -1661,68 +1366,47 @@ const AdminPage = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {products.map((product) => (
-                        <TableRow key={product.id}>
+                      {products.map(product => <TableRow key={product.id}>
                           <TableCell>
-                            {product.image_url ? (
-                              <img 
-                                src={product.image_url} 
-                                alt={product.name}
-                                className="w-12 h-12 object-cover rounded"
-                              />
-                            ) : (
-                              <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                            {product.image_url ? <img src={product.image_url} alt={product.name} className="w-12 h-12 object-cover rounded" /> : <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
                                 <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                              </div>
-                            )}
+                              </div>}
                           </TableCell>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.categories?.name || '-'}</TableCell>
                           <TableCell>{product.featured ? 'Yes' : 'No'}</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end space-x-2">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={async () => {
-                                  setEditingProduct(product);
-                                  setProductName(product.name);
-                                  setProductDescription(product.description || '');
-                                  setProductSpecialNotes(product.special_notes || '');
-                                  setProductFeatured(product.featured);
-                                  
-                                  // Reset file inputs (they can't be pre-filled for security reasons)
-                                  setProductImage(null);
-                                  setProduct3DModel(null);
-                                  
-                                  // Fetch current categories for this product
-                                  const { data: productCategories } = await supabase
-                                    .from('product_categories')
-                                    .select('category_id')
-                                    .eq('product_id', product.id);
-                                  
-                                  const categoryIds = productCategories?.map(pc => pc.category_id) || [];
-                                  setProductCategoryIds(categoryIds);
-                                  
-                                  // Fetch product details including accessories
-                                  await fetchProductDetails(product.id);
-                                  
-                                  setProductDialogOpen(true);
-                                }}
-                              >
+                              <Button size="sm" variant="outline" onClick={async () => {
+                            setEditingProduct(product);
+                            setProductName(product.name);
+                            setProductDescription(product.description || '');
+                            setProductSpecialNotes(product.special_notes || '');
+                            setProductFeatured(product.featured);
+
+                            // Reset file inputs (they can't be pre-filled for security reasons)
+                            setProductImage(null);
+                            setProduct3DModel(null);
+
+                            // Fetch current categories for this product
+                            const {
+                              data: productCategories
+                            } = await supabase.from('product_categories').select('category_id').eq('product_id', product.id);
+                            const categoryIds = productCategories?.map(pc => pc.category_id) || [];
+                            setProductCategoryIds(categoryIds);
+
+                            // Fetch product details including accessories
+                            await fetchProductDetails(product.id);
+                            setProductDialogOpen(true);
+                          }}>
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteProduct(product.id)}
-                              >
+                              <Button size="sm" variant="destructive" onClick={() => handleDeleteProduct(product.id)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
-                        </TableRow>
-                      ))}
+                        </TableRow>)}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -1736,49 +1420,30 @@ const AdminPage = () => {
                 <div className="mb-6">
                   <h3 className="text-lg font-medium mb-4">Select a Product</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {products.map((product) => (
-                      <Card 
-                        key={product.id} 
-                        className={`cursor-pointer border-2 transition-all hover:border-primary/50 ${
-                          selectedProduct?.id === product.id 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-border'
-                        }`}
-                        onClick={() => {
-                          setSelectedProduct(product);
-                          fetchProductDetails(product.id);
-                        }}
-                      >
+                    {products.map(product => <Card key={product.id} className={`cursor-pointer border-2 transition-all hover:border-primary/50 ${selectedProduct?.id === product.id ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => {
+                    setSelectedProduct(product);
+                    fetchProductDetails(product.id);
+                  }}>
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-3">
-                            {product.image_url && (
-                              <img 
-                                src={product.image_url} 
-                                alt={product.name}
-                                className="w-12 h-12 object-cover rounded-md border"
-                              />
-                            )}
+                            {product.image_url && <img src={product.image_url} alt={product.name} className="w-12 h-12 object-cover rounded-md border" />}
                             <div className="flex-1 min-w-0">
                               <h4 className="font-medium text-sm truncate">{product.name}</h4>
                               <p className="text-xs text-muted-foreground">
                                 {product.categories?.name || 'Uncategorized'}
                               </p>
-                              {product.featured && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 mt-1">
+                              {product.featured && <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-800 mt-1">
                                   Featured
-                                </span>
-                              )}
+                                </span>}
                             </div>
                           </div>
                         </CardContent>
-                      </Card>
-                    ))}
+                      </Card>)}
                   </div>
                 </div>
               </div>
 
-              {selectedProduct && (
-                <div className="space-y-6">
+              {selectedProduct && <div className="space-y-6">
                   {/* Product Information */}
                   <Card>
                     <CardHeader>
@@ -1791,23 +1456,19 @@ const AdminPage = () => {
                           <p className="text-sm text-muted-foreground mb-2">
                             Category: {selectedProduct.categories?.name || 'Uncategorized'}
                           </p>
-                          {selectedProduct.description && (
-                            <div>
+                          {selectedProduct.description && <div>
                               <p className="text-sm font-medium mb-1">Description:</p>
                               <p className="text-sm text-muted-foreground">{selectedProduct.description}</p>
-                            </div>
-                          )}
+                            </div>}
                         </div>
-                        {selectedProduct.special_notes && (
-                          <div>
+                        {selectedProduct.special_notes && <div>
                             <p className="text-sm font-medium mb-1 text-warning-foreground">Special Notes:</p>
                             <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
                               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                                 {selectedProduct.special_notes}
                               </p>
                             </div>
-                          </div>
-                        )}
+                          </div>}
                       </div>
                     </CardContent>
                   </Card>
@@ -1833,40 +1494,19 @@ const AdminPage = () => {
                             <form onSubmit={handleVariantSubmit} className="space-y-4">
                               <div>
                                 <Label htmlFor="variantName">Variant Name</Label>
-                                <Input
-                                  id="variantName"
-                                  value={variantName}
-                                  onChange={(e) => setVariantName(e.target.value)}
-                                  placeholder="e.g., 5058-11A"
-                                  required
-                                />
+                                <Input id="variantName" value={variantName} onChange={e => setVariantName(e.target.value)} placeholder="e.g., 5058-11A" required />
                               </div>
                               <div>
                                 <Label htmlFor="variantDescription">Description</Label>
-                                <Textarea
-                                  id="variantDescription"
-                                  value={variantDescription}
-                                  onChange={(e) => setVariantDescription(e.target.value)}
-                                  placeholder="Variant description"
-                                />
+                                <Textarea id="variantDescription" value={variantDescription} onChange={e => setVariantDescription(e.target.value)} placeholder="Variant description" />
                               </div>
                               <div>
                                 <Label htmlFor="variantImage">Variant Image</Label>
-                                <Input
-                                  id="variantImage"
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={(e) => setVariantImage(e.target.files?.[0] || null)}
-                                />
+                                <Input id="variantImage" type="file" accept="image/*" onChange={e => setVariantImage(e.target.files?.[0] || null)} />
                               </div>
                               <div>
                                 <Label htmlFor="variant3DModel">3D Model (GLB)</Label>
-                                <Input
-                                  id="variant3DModel"
-                                  type="file"
-                                  accept=".glb,.gltf"
-                                  onChange={(e) => setVariant3DModel(e.target.files?.[0] || null)}
-                                />
+                                <Input id="variant3DModel" type="file" accept=".glb,.gltf" onChange={e => setVariant3DModel(e.target.files?.[0] || null)} />
                               </div>
                               <div className="flex justify-end space-x-2">
                                 <Button type="button" variant="outline" onClick={resetVariantForm}>
@@ -1882,116 +1522,75 @@ const AdminPage = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {variants.length > 0 ? (
-                        <div className="space-y-2">
-                          {variants.map((variant) => (
-                            <div key={variant.id} className="flex items-center justify-between p-3 bg-muted rounded">
+                      {variants.length > 0 ? <div className="space-y-2">
+                          {variants.map(variant => <div key={variant.id} className="flex items-center justify-between p-3 bg-muted rounded">
                               <div className="flex items-center space-x-3">
-                                {variant.image_url ? (
-                                  <img 
-                                    src={variant.image_url} 
-                                    alt={variant.variant_name}
-                                    className="w-12 h-12 object-cover rounded"
-                                  />
-                                ) : (
-                                  <div className="w-12 h-12 bg-background rounded flex items-center justify-center">
+                                {variant.image_url ? <img src={variant.image_url} alt={variant.variant_name} className="w-12 h-12 object-cover rounded" /> : <div className="w-12 h-12 bg-background rounded flex items-center justify-center">
                                     <ImageIcon className="h-6 w-6 text-muted-foreground" />
-                                  </div>
-                                )}
+                                  </div>}
                                 <div>
                                   <div className="font-medium">{formatVariantName(variant.variant_name)}</div>
-                                  {variant.variant_description && (
-                                    <div className="text-sm text-muted-foreground">{variant.variant_description}</div>
-                                  )}
+                                  {variant.variant_description && <div className="text-sm text-muted-foreground">{variant.variant_description}</div>}
                                 </div>
                               </div>
                               <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setEditingVariant(variant);
-                                    setVariantName(variant.variant_name);
-                                    setVariantDescription(variant.variant_description || '');
-                                    setVariant3DModel(null);
-                                    setVariantDialogOpen(true);
-                                  }}
-                                >
+                                <Button size="sm" variant="outline" onClick={() => {
+                          setEditingVariant(variant);
+                          setVariantName(variant.variant_name);
+                          setVariantDescription(variant.variant_description || '');
+                          setVariant3DModel(null);
+                          setVariantDialogOpen(true);
+                        }}>
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => handleDeleteVariant(variant.id)}
-                                >
+                                <Button size="sm" variant="destructive" onClick={() => handleDeleteVariant(variant.id)}>
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground text-center py-4">
+                            </div>)}
+                        </div> : <p className="text-muted-foreground text-center py-4">
                           No variants created yet. Add a variant to get started.
-                        </p>
-                      )}
+                        </p>}
                     </CardContent>
                   </Card>
 
                   {/* Specifications Table Display */}
-                  <ProductVariantsTable 
-                    variants={variants}
-                    specifications={specifications}
-                  />
+                  <ProductVariantsTable variants={variants} specifications={specifications} />
 
                   {/* Size Specifications - Full Width Row */}
-                  <SizeSpecificationInput
-                    productId={selectedProduct.id}
-                    variants={variants}
-                    onSpecificationsChange={(specs) => {
-                      // Add the specifications to the database
-                      specs.forEach(async (spec) => {
-                        const { error } = await supabase
-                          .from('product_specifications')
-                          .insert([spec]);
-                        
-                        if (error) {
-                          toast({
-                            title: "Error",
-                            description: "Failed to save specification",
-                            variant: "destructive",
-                          });
-                        }
-                      });
-                      // Refresh specifications
-                      fetchProductDetails(selectedProduct.id);
-                    }}
-                    existingSpecifications={specifications}
-                    customDimensions={productDimensions}
-                    onDimensionsChange={(newDimensions) => {
-                      setProductDimensions(newDimensions);
-                      toast({
-                        title: "Success",
-                        description: "Dimension configuration updated"
-                      });
-                    }}
-                    onSpecificationDelete={async (productId, variantId, specKey, specValue) => {
-                      const { error } = await supabase
-                        .from('product_specifications')
-                        .delete()
-                        .eq('product_id', productId)
-                        .eq('variant_id', variantId)
-                        .eq('specification_key', specKey)
-                        .eq('specification_value', specValue);
+                  <SizeSpecificationInput productId={selectedProduct.id} variants={variants} onSpecificationsChange={specs => {
+                // Add the specifications to the database
+                specs.forEach(async spec => {
+                  const {
+                    error
+                  } = await supabase.from('product_specifications').insert([spec]);
+                  if (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to save specification",
+                      variant: "destructive"
+                    });
+                  }
+                });
+                // Refresh specifications
+                fetchProductDetails(selectedProduct.id);
+              }} existingSpecifications={specifications} customDimensions={productDimensions} onDimensionsChange={newDimensions => {
+                setProductDimensions(newDimensions);
+                toast({
+                  title: "Success",
+                  description: "Dimension configuration updated"
+                });
+              }} onSpecificationDelete={async (productId, variantId, specKey, specValue) => {
+                const {
+                  error
+                } = await supabase.from('product_specifications').delete().eq('product_id', productId).eq('variant_id', variantId).eq('specification_key', specKey).eq('specification_value', specValue);
+                if (error) {
+                  throw new Error('Failed to delete specification from database');
+                }
 
-                      if (error) {
-                        throw new Error('Failed to delete specification from database');
-                      }
-                      
-                      // Refresh specifications after successful deletion
-                      fetchProductDetails(selectedProduct.id);
-                    }}
-                  />
+                // Refresh specifications after successful deletion
+                fetchProductDetails(selectedProduct.id);
+              }} />
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Features */}
@@ -2006,58 +1605,39 @@ const AdminPage = () => {
                         {/* Variant Selection for Features */}
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Select Variant for Features:</label>
-                          <Select 
-                            value={selectedVariant?.id || ''} 
-                            onValueChange={(value) => {
-                              const variant = variants.find(v => v.id === value);
-                              setSelectedVariant(variant || null);
-                            }}
-                          >
+                          <Select value={selectedVariant?.id || ''} onValueChange={value => {
+                        const variant = variants.find(v => v.id === value);
+                        setSelectedVariant(variant || null);
+                      }}>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a variant to manage features" />
                             </SelectTrigger>
                             <SelectContent>
-                              {variants.map((variant) => (
-                                <SelectItem key={variant.id} value={variant.id}>
+                              {variants.map(variant => <SelectItem key={variant.id} value={variant.id}>
                                   {formatVariantName(variant.variant_name)}
-                                </SelectItem>
-                              ))}
+                                </SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>
 
-                        {selectedVariant && (
-                          <>
+                        {selectedVariant && <>
                             <div className="flex space-x-2">
-                              <Input
-                                value={newFeature}
-                                onChange={(e) => setNewFeature(e.target.value)}
-                                placeholder={`Add feature to ${formatVariantName(selectedVariant.variant_name)}`}
-                              />
+                              <Input value={newFeature} onChange={e => setNewFeature(e.target.value)} placeholder={`Add feature to ${formatVariantName(selectedVariant.variant_name)}`} />
                               <Button onClick={() => handleAddFeature(false)}>Add</Button>
                             </div>
                             <div className="space-y-2">
-                              {features.filter(f => !f.is_optional && f.variant_id === selectedVariant.id).map((feature) => (
-                                <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                              {features.filter(f => !f.is_optional && f.variant_id === selectedVariant.id).map(feature => <div key={feature.id} className="flex items-center justify-between p-2 bg-muted rounded">
                                   <span>{feature.feature}</span>
-                                  <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleDeleteFeature(feature.id)}
-                                  >
+                                  <Button size="sm" variant="destructive" onClick={() => handleDeleteFeature(feature.id)}>
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
-                                </div>
-                              ))}
+                                </div>)}
                             </div>
-                          </>
-                        )}
+                          </>}
 
-                        {!selectedVariant && (
-                          <p className="text-muted-foreground text-center py-4">
+                        {!selectedVariant && <p className="text-muted-foreground text-center py-4">
                             Please select a variant to manage features
-                          </p>
-                        )}
+                          </p>}
                       </CardContent>
                     </Card>
 
@@ -2072,84 +1652,49 @@ const AdminPage = () => {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <div className="space-y-2">
-                          <Select 
-                            value={selectedVariant?.id || 'product'} 
-                            onValueChange={(value) => {
-                              if (value === 'product') {
-                                setSelectedVariant(null);
-                              } else {
-                                const variant = variants.find(v => v.id === value);
-                                setSelectedVariant(variant || null);
-                              }
-                            }}
-                          >
+                          <Select value={selectedVariant?.id || 'product'} onValueChange={value => {
+                        if (value === 'product') {
+                          setSelectedVariant(null);
+                        } else {
+                          const variant = variants.find(v => v.id === value);
+                          setSelectedVariant(variant || null);
+                        }
+                      }}>
                             <SelectTrigger>
                               <SelectValue placeholder="Assign to..." />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="product">Product (General)</SelectItem>
-                              {variants.map((variant) => (
-                                <SelectItem key={variant.id} value={variant.id}>
+                              {variants.map(variant => <SelectItem key={variant.id} value={variant.id}>
                                   {formatVariantName(variant.variant_name)}
-                                </SelectItem>
-                              ))}
+                                </SelectItem>)}
                             </SelectContent>
                           </Select>
-                          <Input
-                            value={newSpecKey}
-                            onChange={(e) => setNewSpecKey(e.target.value)}
-                            placeholder="Specification key (e.g., Weight, Material)"
-                          />
-                          <Input
-                            value={newSpecValue}
-                            onChange={(e) => setNewSpecValue(e.target.value)}
-                            placeholder="Specification value (e.g., 15 lbs, Stainless Steel)"
-                          />
+                          <Input value={newSpecKey} onChange={e => setNewSpecKey(e.target.value)} placeholder="Specification key (e.g., Weight, Material)" />
+                          <Input value={newSpecValue} onChange={e => setNewSpecValue(e.target.value)} placeholder="Specification value (e.g., 15 lbs, Stainless Steel)" />
                           <Button onClick={handleAddSpecification}>Add Specification</Button>
                         </div>
                         <div className="space-y-2">
-                          {specifications.filter(spec => !['Width', 'Length', 'Depth'].includes(spec.specification_key)).map((spec, index) => (
-                            <div
-                              key={spec.id}
-                              draggable
-                              onDragStart={(e) => handleDragStart(e, spec.id)}
-                              onDragOver={(e) => handleDragOver(e, index)}
-                              onDragLeave={handleDragLeave}
-                              onDrop={(e) => handleDrop(e, index)}
-                              className={`flex items-center justify-between p-2 bg-muted rounded cursor-move transition-all duration-200 ${
-                                draggedSpecId === spec.id ? 'opacity-50 scale-95' : ''
-                              } ${
-                                dragOverIndex === index ? 'border-2 border-primary border-dashed' : ''
-                              }`}
-                            >
+                          {specifications.filter(spec => !['Width', 'Length', 'Depth'].includes(spec.specification_key)).map((spec, index) => <div key={spec.id} draggable onDragStart={e => handleDragStart(e, spec.id)} onDragOver={e => handleDragOver(e, index)} onDragLeave={handleDragLeave} onDrop={e => handleDrop(e, index)} className={`flex items-center justify-between p-2 bg-muted rounded cursor-move transition-all duration-200 ${draggedSpecId === spec.id ? 'opacity-50 scale-95' : ''} ${dragOverIndex === index ? 'border-2 border-primary border-dashed' : ''}`}>
                               <div className="flex items-center space-x-2 flex-1">
                                 <GripVertical className="h-4 w-4 text-muted-foreground" />
                                 <div>
                                   <div className="font-medium">{spec.specification_key}</div>
                                   <div className="text-sm text-muted-foreground">{spec.specification_value}</div>
-                                  {spec.variant_id && (
-                                    <div className="text-xs text-muted-foreground">
+                                  {spec.variant_id && <div className="text-xs text-muted-foreground">
                                       Variant: {formatVariantName(variants.find(v => v.id === spec.variant_id)?.variant_name || '')}
-                                    </div>
-                                  )}
+                                    </div>}
                                 </div>
                               </div>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleDeleteSpecification(spec.id)}
-                                title="Delete"
-                              >
+                              <Button size="sm" variant="destructive" onClick={() => handleDeleteSpecification(spec.id)} title="Delete">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
-                            </div>
-                          ))}
+                            </div>)}
                         </div>
                       </CardContent>
                     </Card>
                   </div>
-                </div>
-              )}
+                </div>}
             </TabsContent>
 
             {/* Custom Products Tab */}
@@ -2157,11 +1702,7 @@ const AdminPage = () => {
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Manage Custom Products</h2>
                 <div className="flex space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={syncCustomProductsToProducts}
-                    disabled={loading}
-                  >
+                  <Button variant="outline" onClick={syncCustomProductsToProducts} disabled={loading}>
                     {loading ? "Syncing..." : "Sync to Products Page"}
                   </Button>
                   <Dialog open={customProductDialogOpen} onOpenChange={setCustomProductDialogOpen}>
@@ -2180,41 +1721,16 @@ const AdminPage = () => {
                     <form onSubmit={handleCustomProductSubmit} className="space-y-4">
                       <div>
                         <Label htmlFor="customProductName">Product Name</Label>
-                        <Input
-                          id="customProductName"
-                          value={customProductName}
-                          onChange={(e) => setCustomProductName(e.target.value)}
-                          placeholder="Enter custom product name"
-                          required
-                        />
+                        <Input id="customProductName" value={customProductName} onChange={e => setCustomProductName(e.target.value)} placeholder="Enter custom product name" required />
                       </div>
-                      <div>
-                        <Label htmlFor="customProductDescription">Description</Label>
-                        <Textarea
-                          id="customProductDescription"
-                          value={customProductDescription}
-                          onChange={(e) => setCustomProductDescription(e.target.value)}
-                          placeholder="Product description"
-                        />
-                      </div>
+                      
                        <div>
                          <Label htmlFor="customProductMainImage">Main Image</Label>
-                         {editingCustomProduct?.main_image_url && (
-                           <div className="mb-2">
-                             <img 
-                               src={editingCustomProduct.main_image_url} 
-                               alt="Current main image"
-                               className="w-20 h-20 object-cover rounded border"
-                             />
+                         {editingCustomProduct?.main_image_url && <div className="mb-2">
+                             <img src={editingCustomProduct.main_image_url} alt="Current main image" className="w-20 h-20 object-cover rounded border" />
                              <p className="text-xs text-muted-foreground mt-1">Current main image</p>
-                           </div>
-                         )}
-                         <Input
-                           id="customProductMainImage"
-                           type="file"
-                           accept="image/*"
-                           onChange={(e) => setCustomProductMainImage(e.target.files?.[0] || null)}
-                         />
+                           </div>}
+                         <Input id="customProductMainImage" type="file" accept="image/*" onChange={e => setCustomProductMainImage(e.target.files?.[0] || null)} />
                          <p className="text-xs text-muted-foreground mt-1">
                            {editingCustomProduct ? 'Upload a new image to replace the current one' : 'Upload main product image'}
                          </p>
@@ -2226,77 +1742,49 @@ const AdminPage = () => {
                          </p>
                          
                          {/* Show existing uploaded images when editing */}
-                         {editingCustomProduct && customProductImages.length > 0 && (
-                           <div className="mb-4">
+                         {editingCustomProduct && customProductImages.length > 0 && <div className="mb-4">
                              <Label className="text-sm font-medium">Current Images</Label>
                              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
-                               {customProductImages.map((image) => (
-                                 <div key={image.id} className="relative border rounded-lg p-2">
-                                   <img 
-                                     src={image.image_url} 
-                                     alt={image.description || 'Product image'}
-                                     className="w-full h-20 object-cover rounded"
-                                   />
+                               {customProductImages.map(image => <div key={image.id} className="relative border rounded-lg p-2">
+                                   <img src={image.image_url} alt={image.description || 'Product image'} className="w-full h-20 object-cover rounded" />
                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                                      {image.description}
                                    </p>
-                                   <Button
-                                     type="button"
-                                     size="sm"
-                                     variant="destructive"
-                                     className="absolute -top-2 -right-2 h-6 w-6 p-0"
-                                     onClick={async () => {
-                                       try {
-                                         const { error } = await supabase
-                                           .from('custom_product_images')
-                                           .delete()
-                                           .eq('id', image.id);
-                                         
-                                         if (error) throw error;
-                                         
-                                         setCustomProductImages(prev => 
-                                           prev.filter(img => img.id !== image.id)
-                                         );
-                                         
-                                         toast({
-                                           title: "Success",
-                                           description: "Image deleted successfully"
-                                         });
-                                       } catch (error: any) {
-                                         toast({
-                                           title: "Error",
-                                           description: "Failed to delete image",
-                                           variant: "destructive"
-                                         });
-                                       }
-                                     }}
-                                   >
+                                   <Button type="button" size="sm" variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 p-0" onClick={async () => {
+                                try {
+                                  const {
+                                    error
+                                  } = await supabase.from('custom_product_images').delete().eq('id', image.id);
+                                  if (error) throw error;
+                                  setCustomProductImages(prev => prev.filter(img => img.id !== image.id));
+                                  toast({
+                                    title: "Success",
+                                    description: "Image deleted successfully"
+                                  });
+                                } catch (error: any) {
+                                  toast({
+                                    title: "Error",
+                                    description: "Failed to delete image",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }}>
                                      <X className="h-3 w-3" />
                                    </Button>
-                                 </div>
-                               ))}
+                                 </div>)}
                              </div>
-                           </div>
-                         )}
+                           </div>}
                         <div className="space-y-4">
-                          {customProductAdditionalImages.map((item, index) => (
-                            <Card key={index} className="p-4 border-2 border-dashed border-muted">
+                          {customProductAdditionalImages.map((item, index) => <Card key={index} className="p-4 border-2 border-dashed border-muted">
                               <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-2">
                                     <ImageIcon className="h-4 w-4 text-muted-foreground" />
                                     <span className="text-sm font-medium">Image {index + 1}</span>
                                   </div>
-                                  <Button
-                                    type="button"
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => {
-                                      setCustomProductAdditionalImages(prev =>
-                                        prev.filter((_, i) => i !== index)
-                                      );
-                                    }}
-                                  >
+                                  <Button type="button" size="sm" variant="destructive" onClick={() => {
+                                  setCustomProductAdditionalImages(prev => prev.filter((_, i) => i !== index));
+                                }}>
                                     <X className="h-4 w-4" />
                                   </Button>
                                 </div>
@@ -2307,27 +1795,17 @@ const AdminPage = () => {
                                   <Label htmlFor={`description-${index}`} className="text-sm font-medium">
                                     Description *
                                   </Label>
-                                  <Textarea
-                                    id={`description-${index}`}
-                                    placeholder="Describe what this image shows (e.g., 'Side view showing adjustment mechanism', 'Close-up of locking wheels', 'Interior storage compartment')"
-                                    value={item.description}
-                                    onChange={(e) => {
-                                      const updated = [...customProductAdditionalImages];
-                                      updated[index].description = e.target.value;
-                                      setCustomProductAdditionalImages(updated);
-                                    }}
-                                    className="mt-1"
-                                    rows={2}
-                                  />
-                                  {!item.description && (
-                                    <p className="text-xs text-destructive mt-1">
+                                  <Textarea id={`description-${index}`} placeholder="Describe what this image shows (e.g., 'Side view showing adjustment mechanism', 'Close-up of locking wheels', 'Interior storage compartment')" value={item.description} onChange={e => {
+                                  const updated = [...customProductAdditionalImages];
+                                  updated[index].description = e.target.value;
+                                  setCustomProductAdditionalImages(updated);
+                                }} className="mt-1" rows={2} />
+                                  {!item.description && <p className="text-xs text-destructive mt-1">
                                       Please add a description for this image
-                                    </p>
-                                  )}
+                                    </p>}
                                 </div>
                               </div>
-                            </Card>
-                          ))}
+                            </Card>)}
                           
                           <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
                             <ImageIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
@@ -2336,20 +1814,16 @@ const AdminPage = () => {
                                 Click to add more images
                               </span>
                             </Label>
-                            <Input
-                              id="additional-images"
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              className="hidden"
-                              onChange={(e) => {
-                                const files = Array.from(e.target.files || []);
-                                const newImages = files.map(file => ({ file, description: "" }));
-                                setCustomProductAdditionalImages(prev => [...prev, ...newImages]);
-                                // Reset the input
-                                e.target.value = "";
-                              }}
-                            />
+                            <Input id="additional-images" type="file" accept="image/*" multiple className="hidden" onChange={e => {
+                              const files = Array.from(e.target.files || []);
+                              const newImages = files.map(file => ({
+                                file,
+                                description: ""
+                              }));
+                              setCustomProductAdditionalImages(prev => [...prev, ...newImages]);
+                              // Reset the input
+                              e.target.value = "";
+                            }} />
                             <p className="text-xs text-muted-foreground mt-1">
                               JPG, PNG, WEBP up to 10MB each
                             </p>
@@ -2360,10 +1834,7 @@ const AdminPage = () => {
                         <Button type="button" variant="outline" onClick={resetCustomProductForm}>
                           Cancel
                         </Button>
-                        <Button 
-                          type="submit" 
-                          disabled={loading || customProductAdditionalImages.some(img => !img.description.trim())}
-                        >
+                        <Button type="submit" disabled={loading || customProductAdditionalImages.some(img => !img.description.trim())}>
                           {loading ? "Saving..." : editingCustomProduct ? "Update" : "Create"}
                         </Button>
                       </div>
@@ -2374,55 +1845,35 @@ const AdminPage = () => {
               </div>
 
               <div className="grid gap-4">
-                {customProducts.map((customProduct) => (
-                  <Card key={customProduct.id}>
+                {customProducts.map(customProduct => <Card key={customProduct.id}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
-                          {customProduct.main_image_url && (
-                            <img
-                              src={customProduct.main_image_url}
-                              alt={customProduct.name}
-                              className="w-16 h-16 object-cover rounded"
-                            />
-                          )}
+                          {customProduct.main_image_url && <img src={customProduct.main_image_url} alt={customProduct.name} className="w-16 h-16 object-cover rounded" />}
                           <div>
                             <h3 className="font-medium">{customProduct.name}</h3>
-                            {customProduct.description && (
-                              <p className="text-sm text-muted-foreground">{customProduct.description}</p>
-                            )}
+                            {customProduct.description && <p className="text-sm text-muted-foreground">{customProduct.description}</p>}
                             <p className="text-xs text-muted-foreground">
                               Created: {new Date(customProduct.created_at).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
                         <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEditCustomProduct(customProduct)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => handleEditCustomProduct(customProduct)}>
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => handleDeleteCustomProduct(customProduct.id)}
-                          >
+                          <Button size="sm" variant="destructive" onClick={() => handleDeleteCustomProduct(customProduct.id)}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
-    </ProtectedRoute>
-  );
+    </ProtectedRoute>;
 };
-
 export default AdminPage;
