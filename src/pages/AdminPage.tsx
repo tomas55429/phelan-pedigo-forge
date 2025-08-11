@@ -136,6 +136,7 @@ const AdminPage = () => {
   const [productSpecialNotes, setProductSpecialNotes] = useState('');
   const [productFeatured, setProductFeatured] = useState(false);
   const [productImage, setProductImage] = useState<File | null>(null);
+  const [product3DModel, setProduct3DModel] = useState<File | null>(null);
   
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
@@ -421,10 +422,16 @@ const AdminPage = () => {
     setLoading(true);
     try {
       let imageUrl = editingProduct?.image_url || null;
+      let model3DUrl = editingProduct?.model_3d_url || null;
       
       if (productImage) {
         const uploadedUrl = await uploadProductImage(productImage);
         if (uploadedUrl) imageUrl = uploadedUrl;
+      }
+
+      if (product3DModel) {
+        const uploaded3DUrl = await upload3DModel(product3DModel);
+        if (uploaded3DUrl) model3DUrl = uploaded3DUrl;
       }
 
       const productData = {
@@ -434,6 +441,7 @@ const AdminPage = () => {
         description: productDescription || null,
         special_notes: productSpecialNotes || null,
         image_url: imageUrl,
+        model_3d_url: model3DUrl,
         featured: productFeatured,
       };
 
@@ -503,6 +511,7 @@ const AdminPage = () => {
     setProductSpecialNotes('');
     setProductFeatured(false);
     setProductImage(null);
+    setProduct3DModel(null);
     
     setEditingProduct(null);
     setProductDialogOpen(false);
@@ -1113,9 +1122,18 @@ const AdminPage = () => {
             <TabsContent value="products" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Manage Products</h2>
-                <Dialog open={productDialogOpen} onOpenChange={setProductDialogOpen}>
+                <Dialog open={productDialogOpen} onOpenChange={(open) => {
+                  if (!open) {
+                    resetProductForm(); // Reset form when dialog closes
+                  }
+                  setProductDialogOpen(open);
+                }}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button onClick={() => {
+                      // Reset form when Add Product is clicked
+                      resetProductForm();
+                      setProductDialogOpen(true);
+                    }}>
                       <Plus className="h-4 w-4 mr-2" />
                       Add Product
                     </Button>
@@ -1189,6 +1207,18 @@ const AdminPage = () => {
                           accept="image/*"
                           onChange={(e) => setProductImage(e.target.files?.[0] || null)}
                         />
+                      </div>
+                      <div>
+                        <Label htmlFor="product3DModel">3D Model (GLB/GLTF)</Label>
+                        <Input
+                          id="product3DModel"
+                          type="file"
+                          accept=".glb,.gltf"
+                          onChange={(e) => setProduct3DModel(e.target.files?.[0] || null)}
+                        />
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Upload a 3D model file in GLB or GLTF format for interactive viewing
+                        </p>
                       </div>
                       <div className="flex items-center space-x-2">
                         <input
@@ -1320,6 +1350,10 @@ const AdminPage = () => {
                                   setProductDescription(product.description || '');
                                   setProductSpecialNotes(product.special_notes || '');
                                   setProductFeatured(product.featured);
+                                  
+                                  // Reset file inputs (they can't be pre-filled for security reasons)
+                                  setProductImage(null);
+                                  setProduct3DModel(null);
                                   
                                   // Fetch current categories for this product
                                   const { data: productCategories } = await supabase
