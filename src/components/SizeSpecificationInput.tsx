@@ -227,20 +227,46 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
 
   const generateSpecifications = () => {
     const newSpecifications: any[] = [];
-    
+
+    // Determine enabled dimensions and their labels once
+    const enabledDimsConfig = dimensions.filter((d) => d.enabled);
+    const enabledKeys = enabledDimsConfig.map((d) => d.key as 'width' | 'length' | 'depth');
+    const enabledLabels = enabledDimsConfig.map((d) => d.label);
+
+    // Build a lookup of existing size-set signatures per variant (grouped by sort_order)
+    const groupedByVariant: Map<string, Map<number, Record<string, string>>> = new Map();
+    for (const es of existingSpecifications) {
+      if (!es.variant_id) continue;
+      if (!enabledLabels.includes(es.specification_key)) continue; // only consider current enabled dims
+      const byOrder = groupedByVariant.get(es.variant_id) || new Map<number, Record<string, string>>();
+      groupedByVariant.set(es.variant_id, byOrder);
+      const orderKey = typeof es.sort_order === 'number' ? es.sort_order : -1; // fallback bucket
+      const vals = byOrder.get(orderKey) || {};
+      vals[es.specification_key] = (es.specification_value || '').trim();
+      byOrder.set(orderKey, vals);
+    }
+
+    const existingSignaturesByVariant: Map<string, Set<string>> = new Map();
+    groupedByVariant.forEach((orders, variantId) => {
+      const sigs = new Set<string>();
+      orders.forEach((vals) => {
+        const sig = enabledDimsConfig.map((d) => (vals[d.label] || '')).join('||');
+        const hasAny = enabledDimsConfig.some((d) => (vals[d.label] || '').trim());
+        if (hasAny) sigs.add(sig);
+      });
+      existingSignaturesByVariant.set(variantId, sigs);
+    });
+
+    // Track signatures we plan to add in this run to avoid duplicates within the same Apply
+    const pendingSignaturesByVariant: Map<string, Set<string>> = new Map();
+
     // Start sort order after the highest existing one
-    const maxSortOrder = Math.max(...existingSpecifications.map(spec => spec.sort_order || 0), 0);
+    const maxSortOrder = Math.max(...existingSpecifications.map((spec) => spec.sort_order || 0), 0);
     let nextSortOrder = maxSortOrder + 1;
 
     sizeSpecs.forEach((spec) => {
-      // Use only enabled dimensions in their current order
-      const enabledDims = dimensions.filter((d) => d.enabled).map((d) => d.key as 'width' | 'length' | 'depth');
-      const maxLen = Math.max(
-        0,
-        ...enabledDims.map((key) => ((spec[key] as string[]) || []).length)
-      );
+      const maxLen = Math.max(0, ...enabledKeys.map((key) => ((spec[key] as string[]) || []).length));
 
-      // Iterate by size set index so values stay aligned across dimensions
       for (let i = 0; i < maxLen; i++) {
         const valuesByKey: Record<'width' | 'length' | 'depth', string> = {
           width: (spec.width[i] || '').trim(),
@@ -248,19 +274,25 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           depth: (spec.depth[i] || '').trim(),
         };
 
-        // Only create a set if at least one value exists
-        const hasAny = enabledDims.some((k) => valuesByKey[k] && valuesByKey[k].length > 0);
+        const hasAny = enabledKeys.some((k) => valuesByKey[k] && valuesByKey[k].length > 0);
         if (!hasAny) continue;
 
-        // Keep all dimensions from the same set grouped by the same sort_order
+        // Signature of the full size set in the current enabled dimension order
+        const sig = enabledDimsConfig.map((d) => valuesByKey[d.key as 'width' | 'length' | 'depth'] || '').join('||');
+        const existingSigs = existingSignaturesByVariant.get(spec.variantId) || new Set<string>();
+        const pendingSigs = pendingSignaturesByVariant.get(spec.variantId) || new Set<string>();
+
+        // Skip adding if an identical full set already exists (prevents duplication on repeated Apply)
+        if (existingSigs.has(sig) || pendingSigs.has(sig)) {
+          continue;
+        }
+
         const setSortOrder = nextSortOrder++;
 
-        enabledDims.forEach((k) => {
+        enabledKeys.forEach((k) => {
           const val = valuesByKey[k];
-          if (!val) return; // skip empty cells
-          const label = dimensions.find((d) => d.key === k)?.label || k;
-
-          // IMPORTANT: Allow duplicates intentionally so similar sizes are preserved
+          if (!val) return;
+          const label = enabledDimsConfig.find((d) => d.key === k)?.label || k;
           newSpecifications.push({
             product_id: productId,
             variant_id: spec.variantId,
@@ -269,19 +301,20 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
             sort_order: setSortOrder,
           });
         });
+
+        // Record this signature as pending to avoid duplicates within the same run
+        pendingSigs.add(sig);
+        pendingSignaturesByVariant.set(spec.variantId, pendingSigs);
       }
     });
 
     if (newSpecifications.length === 0) {
-      toast({ title: 'Info', description: 'Please enter at least one size value' });
+      toast({ title: 'Info', description: 'No new size sets to add' });
       return;
     }
 
     onSpecificationsChange(newSpecifications);
-    toast({
-      title: 'Success',
-      description: `${newSpecifications.length} new size specifications added`,
-    });
+    toast({ title: 'Success', description: `${newSpecifications.length} new size specifications added` });
   };
 
   const clearAll = () => {
