@@ -97,15 +97,17 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
               const valueData = values[sizeIndex];
               const isFirstOfVariant = sizeIndex === 0;
               const hasValue = valueData && valueData.value.trim();
+              const generalValue = processedSpecs[specKey]?.generalValue;
               
               return (
                 <TableCell 
                   key={`${variant.id}-${sizeIndex}`} 
                   className={`text-center border border-border text-sm ${
                     isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
-                  } ${!hasValue ? 'bg-muted/20' : ''}`}
+                  } ${!hasValue && !generalValue ? 'bg-muted/20' : ''}`}
                 >
-                  {hasValue ? formatSizeValue(valueData.value) : '-'}
+                  {hasValue ? formatSizeValue(valueData.value) : 
+                   generalValue ? formatSizeValue(generalValue) : '-'}
                 </TableCell>
               );
             });
@@ -122,13 +124,16 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           variants.map((variant) => {
             const values = processedSpecs[specKey]?.values?.[variant.id] || [];
             const value = values.length > 0 ? values[0].value : '';
+            const generalValue = processedSpecs[specKey]?.generalValue;
+            const displayValue = value || generalValue || '-';
+            
             return (
               <TableCell 
                 key={variant.id} 
                 className="text-center border border-border"
                 colSpan={maxSizeCount}
               >
-                {value || '-'}
+                {displayValue}
               </TableCell>
             );
           })
