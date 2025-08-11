@@ -80,7 +80,7 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
 
   return (
     <TableRow ref={setNodeRef} style={style} {...attributes}>
-      <TableCell className="border border-border font-medium bg-muted/30 min-w-[120px]">
+      <TableCell className="border-t border-r border-b border-border font-medium bg-muted/30 min-w-[120px]">
         <div className="flex items-center space-x-2">
           <button {...listeners} className="cursor-grab hover:cursor-grabbing">
             <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -306,7 +306,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
           <Table className="border-collapse">
             <TableHeader>
               <TableRow>
-                <TableHead className="border border-border bg-muted/50 font-semibold min-w-[120px]">
+                <TableHead className="border-t border-r border-b border-border bg-muted/50 font-semibold min-w-[120px]">
                   Specification
                 </TableHead>
                 {hasVariants ? (
