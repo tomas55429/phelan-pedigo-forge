@@ -10,6 +10,7 @@ import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, Che
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import ProductVariantsTable from './ProductVariantsTable';
 import VariantDetail from './VariantDetail';
+import Product3DViewer from './Product3DViewer';
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
 type ProductFeature = Tables<'product_features'> & { image_url?: string };
@@ -536,19 +537,33 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     </div>}
                 </div>
                </div>
-               
-               {/* Specifications Section - Only show if there are specifications */}
-               {selectedProduct.specifications.length > 0 && (
-                 <div className="mt-12">
-                   <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
-                   <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
-                     <div className="w-full">
-                       <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
-                     </div>
-                   </div>
+                
+                {/* 3D Model Section - Only show if model exists */}
+                {selectedProduct.product.model_3d_url && (
+                  <div className="mt-12">
+                    <h2 className="text-xl font-semibold mb-4">3D Model</h2>
+                    <div className="border-2 border-muted rounded-lg overflow-hidden">
+                      <Product3DViewer 
+                        modelUrl={selectedProduct.product.model_3d_url}
+                        productName={selectedProduct.product.name}
+                        className="w-full h-[600px]"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Specifications Section - Only show if there are specifications */}
+                {selectedProduct.specifications.length > 0 && (
+                  <div className="mt-12">
+                    <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
+                    <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                      <div className="w-full">
+                        <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
+                      </div>
+                    </div>
+                  </div>
+                )}
                  </div>
-               )}
-                </div>
              </div>
            </div>}
 
