@@ -26,7 +26,13 @@ const Products = () => {
           .order('name');
 
         if (error) throw error;
-        setCategories(data || []);
+        
+        // Filter out custom categories from home page display
+        const filteredCategories = (data || []).filter(category => 
+          !category.name?.toLowerCase().includes('custom')
+        );
+        
+        setCategories(filteredCategories);
       } catch (error) {
         console.error('Error fetching categories:', error);
       } finally {
