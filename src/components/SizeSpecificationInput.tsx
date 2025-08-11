@@ -228,51 +228,59 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   const generateSpecifications = () => {
     const newSpecifications: any[] = [];
     
-    // Find the highest existing sort order to ensure new specs are added after existing ones
+    // Start sort order after the highest existing one
     const maxSortOrder = Math.max(...existingSpecifications.map(spec => spec.sort_order || 0), 0);
     let nextSortOrder = maxSortOrder + 1;
-    
-    sizeSpecs.forEach(spec => {
-      dimensions.forEach((dim, dimIndex) => {
-        if (dim.enabled && spec[dim.key as keyof SizeSpecification]) {
-          const values = spec[dim.key as keyof SizeSpecification] as string[];
-          values.forEach((value, valueIndex) => {
-            if (value.trim()) {
-              // Check if this specification already exists
-              const existingSpec = existingSpecifications.find(existing => 
-                existing.variant_id === spec.variantId &&
-                existing.specification_key === dim.label &&
-                existing.specification_value === value
-              );
-              
-              // Only add if it doesn't already exist
-              if (!existingSpec) {
-                newSpecifications.push({
-                  product_id: productId,
-                  variant_id: spec.variantId,
-                  specification_key: dim.label,
-                  specification_value: value,
-                  sort_order: nextSortOrder++
-                });
-              }
-            }
+
+    sizeSpecs.forEach((spec) => {
+      // Use only enabled dimensions in their current order
+      const enabledDims = dimensions.filter((d) => d.enabled).map((d) => d.key as 'width' | 'length' | 'depth');
+      const maxLen = Math.max(
+        0,
+        ...enabledDims.map((key) => ((spec[key] as string[]) || []).length)
+      );
+
+      // Iterate by size set index so values stay aligned across dimensions
+      for (let i = 0; i < maxLen; i++) {
+        const valuesByKey: Record<'width' | 'length' | 'depth', string> = {
+          width: (spec.width[i] || '').trim(),
+          length: (spec.length[i] || '').trim(),
+          depth: (spec.depth[i] || '').trim(),
+        };
+
+        // Only create a set if at least one value exists
+        const hasAny = enabledDims.some((k) => valuesByKey[k] && valuesByKey[k].length > 0);
+        if (!hasAny) continue;
+
+        // Keep all dimensions from the same set grouped by the same sort_order
+        const setSortOrder = nextSortOrder++;
+
+        enabledDims.forEach((k) => {
+          const val = valuesByKey[k];
+          if (!val) return; // skip empty cells
+          const label = dimensions.find((d) => d.key === k)?.label || k;
+
+          // IMPORTANT: Allow duplicates intentionally so similar sizes are preserved
+          newSpecifications.push({
+            product_id: productId,
+            variant_id: spec.variantId,
+            specification_key: label,
+            specification_value: val,
+            sort_order: setSortOrder,
           });
-        }
-      });
+        });
+      }
     });
 
     if (newSpecifications.length === 0) {
-      toast({
-        title: "Info",
-        description: "No new specifications to add"
-      });
+      toast({ title: 'Info', description: 'Please enter at least one size value' });
       return;
     }
 
     onSpecificationsChange(newSpecifications);
     toast({
-      title: "Success",
-      description: `${newSpecifications.length} new size specifications added`
+      title: 'Success',
+      description: `${newSpecifications.length} new size specifications added`,
     });
   };
 
