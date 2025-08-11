@@ -384,6 +384,23 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           <p className="text-sm text-muted-foreground">{categories.length > 0 ? categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
         </CardHeader>
         <CardContent className="pt-0">
+          {/* DEBUG: Show additional images info */}
+          {additionalImages && additionalImages.length > 0 && (
+            <div className="mb-4 p-2 bg-green-100 border border-green-300 rounded text-xs">
+              <strong>🎯 Additional Images ({additionalImages.length}):</strong>
+              <div className="flex gap-1 mt-1">
+                {additionalImages.map((img, idx) => (
+                  <img 
+                    key={idx} 
+                    src={img.image_url} 
+                    alt={img.description || `Image ${idx + 1}`}
+                    className="w-8 h-8 object-cover border rounded"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+          
           <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
             {product.description || 'No description available'}
           </p>
