@@ -1727,7 +1727,9 @@ const AdminPage = () => {
                       <CardHeader>
                         <CardTitle>Other Specifications</CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          For non-dimension specifications (e.g., Weight, Material, etc.)
+                          Add general product specifications or variant-specific details.<br />
+                          <strong>For general product specs:</strong> Select "Product (General)"<br />
+                          <strong>For variant-specific specs:</strong> Select a specific variant
                         </p>
                       </CardHeader>
                       <CardContent className="space-y-4">
