@@ -363,56 +363,36 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                       {dimensions.filter(dim => dim.enabled).map((dim) => (
                         <div key={dim.key} className="space-y-2">
                           <Label htmlFor={`${dim.key}-${variant.id}`}>{dim.label}</Label>
-                           {/* Group related size dimensions with visual dividers */}
-                           <div className="space-y-3">
-                             {/* Determine the maximum number of size sets */}
-                             {Array.from({ length: Math.max(...dimensions.filter(d => d.enabled).map(d => 
-                               (spec?.[d.key as keyof SizeSpecification] as string[])?.length || 0
-                             )) }).map((_, sizeIndex) => {
-                               const hasAnyValue = dimensions.filter(d => d.enabled).some(d => 
-                                 (spec?.[d.key as keyof SizeSpecification] as string[])?.[sizeIndex]?.trim()
-                               );
-                               
-                               if (!hasAnyValue && sizeIndex > 0) return null;
-                               
-                               return (
-                                 <div key={sizeIndex} className={`relative ${sizeIndex > 0 ? 'border-l-2 border-primary/30 pl-4 ml-2' : ''}`}>
-                                   {sizeIndex > 0 && (
-                                     <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rounded-full"></div>
-                                   )}
-                                   <div className="grid gap-3">
-                                     {dimensions.filter(d => d.enabled).map((d) => {
-                                       const values = spec?.[d.key as keyof SizeSpecification] as string[] || [];
-                                       const value = values[sizeIndex] || '';
-                                       
-                                       return (
-                                         <div key={`${d.key}-${sizeIndex}`} className="space-y-1">
-                                           <Label className="text-xs text-muted-foreground">{d.label}</Label>
-                                           <div className="flex items-center space-x-2">
-                                             <Input
-                                               value={value}
-                                               onChange={(e) => handleSpecChange(variant.id, d.key as 'width' | 'length' | 'depth', sizeIndex, e.target.value)}
-                                               placeholder={`e.g., 12″, 15¼″`}
-                                               className="text-sm"
-                                             />
-                                             {values.length > 1 && (
-                                               <Button
-                                                 type="button"
-                                                 variant="outline"
-                                                 size="sm"
-                                                 onClick={() => removeSizeOption(variant.id, d.key as 'width' | 'length' | 'depth', sizeIndex)}
-                                               >
-                                                 <Trash2 className="h-4 w-4" />
-                                               </Button>
-                                             )}
-                                           </div>
-                                         </div>
-                                       );
-                                     })}
-                                   </div>
-                                 </div>
-                               );
-                             })}
+                           {/* Show input fields only for the current dimension */}
+                           <div className="space-y-2">
+                             {((spec?.[dim.key as keyof SizeSpecification] as string[]) || ['']).map((value, index) => (
+                               <div key={index} className="flex items-center space-x-2">
+                                 <Input
+                                   value={value}
+                                   onChange={(e) => handleSpecChange(variant.id, dim.key as 'width' | 'length' | 'depth', index, e.target.value)}
+                                   placeholder={`e.g., 12″, 15¼″`}
+                                   className="text-sm"
+                                 />
+                                 <Button
+                                   type="button"
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => addSizeOption(variant.id, dim.key as 'width' | 'length' | 'depth')}
+                                 >
+                                   <Plus className="h-4 w-4" />
+                                 </Button>
+                                 {((spec?.[dim.key as keyof SizeSpecification] as string[]) || []).length > 1 && (
+                                   <Button
+                                     type="button"
+                                     variant="outline"
+                                     size="sm"
+                                     onClick={() => removeSizeOption(variant.id, dim.key as 'width' | 'length' | 'depth', index)}
+                                   >
+                                     <Trash2 className="h-4 w-4" />
+                                   </Button>
+                                 )}
+                               </div>
+                             ))}
                            </div>
                         </div>
                       ))}
