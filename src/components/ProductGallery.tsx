@@ -66,7 +66,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
   // Fetch products and related data from Supabase
   useEffect(() => {
-    console.log('ProductGallery: Fetching data, selectedProduct:', selectedProduct, 'specsProduct:', specsProduct);
+    console.log('ProductGallery: Starting data fetch...');
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -99,6 +99,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         const productCategories = productCategoriesRes.data || [];
         const customProducts = customProductsRes.data || [];
         const customProductImages = customProductImagesRes.data || [];
+
+        console.log('ProductGallery: Fetched data:', {
+          products: products.length,
+          customProducts: customProducts.length,
+          customProductImages: customProductImages.length,
+          customProductImagesData: customProductImages
+        });
 
         // Find or create "Custom" category
         let customCategory = categoriesData.find(cat => cat.name === 'Custom');
