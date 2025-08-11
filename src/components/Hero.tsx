@@ -24,8 +24,8 @@ const Hero = () => {
           <div className="animate-fade-in">
             <div className="flex justify-center mb-6">
               <img 
-                src="/lovable-uploads/6f1e269b-425a-431b-943f-9c14a9cab828.png" 
-                alt="Phelan Manufacturing Corporation Logo" 
+                src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" 
+                alt="Phelan Manufacturing Corporation Logo"
                 className="h-20 md:h-24 lg:h-28 w-auto"
                 loading="eager"
                 decoding="async"

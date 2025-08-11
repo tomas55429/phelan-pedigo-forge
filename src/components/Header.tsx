@@ -45,7 +45,7 @@ const Header = () => {
           <div className="flex items-center space-x-8">
             {/* Logo */}
             <Link to="/">
-              <img src="/lovable-uploads/1d0becd4-a355-464a-831c-1708240818d1.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-12' : 'h-16'}`} />
+              <img src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-12' : 'h-16'}`} />
             </Link>
             
             {/* Desktop Navigation */}
