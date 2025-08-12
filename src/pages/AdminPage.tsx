@@ -1580,23 +1580,25 @@ const AdminPage = () => {
                   <ProductVariantsTable variants={variants} specifications={specifications} onSpecificationOrderChange={handleSpecificationOrderChange} />
 
                   {/* Size Specifications - Full Width Row */}
-                  <SizeSpecificationInput productId={selectedProduct.id} variants={variants} onSpecificationsChange={specs => {
-                // Add the specifications to the database
-                specs.forEach(async spec => {
-                  const {
-                    error
-                  } = await supabase.from('product_specifications').insert([spec]);
-                  if (error) {
-                    toast({
-                      title: "Error",
-                      description: "Failed to save specification",
-                      variant: "destructive"
-                    });
-                  }
-                });
-                // Refresh specifications
-                fetchProductDetails(selectedProduct.id);
-              }} existingSpecifications={specifications} customDimensions={productDimensions} onDimensionsChange={newDimensions => {
+                  <SizeSpecificationInput 
+                    productId={selectedProduct.id}
+                    variants={variants}
+                    onSpecificationsChange={async (specs) => {
+                      try {
+                        const { error } = await supabase
+                          .from('product_specifications')
+                          .insert(specs);
+                        if (error) throw error;
+                        toast({ title: 'Saved', description: `${specs.length} specifications added` });
+                      } catch (err) {
+                        toast({ title: 'Error', description: 'Failed to save specifications', variant: 'destructive' });
+                      } finally {
+                        fetchProductDetails(selectedProduct.id);
+                      }
+                    }}
+                    existingSpecifications={specifications}
+                    customDimensions={productDimensions}
+                    onDimensionsChange={newDimensions => {
                 setProductDimensions(newDimensions);
                 toast({
                   title: "Success",
