@@ -59,7 +59,6 @@ interface SortableRowProps {
   formatSizeValue: (value: string) => JSX.Element | string;
   maxSizeCount: number;
   generalMaxColumnSpan: number;
-  generalOrderKeys: number[];
   isAdmin: boolean;
 }
 
@@ -104,17 +103,22 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           variants.flatMap((variant) => {
             const values = processedSpecs[specKey]?.values?.[variant.id] || [];
             const generalValue = processedSpecs[specKey]?.generalValue;
-            const actualSizeCount = Math.max(values.length, generalValue ? 1 : 0);
             
-            // Only render columns if there's actual data
-            if (actualSizeCount === 0) {
-              return [];
-            }
+            // Ensure consistent number of columns per variant across all size rows
+            const variantColumnSpan = Math.max(1, ...Object.values(processedSpecs)
+              .filter(spec => {
+                const hasValues = spec.values[variant.id]?.length > 0;
+                const hasGeneral = spec.generalValue;
+                return hasValues || hasGeneral;
+              })
+              .map(spec => Math.max(spec.values[variant.id]?.length || 0, spec.generalValue ? 1 : 0))
+            );
             
-            return Array.from({ length: actualSizeCount }).map((_, sizeIndex) => {
+            return Array.from({ length: variantColumnSpan }).map((_, sizeIndex) => {
               const valueData = values[sizeIndex];
               const isFirstOfVariant = sizeIndex === 0;
-              const hasValue = valueData && valueData.value.trim();
+              const hasValue = !!(valueData && valueData.value.trim());
+              const content = hasValue ? formatSizeValue(valueData.value) : (isFirstOfVariant && generalValue ? formatSizeValue(generalValue) : '');
               
               return (
                 <TableCell 
@@ -123,8 +127,7 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
                     isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
                   }`}
                 >
-                  {hasValue ? formatSizeValue(valueData.value) : 
-                   generalValue ? formatSizeValue(generalValue) : ''}
+                  {content}
                 </TableCell>
               );
             });
@@ -186,7 +189,7 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             );
           })
         ) : (
-          <TableCell className="text-center border border-border">
+          <TableCell className="text-center border border-border" colSpan={generalMaxColumnSpan}>
             {processedSpecs[specKey]?.generalValue || '-'}
           </TableCell>
         )
@@ -435,7 +438,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                     );
                   })
                 ) : (
-                  <TableHead className="text-center font-semibold" colSpan={1}>Value</TableHead>
+                  <TableHead className="text-center font-semibold" colSpan={generalMaxColumnSpan}>Value</TableHead>
                 )}
               </TableRow>
             </TableHeader>
