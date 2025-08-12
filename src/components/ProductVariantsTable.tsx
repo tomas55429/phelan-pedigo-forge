@@ -145,7 +145,6 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           )
         )
       ) : (
-      ) : (
         // Non-size specifications with single column per variant (no separators)
         hasVariants ? (
           variants.map((variant, variantIndex) => {
@@ -155,15 +154,8 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             const displayValue = value || generalValue || '-';
             const isFirstVariant = variantIndex === 0;
             
-            // Calculate column span for this variant
-            const variantColumnSpan = Math.max(1, ...Object.values(processedSpecs)
-              .filter(spec => {
-                const hasValues = spec.values[variant.id]?.length > 0;
-                const hasGeneral = spec.generalValue;
-                return hasValues || hasGeneral;
-              })
-              .map(spec => Math.max(spec.values[variant.id]?.length || 0, spec.generalValue ? 1 : 0))
-            );
+            // Calculate column span for this variant using unified size order map
+            const variantColumnSpan = Math.max(1, variantSizeOrderMap[variant.id]?.length || 0);
             
             return (
               <TableCell 
