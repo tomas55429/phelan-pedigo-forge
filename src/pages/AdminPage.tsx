@@ -271,17 +271,25 @@ const AdminPage = () => {
   // Persist specification order per key for the selected product
   const handleSpecificationOrderChange = async (newOrder: string[]) => {
     if (!selectedProduct) return;
+
+    // Do NOT update DB sort_order for size rows to avoid corrupting size-set alignment
+    const SIZE_KEYS = ['width', 'length', 'depth', 'height'];
+    const isSizeKey = (k: string) => SIZE_KEYS.some(s => k.toLowerCase().includes(s));
+    const nonSizeOrder = newOrder.filter(k => !isSizeKey(k));
+
     try {
-      const updates = newOrder.map((key, index) => ({ key, order: index + 1 }));
-      await Promise.all(
-        updates.map(u =>
-          supabase
-            .from('product_specifications')
-            .update({ sort_order: u.order })
-            .eq('product_id', selectedProduct.id)
-            .eq('specification_key', u.key)
-        )
-      );
+      const updates = nonSizeOrder.map((key, index) => ({ key, order: index + 1 }));
+      if (updates.length) {
+        await Promise.all(
+          updates.map(u =>
+            supabase
+              .from('product_specifications')
+              .update({ sort_order: u.order })
+              .eq('product_id', selectedProduct.id)
+              .eq('specification_key', u.key)
+          )
+        );
+      }
       await fetchProductDetails(selectedProduct.id);
       toast({ title: 'Saved', description: 'Specification order updated.' });
     } catch (error: any) {
