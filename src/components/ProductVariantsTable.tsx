@@ -59,10 +59,12 @@ interface SortableRowProps {
   formatSizeValue: (value: string) => JSX.Element | string;
   maxSizeCount: number;
   generalMaxColumnSpan: number;
+  variantSizeOrderMap: Record<string, number[]>;
+  generalSizeOrders: number[];
   isAdmin: boolean;
 }
 
-const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue, maxSizeCount, generalMaxColumnSpan, isAdmin }: SortableRowProps) => {
+const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue, maxSizeCount, generalMaxColumnSpan, variantSizeOrderMap, generalSizeOrders, isAdmin }: SortableRowProps) => {
   const {
     attributes,
     listeners,
@@ -103,29 +105,16 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           variants.flatMap((variant) => {
             const values = processedSpecs[specKey]?.values?.[variant.id] || [];
             const generalValue = processedSpecs[specKey]?.generalValue;
-            
-            // Ensure consistent number of columns per variant across all size rows
-            const variantColumnSpan = Math.max(1, ...Object.values(processedSpecs)
-              .filter(spec => {
-                const hasValues = spec.values[variant.id]?.length > 0;
-                const hasGeneral = spec.generalValue;
-                return hasValues || hasGeneral;
-              })
-              .map(spec => Math.max(spec.values[variant.id]?.length || 0, spec.generalValue ? 1 : 0))
-            );
-            
-            return Array.from({ length: variantColumnSpan }).map((_, sizeIndex) => {
-              const valueData = values[sizeIndex];
+            const orders = variantSizeOrderMap[variant.id] || [0];
+            return orders.map((order, sizeIndex) => {
+              const valueData = values.find(v => v.sort_order === order);
               const isFirstOfVariant = sizeIndex === 0;
               const hasValue = !!(valueData && valueData.value.trim());
               const content = hasValue ? formatSizeValue(valueData.value) : (isFirstOfVariant && generalValue ? formatSizeValue(generalValue) : '');
-              
               return (
-                <TableCell 
-                  key={`${variant.id}-${sizeIndex}`} 
-                  className={`text-center border border-border text-sm ${
-                    isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
-                  }`}
+                <TableCell
+                  key={`${variant.id}-${order}`}
+                  className={`text-center border border-border text-sm ${isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'}`}
                 >
                   {content}
                 </TableCell>
@@ -133,21 +122,20 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             });
           })
         ) : (
-          generalActualSizeCount === 0 ? (
+          (generalSizeOrders && generalSizeOrders.length === 0 && generalActualSizeCount === 0) ? (
             <TableCell className="text-center border border-border" />
           ) : (
             <>
-              {Array.from({ length: generalMaxColumnSpan }).map((_, sizeIndex) => {
-                const valueData = generalValuesForKey[sizeIndex];
+              {(generalSizeOrders.length ? generalSizeOrders : Array.from({ length: generalMaxColumnSpan }).map((_, i) => i)).map((orderOrIndex, idx) => {
+                const order = typeof orderOrIndex === 'number' && generalSizeOrders.length ? orderOrIndex : undefined;
+                const valueData = order !== undefined ? generalValuesForKey.find(v => v.sort_order === order) : generalValuesForKey[idx];
                 const hasValue = !!(valueData && valueData.value.trim());
-                const content = hasValue ? formatSizeValue(valueData.value) : '';
-                const isFirst = sizeIndex === 0;
+                const content = hasValue ? formatSizeValue(valueData!.value) : '';
+                const isFirst = idx === 0;
                 return (
                   <TableCell
-                    key={`general-${sizeIndex}`}
-                    className={`text-center border border-border text-sm ${
-                      isFirst ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
-                    }`}
+                    key={`general-${order ?? idx}`}
+                    className={`text-center border border-border text-sm ${isFirst ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'}`}
                   >
                     {content}
                   </TableCell>
@@ -156,6 +144,7 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             </>
           )
         )
+      ) : (
       ) : (
         // Non-size specifications with single column per variant (no separators)
         hasVariants ? (
@@ -331,15 +320,34 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
         .map(values => values.length)
     )
   );
-  // Calculate max number of size sets for general (no variant) specs
-  const generalMaxColumnSpan = Math.max(
-    1,
-    ...Object.values(processedSpecs).map(spec => {
-      const count = spec.generalValues?.length ?? 0;
-      return Math.max(count, spec.generalValue ? 1 : 0);
-    })
-  );
-
+  // Build consistent order buckets by sort_order across size specs
+  const isSizeSpecKey = (key: string) => {
+    const k = key.toLowerCase();
+    return k.includes('width') || k.includes('length') || k.includes('depth') || k.includes('height');
+  };
+  const sizeSpecKeys = Object.keys(processedSpecs).filter(isSizeSpecKey);
+  // General (no variants) order list
+  const generalSizeOrdersSet = new Set<number>();
+  sizeSpecKeys.forEach((key) => {
+    (processedSpecs[key].generalValues || []).forEach((v) => {
+      if (typeof v.sort_order === 'number') generalSizeOrdersSet.add(v.sort_order);
+    });
+  });
+  const generalSizeOrders = Array.from(generalSizeOrdersSet).sort((a, b) => a - b);
+  const generalMaxColumnSpan = Math.max(1, generalSizeOrders.length);
+  // Variant-specific order maps
+  const variantSizeOrderMap: Record<string, number[]> = {};
+  variantsWithSizeData.forEach((variant) => {
+    const set = new Set<number>();
+    sizeSpecKeys.forEach((key) => {
+      (processedSpecs[key].values[variant.id] || []).forEach((v) => {
+        if (typeof v.sort_order === 'number') set.add(v.sort_order);
+      });
+    });
+    const orders = Array.from(set).sort((a, b) => a - b);
+    variantSizeOrderMap[variant.id] = orders.length ? orders : (generalSizeOrders.length ? generalSizeOrders : [0]);
+  });
+  
   // Debug logging to check counts and data
   console.log('Debug - maxSizeCount (variants):', maxSizeCount);
   console.log('Debug - generalMaxColumnSpan (no variants):', generalMaxColumnSpan);
@@ -407,15 +415,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                 </TableHead>
                 {variantsWithSizeData.length > 0 ? (
                   variantsWithSizeData.map((variant) => {
-                    // Calculate actual column span for this variant based on size specifications
-                    const variantColumnSpan = Math.max(1, ...Object.values(processedSpecs)
-                      .filter(spec => {
-                        const hasValues = spec.values[variant.id]?.length > 0;
-                        const hasGeneral = spec.generalValue;
-                        return hasValues || hasGeneral;
-                      })
-                      .map(spec => Math.max(spec.values[variant.id]?.length || 0, spec.generalValue ? 1 : 0))
-                    );
+                    // Calculate actual column span for this variant based on unified size orders
+                    const variantColumnSpan = Math.max(1, variantSizeOrderMap[variant.id]?.length || 0);
                     
                     return (
                       <TableHead 
@@ -450,19 +451,21 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
               >
                 <SortableContext items={specificationKeys} strategy={verticalListSortingStrategy}>
                   <TableBody>
-                    {specificationKeys.map((specKey) => (
-                     <SortableRow
-                         key={specKey}
-                         specKey={specKey}
-                         processedSpecs={processedSpecs}
-                         variants={variantsWithSizeData}
-                         hasVariants={variantsWithSizeData.length > 0}
-                         formatSizeValue={formatSizeValue}
-                         maxSizeCount={maxSizeCount}
-                         generalMaxColumnSpan={generalMaxColumnSpan}
-                         isAdmin={isAdmin}
-                       />
-                    ))}
+                     {specificationKeys.map((specKey) => (
+                      <SortableRow
+                          key={specKey}
+                          specKey={specKey}
+                          processedSpecs={processedSpecs}
+                          variants={variantsWithSizeData}
+                          hasVariants={variantsWithSizeData.length > 0}
+                          formatSizeValue={formatSizeValue}
+                          maxSizeCount={maxSizeCount}
+                          generalMaxColumnSpan={generalMaxColumnSpan}
+                          variantSizeOrderMap={variantSizeOrderMap}
+                          generalSizeOrders={generalSizeOrders}
+                          isAdmin={isAdmin}
+                        />
+                     ))}
                   </TableBody>
                 </SortableContext>
               </DndContext>
@@ -478,6 +481,8 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                     formatSizeValue={formatSizeValue}
                     maxSizeCount={maxSizeCount}
                     generalMaxColumnSpan={generalMaxColumnSpan}
+                    variantSizeOrderMap={variantSizeOrderMap}
+                    generalSizeOrders={generalSizeOrders}
                     isAdmin={isAdmin}
                   />
                 ))}
