@@ -131,8 +131,8 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           generalActualSizeCount === 0 ? (
             <TableCell className="text-center border border-border" />
           ) : (
-            <TableCell className="text-center border border-border">
-              <div className="inline-flex items-center">
+            <TableCell className="text-center border border-border p-0">
+              <div className="flex items-stretch h-full">
                 {Array.from({ length: generalActualSizeCount }).map((_, sizeIndex) => {
                   const valueData = generalValuesForKey[sizeIndex];
                   const hasValue = !!(valueData && valueData.value.trim());
@@ -142,12 +142,12 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
                     ? formatSizeValue(processedSpecs[specKey]?.generalValue || '')
                     : '';
                   return (
-                    <span
+                    <div
                       key={`general-${sizeIndex}`}
-                      className={`${sizeIndex > 0 ? 'border-l border-l-muted-foreground/30' : ''} px-2`}
+                      className={`${sizeIndex > 0 ? 'border-l border-l-muted-foreground/30' : ''} px-3 py-2 self-stretch flex items-center justify-center`}
                     >
                       {content}
-                    </span>
+                    </div>
                   );
                 })}
               </div>
@@ -343,14 +343,9 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   console.log('Debug - generalMaxColumnSpan (no variants):', generalMaxColumnSpan);
   console.log('Debug - processedSpecs:', processedSpecs);
   console.log('Debug - specifications input:', specifications);
-  // Custom ordering: Description first, then Width, Length, Depth, then others
   const getSpecOrder = (key: string) => {
-    const lowerKey = key.toLowerCase();
-    if (lowerKey.includes('description')) return 1;
-    if (lowerKey === 'width') return 2;
-    if (lowerKey === 'length') return 3;
-    if (lowerKey === 'depth') return 4;
-    return processedSpecs[key].sort_order || 999;
+    const so = processedSpecs[key]?.sort_order;
+    return typeof so === 'number' ? so : 999;
   };
 
   // Get all unique specification keys with custom ordering

@@ -267,6 +267,28 @@ const AdminPage = () => {
       });
     }
   };
+  
+  // Persist specification order per key for the selected product
+  const handleSpecificationOrderChange = async (newOrder: string[]) => {
+    if (!selectedProduct) return;
+    try {
+      const updates = newOrder.map((key, index) => ({ key, order: index + 1 }));
+      await Promise.all(
+        updates.map(u =>
+          supabase
+            .from('product_specifications')
+            .update({ sort_order: u.order })
+            .eq('product_id', selectedProduct.id)
+            .eq('specification_key', u.key)
+        )
+      );
+      await fetchProductDetails(selectedProduct.id);
+      toast({ title: 'Saved', description: 'Specification order updated.' });
+    } catch (error: any) {
+      console.error('Order save error', error);
+      toast({ title: 'Error', description: 'Failed to save order', variant: 'destructive' });
+    }
+  };
   const handleCategorySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!categoryName.trim()) return;
@@ -1555,7 +1577,7 @@ const AdminPage = () => {
                   </Card>
 
                   {/* Specifications Table Display */}
-                  <ProductVariantsTable variants={variants} specifications={specifications} />
+                  <ProductVariantsTable variants={variants} specifications={specifications} onSpecificationOrderChange={handleSpecificationOrderChange} />
 
                   {/* Size Specifications - Full Width Row */}
                   <SizeSpecificationInput productId={selectedProduct.id} variants={variants} onSpecificationsChange={specs => {
