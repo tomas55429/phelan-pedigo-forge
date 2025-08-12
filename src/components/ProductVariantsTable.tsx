@@ -105,15 +105,15 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           variants.flatMap((variant) => {
             const values = processedSpecs[specKey]?.values?.[variant.id] || [];
             const generalValue = processedSpecs[specKey]?.generalValue;
-            const orders = variantSizeOrderMap[variant.id] || [0];
-            return orders.map((order, sizeIndex) => {
-              const valueData = values.find(v => v.sort_order === order);
+            const indices = variantSizeOrderMap[variant.id] || [0];
+            return indices.map((index, sizeIndex) => {
+              const valueData = values[index];
               const isFirstOfVariant = sizeIndex === 0;
               const hasValue = !!(valueData && valueData.value.trim());
               const content = hasValue ? formatSizeValue(valueData.value) : (isFirstOfVariant && generalValue ? formatSizeValue(generalValue) : '');
               return (
                 <TableCell
-                  key={`${variant.id}-${order}`}
+                  key={`${variant.id}-${index}`}
                   className={`text-center border border-border text-sm ${isFirstOfVariant ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'}`}
                 >
                   {content}
@@ -126,15 +126,14 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
             <TableCell className="text-center border border-border" />
           ) : (
             <>
-              {(generalSizeOrders.length ? generalSizeOrders : Array.from({ length: generalMaxColumnSpan }).map((_, i) => i)).map((orderOrIndex, idx) => {
-                const order = typeof orderOrIndex === 'number' && generalSizeOrders.length ? orderOrIndex : undefined;
-                const valueData = order !== undefined ? generalValuesForKey.find(v => v.sort_order === order) : generalValuesForKey[idx];
+              {(generalSizeOrders.length ? generalSizeOrders : Array.from({ length: generalMaxColumnSpan }).map((_, i) => i)).map((index, idx) => {
+                const valueData = generalValuesForKey[index];
                 const hasValue = !!(valueData && valueData.value.trim());
                 const content = hasValue ? formatSizeValue(valueData!.value) : '';
                 const isFirst = idx === 0;
                 return (
                   <TableCell
-                    key={`general-${order ?? idx}`}
+                    key={`general-${index}`}
                     className={`text-center border border-border text-sm ${isFirst ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'}`}
                   >
                     {content}
@@ -300,7 +299,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
     });
   });
 
-  // Calculate maximum number of sizes across all variants and specifications (only for variants with size data)
+  // Calculate maximum number of sizes per variant by index (align sets by position, not raw sort_order)
   const maxSizeCount = Math.max(
     1,
     ...Object.values(processedSpecs).flatMap(spec => 
@@ -312,32 +311,27 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
         .map(values => values.length)
     )
   );
-  // Build consistent order buckets by sort_order across size specs
+
   const isSizeSpecKey = (key: string) => {
     const k = key.toLowerCase();
     return k.includes('width') || k.includes('length') || k.includes('depth') || k.includes('height');
   };
   const sizeSpecKeys = Object.keys(processedSpecs).filter(isSizeSpecKey);
-  // General (no variants) order list
-  const generalSizeOrdersSet = new Set<number>();
-  sizeSpecKeys.forEach((key) => {
-    (processedSpecs[key].generalValues || []).forEach((v) => {
-      if (typeof v.sort_order === 'number') generalSizeOrdersSet.add(v.sort_order);
-    });
-  });
-  const generalSizeOrders = Array.from(generalSizeOrdersSet).sort((a, b) => a - b);
-  const generalMaxColumnSpan = Math.max(1, generalSizeOrders.length);
-  // Variant-specific order maps
+
+  // General (no variant) maximum count across all size keys
+  const generalMaxCount = Math.max(
+    0,
+    ...sizeSpecKeys.map(key => (processedSpecs[key].generalValues || []).length)
+  );
+  const generalSizeOrders = Array.from({ length: Math.max(1, generalMaxCount) }, (_, i) => i);
+  const generalMaxColumnSpan = generalSizeOrders.length;
+
+  // Variant-specific index maps (0..n) to align Width/Length/Depth sets by position
   const variantSizeOrderMap: Record<string, number[]> = {};
   variantsWithSizeData.forEach((variant) => {
-    const set = new Set<number>();
-    sizeSpecKeys.forEach((key) => {
-      (processedSpecs[key].values[variant.id] || []).forEach((v) => {
-        if (typeof v.sort_order === 'number') set.add(v.sort_order);
-      });
-    });
-    const orders = Array.from(set).sort((a, b) => a - b);
-    variantSizeOrderMap[variant.id] = orders.length ? orders : (generalSizeOrders.length ? generalSizeOrders : [0]);
+    const perKeyCounts = sizeSpecKeys.map(key => (processedSpecs[key].values[variant.id] || []).length);
+    const maxCountForVariant = Math.max(1, ...perKeyCounts, generalMaxCount);
+    variantSizeOrderMap[variant.id] = Array.from({ length: maxCountForVariant }, (_, i) => i);
   });
   
   // Debug logging to check counts and data
