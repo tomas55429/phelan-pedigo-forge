@@ -58,10 +58,12 @@ interface SortableRowProps {
   hasVariants: boolean;
   formatSizeValue: (value: string) => JSX.Element | string;
   maxSizeCount: number;
+  generalMaxColumnSpan: number;
+  generalOrderKeys: number[];
   isAdmin: boolean;
 }
 
-const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue, maxSizeCount, isAdmin }: SortableRowProps) => {
+const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSizeValue, maxSizeCount, generalMaxColumnSpan, isAdmin }: SortableRowProps) => {
   const {
     attributes,
     listeners,
@@ -131,27 +133,24 @@ const SortableRow = ({ specKey, processedSpecs, variants, hasVariants, formatSiz
           generalActualSizeCount === 0 ? (
             <TableCell className="text-center border border-border" />
           ) : (
-            <TableCell className="text-center border border-border p-0">
-              <div className="flex items-stretch h-full">
-                {Array.from({ length: generalActualSizeCount }).map((_, sizeIndex) => {
-                  const valueData = generalValuesForKey[sizeIndex];
-                  const hasValue = !!(valueData && valueData.value.trim());
-                  const content = hasValue
-                    ? formatSizeValue(valueData.value)
-                    : processedSpecs[specKey]?.generalValue
-                    ? formatSizeValue(processedSpecs[specKey]?.generalValue || '')
-                    : '';
-                  return (
-                    <div
-                      key={`general-${sizeIndex}`}
-                      className={`${sizeIndex > 0 ? 'border-l border-l-muted-foreground/30' : ''} px-3 py-2 self-stretch flex items-center justify-center`}
-                    >
-                      {content}
-                    </div>
-                  );
-                })}
-              </div>
-            </TableCell>
+            <>
+              {Array.from({ length: generalMaxColumnSpan }).map((_, sizeIndex) => {
+                const valueData = generalValuesForKey[sizeIndex];
+                const hasValue = !!(valueData && valueData.value.trim());
+                const content = hasValue ? formatSizeValue(valueData.value) : '';
+                const isFirst = sizeIndex === 0;
+                return (
+                  <TableCell
+                    key={`general-${sizeIndex}`}
+                    className={`text-center border border-border text-sm ${
+                      isFirst ? 'border-l-2 border-l-primary/70' : 'border-l border-l-muted-foreground/30'
+                    }`}
+                  >
+                    {content}
+                  </TableCell>
+                );
+              })}
+            </>
           )
         )
       ) : (
@@ -449,7 +448,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                 <SortableContext items={specificationKeys} strategy={verticalListSortingStrategy}>
                   <TableBody>
                     {specificationKeys.map((specKey) => (
-                       <SortableRow
+                     <SortableRow
                          key={specKey}
                          specKey={specKey}
                          processedSpecs={processedSpecs}
@@ -457,6 +456,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                          hasVariants={variantsWithSizeData.length > 0}
                          formatSizeValue={formatSizeValue}
                          maxSizeCount={maxSizeCount}
+                         generalMaxColumnSpan={generalMaxColumnSpan}
                          isAdmin={isAdmin}
                        />
                     ))}
@@ -474,6 +474,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
                     hasVariants={variantsWithSizeData.length > 0}
                     formatSizeValue={formatSizeValue}
                     maxSizeCount={maxSizeCount}
+                    generalMaxColumnSpan={generalMaxColumnSpan}
                     isAdmin={isAdmin}
                   />
                 ))}
