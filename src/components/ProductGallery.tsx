@@ -749,8 +749,39 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                         </div>
                       );
                     })()}
-                  
-                   {/* Variants - Only show if there are variants */}
+                    
+                    {/* Available Accessories - deduplicated across variants */}
+                    {(() => {
+                      const accessories = selectedProduct.features.filter(f => f.is_optional);
+                      const deduped = accessories.reduce((acc, item) => {
+                        if (!acc.some(a => a.feature === item.feature)) acc.push(item);
+                        return acc;
+                      }, [] as typeof accessories);
+                      return deduped.length > 0 && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Available Accessories</h2>
+                          <ul className="space-y-3">
+                            {deduped.map(acc => (
+                              <li key={acc.id} className="flex items-center gap-3">
+                                {acc.image_url && (
+                                  <img
+                                    src={acc.image_url}
+                                    alt={acc.feature}
+                                    className="w-10 h-10 rounded border object-cover"
+                                    loading="lazy"
+                                    decoding="async"
+                                    sizes="40px"
+                                  />
+                                )}
+                                <span className="text-sm text-muted-foreground">{acc.feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      );
+                    })()}
+                   
+                    {/* Variants - Only show if there are variants */}
                    {selectedProduct.variants.length > 0 && (
                      <div>
                        <h2 className="text-xl font-semibold mb-4">Variants</h2>
