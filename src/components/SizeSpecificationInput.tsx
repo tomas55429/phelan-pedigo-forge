@@ -305,8 +305,11 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           depth: (spec.depth[i] || '').trim(),
         };
 
-        const hasAny = enabledKeys.some((k) => valuesByKey[k] && valuesByKey[k].length > 0);
-        if (!hasAny) continue;
+        const hasAll = enabledKeys.every((k) => {
+          const v = valuesByKey[k];
+          return typeof v === 'string' && v.trim().length > 0;
+        });
+        if (!hasAll) continue;
 
         // Signature of the full size set in the current enabled dimension order
         const sig = enabledDimsConfig
