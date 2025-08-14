@@ -15,8 +15,8 @@ import { Plus, Edit, Trash2, Upload, ArrowLeft, Package, FolderOpen, Settings, I
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
-import ProductVariantsTable from '@/components/ProductVariantsTable';
-import SizeSpecificationInput from '@/components/SizeSpecificationInput';
+import { ProductVariantsTableNew } from '@/components/ProductVariantsTableNew';
+import { SizeSetInput } from '@/components/SizeSetInput';
 interface Category {
   id: string;
   name: string;
@@ -269,7 +269,12 @@ const AdminPage = () => {
   };
   
   // Persist specification order per key for the selected product
-  const handleSpecificationOrderChange = async (newOrder: string[]) => {
+  const handleSpecificationOrderChange = async (newOrder: ProductSpecification[]) => {
+    const specKeys = newOrder.map(spec => spec.specification_key);
+    await handleSpecOrderChange(specKeys);
+  };
+
+  const handleSpecOrderChange = async (newOrder: string[]) => {
     if (!selectedProduct) return;
 
     // Do NOT update DB sort_order for size rows to avoid corrupting size-set alignment
@@ -1585,53 +1590,21 @@ const AdminPage = () => {
                   </Card>
 
                   {/* Specifications Table Display */}
-                  <ProductVariantsTable variants={variants} specifications={specifications} onSpecificationOrderChange={handleSpecificationOrderChange} />
+                  <ProductVariantsTableNew 
+                    productId={selectedProduct.id}
+                    variants={variants} 
+                    specifications={specifications} 
+                    onSpecificationOrderChange={handleSpecificationOrderChange} 
+                  />
 
                   {/* Size Specifications - Full Width Row */}
-                  <SizeSpecificationInput 
+                  <SizeSetInput 
                     productId={selectedProduct.id}
                     variants={variants}
-                    onSpecificationsChange={async (specs) => {
-                      try {
-                        const { error } = await supabase
-                          .from('product_specifications')
-                          .insert(specs);
-                        if (error) throw error;
-                        toast({ title: 'Saved', description: `${specs.length} specifications added` });
-                      } catch (err) {
-                        toast({ title: 'Error', description: 'Failed to save specifications', variant: 'destructive' });
-                      } finally {
-                        fetchProductDetails(selectedProduct.id);
-                      }
+                    onSizeSetsChange={() => {
+                      fetchProductDetails(selectedProduct.id);
                     }}
-                    existingSpecifications={specifications}
-                    customDimensions={productDimensions}
-                    onDimensionsChange={newDimensions => {
-                setProductDimensions(newDimensions);
-                toast({
-                  title: "Success",
-                  description: "Dimension configuration updated"
-                });
-              }} onSpecificationDelete={async (productId, variantId, specKey, specValue) => {
-                let query = supabase
-                  .from('product_specifications')
-                  .delete()
-                  .eq('product_id', productId)
-                  .eq('specification_key', specKey)
-                  .eq('specification_value', specValue);
-                if (variantId) {
-                  query = query.eq('variant_id', variantId);
-                } else {
-                  query = query.is('variant_id', null);
-                }
-                const { error } = await query;
-                if (error) {
-                  throw new Error('Failed to delete specification from database');
-                }
-
-                // Refresh specifications after successful deletion
-                fetchProductDetails(selectedProduct.id);
-              }} />
+                  />
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Features */}
