@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import Product3DViewer from './Product3DViewer';
-import ProductVariantsTable from './ProductVariantsTable';
+import { ProductVariantsTableNew } from './ProductVariantsTableNew';
 interface ProductVariant {
   id: string;
   variant_name: string;
@@ -29,6 +29,7 @@ interface ProductSpecification {
 interface VariantDetailProps {
   variant: ProductVariant;
   productName: string;
+  productId: string; // Add productId for the new table
   features: ProductFeature[];
   specifications: ProductSpecification[];
   onClose: () => void;
@@ -37,15 +38,22 @@ interface VariantDetailProps {
 export const VariantDetail: React.FC<VariantDetailProps> = ({
   variant,
   productName,
+  productId,
   features,
   specifications,
   onClose,
   onImageEnlarge
 }) => {
-  // Helper function to format variant name - removes hyphens and everything after them
+  // Helper function to format variant name - only removes trailing product codes after hyphens
   const formatVariantName = (variantName: string) => {
     const name = variantName || '';
-    // Remove hyphen and everything after it
+    
+    // If name starts with hyphen, return the full name
+    if (name.startsWith('-')) {
+      return name;
+    }
+    
+    // Otherwise, remove hyphen and everything after it (product codes)
     const cleanName = name.split('-')[0].trim();
     return cleanName;
   };
@@ -97,7 +105,8 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
               <h2 className="text-xl font-semibold mb-4">Size Chart</h2>
               <div className="border-2 border-muted rounded-lg overflow-hidden">
                 {specifications.length > 0 ? (
-                  <ProductVariantsTable 
+                  <ProductVariantsTableNew 
+                    productId={productId}
                     variants={[variant]}
                     specifications={specifications}
                   />

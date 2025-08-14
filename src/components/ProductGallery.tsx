@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import ProductVariantsTable from './ProductVariantsTable';
+import { ProductVariantsTableNew } from './ProductVariantsTableNew';
 import VariantDetail from './VariantDetail';
 import Product3DViewer from './Product3DViewer';
 type Product = Tables<'products'>;
@@ -56,10 +56,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [selectedVariantProduct, setSelectedVariantProduct] = useState<ProductWithDetails | null>(null);
 
-  // Helper function to format variant name - removes hyphens and everything after them
+  // Helper function to format variant name - only removes trailing product codes after hyphens
   const formatVariantName = (variant: ProductVariant) => {
     const name = variant.variant_name || '';
-    // Remove hyphen and everything after it
+    
+    // If name starts with hyphen, return the full name
+    if (name.startsWith('-')) {
+      return name;
+    }
+    
+    // Otherwise, remove hyphen and everything after it (product codes)
     const cleanName = name.split('-')[0].trim();
     return cleanName;
   };
@@ -82,7 +88,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         setLoading(true);
 
         // Fetch all data in parallel including custom products
-        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes, customProductImagesRes] = await Promise.all([
+        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes, customProductImagesRes, sizeSetsRes] = await Promise.all([
           supabase.from('products').select('*').order('name'), 
           supabase.from('categories').select('*').order('name'), 
           supabase.from('product_variants').select('*'), 
@@ -90,7 +96,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           supabase.from('product_specifications').select('*'),
           supabase.from('product_categories').select('*'),
           supabase.from('custom_products').select('*').order('name'),
-          supabase.from('custom_product_images').select('*').order('sort_order')
+          supabase.from('custom_product_images').select('*').order('sort_order'),
+          supabase.from('product_size_sets').select('*').order('set_index')
         ]);
         if (productsRes.error) throw productsRes.error;
         if (categoriesRes.error) throw categoriesRes.error;
@@ -100,7 +107,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         if (productCategoriesRes.error) throw productCategoriesRes.error;
         if (customProductsRes.error) throw customProductsRes.error;
         if (customProductImagesRes.error) throw customProductImagesRes.error;
-        
+        if (sizeSetsRes.error) throw sizeSetsRes.error;
+
         const products = productsRes.data || [];
         const categoriesData = categoriesRes.data || [];
         const variants = variantsRes.data || [];
@@ -109,6 +117,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         const productCategories = productCategoriesRes.data || [];
         const customProducts = customProductsRes.data || [];
         const customProductImages = customProductImagesRes.data || [];
+        const sizeSets = sizeSetsRes.data || [];
 
         console.log('ProductGallery: Fetched data:', {
           products: products.length,
@@ -838,7 +847,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
                     <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
                       <div className="w-full">
-                        <ProductVariantsTable variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
+                        <ProductVariantsTableNew productId={selectedProduct.product.id} variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
                       </div>
                     </div>
                   </div>
@@ -912,7 +921,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 {/* Specifications Table */}
                 {specsProduct.specifications.length > 0 ? <div>
                     <h3 className="font-semibold mb-3">Technical Specifications</h3>
-                    <ProductVariantsTable variants={specsProduct.variants} specifications={specsProduct.specifications} />
+                    <ProductVariantsTableNew productId={specsProduct.product.id} variants={specsProduct.variants} specifications={specsProduct.specifications} />
                   </div> : <div className="text-center py-8 text-muted-foreground">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No specifications available for this product.</p>
@@ -922,7 +931,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         </Dialog>
 
         {/* Variant Details Modal with 3D Viewer */}
-        {selectedVariant && selectedVariantProduct && <VariantDetail variant={selectedVariant} productName={selectedVariantProduct.product.name} features={selectedVariantProduct.features} specifications={selectedVariantProduct.specifications} onClose={() => {
+        {selectedVariant && selectedVariantProduct && <VariantDetail variant={selectedVariant} productName={selectedVariantProduct.product.name} productId={selectedVariantProduct.product.id} features={selectedVariantProduct.features} specifications={selectedVariantProduct.specifications} onClose={() => {
         setSelectedVariant(null);
         setSelectedVariantProduct(null);
       }} onImageEnlarge={setEnlargedImage} />}
