@@ -187,6 +187,11 @@ const SizeSetsTable: React.FC<SizeSetsTableProps> = ({
   );
 
   const formatVariantName = (variantName: string) => {
+    // If name starts with hyphen, return the full name
+    if (variantName.startsWith('-')) {
+      return variantName;
+    }
+    // Otherwise, remove hyphen and everything after it (product codes)
     return variantName.split('-')[0].trim();
   };
 
@@ -390,6 +395,11 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   };
 
   const formatVariantName = (variantName: string) => {
+    // If name starts with hyphen, return the full name
+    if (variantName.startsWith('-')) {
+      return variantName;
+    }
+    // Otherwise, remove hyphen and everything after it (product codes)
     return variantName.split('-')[0].trim();
   };
 

@@ -80,10 +80,16 @@ interface CustomProductImage {
   created_at: string;
 }
 
-// Helper function to format variant name - removes hyphens and everything after them
+// Helper function to format variant name - only removes trailing product codes after hyphens
 const formatVariantName = (variantName: string) => {
   const name = variantName || '';
-  // Remove hyphen and everything after it
+  
+  // If name starts with hyphen, return the full name
+  if (name.startsWith('-')) {
+    return name;
+  }
+  
+  // Otherwise, remove hyphen and everything after it (product codes)
   const cleanName = name.split('-')[0].trim();
   return cleanName;
 };
