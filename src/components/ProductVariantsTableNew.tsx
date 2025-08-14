@@ -58,16 +58,21 @@ interface ProductVariantsTableProps {
 }
 
 interface SortableRowProps {
-  spec: ProductSpecification;
+  spec: {
+    id: string;
+    specification_key: string;
+    specification_value: string;
+    sort_order?: number;
+    variantValues: Record<string, string>;
+    generalValue: string | null;
+  };
   variants: ProductVariant[];
-  specsByVariant: Record<string, string>;
   isAdmin: boolean;
 }
 
 const SortableRow: React.FC<SortableRowProps> = ({
   spec,
   variants,
-  specsByVariant,
   isAdmin,
 }) => {
   const {
@@ -98,12 +103,12 @@ const SortableRow: React.FC<SortableRowProps> = ({
       {variants.length > 0 ? (
         variants.map((variant) => (
           <TableCell key={variant.id} className="text-center border">
-            {specsByVariant[variant.id] || spec.specification_value || '-'}
+            {spec.variantValues[variant.id] || spec.generalValue || '-'}
           </TableCell>
         ))
       ) : (
         <TableCell className="text-center border">
-          {spec.specification_value || '-'}
+          {spec.generalValue || spec.specification_value || '-'}
         </TableCell>
       )}
     </TableRow>
@@ -368,15 +373,51 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
     return !key.includes('width') && !key.includes('length') && !key.includes('depth') && !key.includes('height');
   });
 
-  // Group specifications by variant
-  const specsByVariant = nonSizeSpecs.reduce((acc, spec) => {
-    if (spec.variant_id) {
-      acc[spec.variant_id] = spec.specification_value;
+  // Group specifications by key to avoid duplicates - each spec key should appear only once
+  const specsByKey = nonSizeSpecs.reduce((acc, spec) => {
+    if (!acc[spec.specification_key]) {
+      acc[spec.specification_key] = {
+        id: spec.id,
+        specification_key: spec.specification_key,
+        specification_value: spec.specification_value,
+        sort_order: spec.sort_order,
+        variantValues: {},
+        generalValue: null
+      };
     }
+    
+    if (spec.variant_id) {
+      acc[spec.specification_key].variantValues[spec.variant_id] = spec.specification_value;
+    } else {
+      acc[spec.specification_key].generalValue = spec.specification_value;
+    }
+    
     return acc;
-  }, {} as Record<string, string>);
+  }, {} as Record<string, {
+    id: string;
+    specification_key: string;
+    specification_value: string;
+    sort_order?: number;
+    variantValues: Record<string, string>;
+    generalValue: string | null;
+  }>);
 
-  const [specificationOrder, setSpecificationOrder] = useState<ProductSpecification[]>(nonSizeSpecs);
+  // Convert back to array for rendering, with unique specifications
+  const uniqueSpecs = Object.values(specsByKey).sort((a, b) => {
+    const orderA = a.sort_order || 0;
+    const orderB = b.sort_order || 0;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    return a.specification_key.localeCompare(b.specification_key);
+  });
+
+  const [specificationOrder, setSpecificationOrder] = useState(uniqueSpecs);
+
+  // Update specification order when uniqueSpecs changes
+  useEffect(() => {
+    setSpecificationOrder(uniqueSpecs);
+  }, [uniqueSpecs.length, specifications.length]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -413,7 +454,7 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
       />
 
       {/* Non-Size Specifications Table */}
-      {nonSizeSpecs.length > 0 && (
+      {uniqueSpecs.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Additional Specifications</CardTitle>
@@ -461,13 +502,12 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                     <SortableContext items={specificationOrder.map(s => s.id)} strategy={verticalListSortingStrategy}>
                       <TableBody>
                         {specificationOrder.map((spec) => (
-                          <SortableRow
-                            key={spec.id}
-                            spec={spec}
-                            variants={variants}
-                            specsByVariant={specsByVariant}
-                            isAdmin={effectiveIsAdmin}
-                          />
+                           <SortableRow
+                             key={spec.id}
+                             spec={spec}
+                             variants={variants}
+                             isAdmin={effectiveIsAdmin}
+                           />
                         ))}
                       </TableBody>
                     </SortableContext>
@@ -475,13 +515,12 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                 ) : (
                   <TableBody>
                     {specificationOrder.map((spec) => (
-                      <SortableRow
-                        key={spec.id}
-                        spec={spec}
-                        variants={variants}
-                        specsByVariant={specsByVariant}
-                        isAdmin={effectiveIsAdmin}
-                      />
+                       <SortableRow
+                         key={spec.id}
+                         spec={spec}
+                         variants={variants}
+                         isAdmin={effectiveIsAdmin}
+                       />
                     ))}
                   </TableBody>
                 )}
