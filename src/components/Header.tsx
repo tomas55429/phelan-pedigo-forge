@@ -42,43 +42,43 @@ const Header = () => {
         {/* Main Navigation Row */}
         <div className="flex items-center justify-between py-3">
           {/* Logo and Desktop Navigation */}
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-4 lg:space-x-8">
             {/* Logo */}
             <Link to="/">
-              <img src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'}`} />
+              <img src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" alt="Phelan Manufacturing Corporation" className={`w-auto cursor-pointer hover:opacity-80 transition-all duration-300 ${isScrolled ? 'h-12 sm:h-14 lg:h-16' : 'h-14 sm:h-16 lg:h-20'}`} />
             </Link>
             
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              {navigation.map(item => item.href.startsWith('#') ? <a key={item.name} href={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+            <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
+              {navigation.map(item => item.href.startsWith('#') ? <a key={item.name} href={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium text-sm xl:text-base">
                     {item.name}
-                  </a> : <Link key={item.name} to={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium">
+                  </a> : <Link key={item.name} to={item.href} className="text-foreground hover:text-primary transition-colors duration-200 font-medium text-sm xl:text-base">
                     {item.name}
                   </Link>)}
             </nav>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex w-full max-w-md mx-4">
+          {/* Search Bar - Hidden on small mobile */}
+          <div className="hidden sm:flex w-full max-w-md mx-2 lg:mx-4">
             <GlobalSearch />
           </div>
 
           {/* Phone Number & Auth Section - Desktop Only */}
-          <div className="hidden lg:flex items-center space-x-6">
+          <div className="hidden xl:flex items-center space-x-6">
             {/* Phone Number */}
             <div className="flex items-center space-x-2 text-primary">
               <Phone className="h-4 w-4" />
-              <span className="font-semibold">1-800-328-2358</span>
+              <span className="font-semibold text-sm">1-800-328-2358</span>
             </div>
             
             {user ? <div className="flex items-center space-x-2">
                 {isAdmin && <Link to="/admin">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="text-xs">
                       Admin Panel
                     </Button>
                   </Link>}
-                <Button variant="ghost" size="sm" onClick={signOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
+                <Button variant="ghost" size="sm" onClick={signOut} className="text-xs">
+                  <LogOut className="h-3 w-3 mr-1" />
                   Sign Out
                 </Button>
               </div> : <Link to="/auth">
@@ -87,11 +87,16 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden ml-auto">
-            <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-foreground">
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <div className="lg:hidden ml-auto">
+            <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-foreground p-2">
+              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
+        </div>
+
+        {/* Mobile Search Bar - Shows on small screens */}
+        <div className="sm:hidden pb-3">
+          <GlobalSearch />
         </div>
 
         {/* Mobile Navigation */}

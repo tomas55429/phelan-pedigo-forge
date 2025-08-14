@@ -278,54 +278,55 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
             <CardTitle>Specifications</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table className="border-collapse">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="border bg-muted/50 font-semibold min-w-[120px]">
-                      Specification
-                    </TableHead>
-                    {variants.length > 0 ? (
-                      variants.map((variant) => {
-                        const variantSets = sizeSetsByVariant[variant.id] || [];
-                        const generalSets = sizeSetsByVariant['general'] || [];
-                        const effectiveSets = variantSets.length > 0 ? variantSets : generalSets;
-                        const colSpan = Math.max(1, effectiveSets.length);
-                        
-                        return (
-                          <TableHead 
-                            key={variant.id} 
-                            className="border bg-muted/50 text-center font-semibold"
-                            colSpan={colSpan}
-                          >
-                            <div className="space-y-1">
-                              <div className="font-bold text-sm">Product No.</div>
-                              <div className="font-bold text-base">
-                                {formatVariantName(variant.variant_name)}
-                              </div>
-                              {variant.variant_description && (
-                                <div className="text-xs text-muted-foreground font-normal">
-                                  {variant.variant_description}
-                                </div>
-                              )}
-                            </div>
-                          </TableHead>
-                        );
-                      })
-                    ) : (
-                      <TableHead className="border bg-muted/50 text-center font-semibold" colSpan={Math.max(1, sizeSetsByVariant['general']?.length || 1)}>
-                        Value
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="min-w-full inline-block align-middle">
+                <Table className="border-collapse w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="border bg-muted/50 font-semibold min-w-[120px] sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/50">
+                        Specification
                       </TableHead>
-                    )}
-                  </TableRow>
-                </TableHeader>
+                      {variants.length > 0 ? (
+                        variants.map((variant) => {
+                          const variantSets = sizeSetsByVariant[variant.id] || [];
+                          const generalSets = sizeSetsByVariant['general'] || [];
+                          const effectiveSets = variantSets.length > 0 ? variantSets : generalSets;
+                          const colSpan = Math.max(1, effectiveSets.length);
+                          
+                          return (
+                            <TableHead 
+                              key={variant.id} 
+                              className="border bg-muted/50 text-center font-semibold min-w-[100px] px-2 py-3"
+                              colSpan={colSpan}
+                            >
+                              <div className="space-y-1">
+                                <div className="font-bold text-xs sm:text-sm">Product No.</div>
+                                <div className="font-bold text-sm sm:text-base break-words">
+                                  {formatVariantName(variant.variant_name)}
+                                </div>
+                                {variant.variant_description && (
+                                  <div className="text-xs text-muted-foreground font-normal hidden sm:block">
+                                    {variant.variant_description}
+                                  </div>
+                                )}
+                              </div>
+                            </TableHead>
+                          );
+                        })
+                      ) : (
+                        <TableHead className="border bg-muted/50 text-center font-semibold" colSpan={Math.max(1, sizeSetsByVariant['general']?.length || 1)}>
+                          Value
+                        </TableHead>
+                      )}
+                    </TableRow>
+                  </TableHeader>
                 <TableBody>
                   {/* Size Set Rows - Width, Length, Depth */}
                   {sizeSets.length > 0 && (
                     <>
                       {/* Width Row */}
                       <TableRow>
-                        <TableCell className="border font-medium bg-muted/30">Width (inside dimensions)</TableCell>
+                        <TableCell className="border font-medium bg-muted/30 sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 min-w-[120px] text-xs sm:text-sm">Width (inside dimensions)</TableCell>
                         {variants.length > 0 ? (
                           variants.flatMap((variant) => {
                             const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -333,21 +334,21 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                             
                             if (variantSets.length === 0 && generalSets.length > 0) {
                               return generalSets.map((sizeSet, index) => (
-                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
+                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
                                   {formatSizeValue(sizeSet.width)}
                                 </TableCell>
                               ));
                             }
                             
                             return variantSets.map((sizeSet, index) => (
-                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
+                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
                                 {formatSizeValue(sizeSet.width)}
                               </TableCell>
                             ));
                           })
                         ) : (
                           sizeSetsByVariant['general']?.map((sizeSet, index) => (
-                            <TableCell key={`general-${index}`} className="text-center border text-sm">
+                            <TableCell key={`general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2">
                               {formatSizeValue(sizeSet.width)}
                             </TableCell>
                           )) || <TableCell className="text-center border">-</TableCell>
@@ -356,7 +357,7 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
 
                       {/* Length Row */}
                       <TableRow>
-                        <TableCell className="border font-medium bg-muted/30">Length (inside dimensions)</TableCell>
+                        <TableCell className="border font-medium bg-muted/30 sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 min-w-[120px] text-xs sm:text-sm">Length (inside dimensions)</TableCell>
                         {variants.length > 0 ? (
                           variants.flatMap((variant) => {
                             const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -364,21 +365,21 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                             
                             if (variantSets.length === 0 && generalSets.length > 0) {
                               return generalSets.map((sizeSet, index) => (
-                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
+                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
                                   {formatSizeValue(sizeSet.length)}
                                 </TableCell>
                               ));
                             }
                             
                             return variantSets.map((sizeSet, index) => (
-                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
+                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
                                 {formatSizeValue(sizeSet.length)}
                               </TableCell>
                             ));
                           })
                         ) : (
                           sizeSetsByVariant['general']?.map((sizeSet, index) => (
-                            <TableCell key={`general-${index}`} className="text-center border text-sm">
+                            <TableCell key={`general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2">
                               {formatSizeValue(sizeSet.length)}
                             </TableCell>
                           )) || <TableCell className="text-center border">-</TableCell>
@@ -387,7 +388,7 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
 
                       {/* Depth Row */}
                       <TableRow>
-                        <TableCell className="border font-medium bg-muted/30">Depth (inside dimensions)</TableCell>
+                        <TableCell className="border font-medium bg-muted/30 sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 min-w-[120px] text-xs sm:text-sm">Depth (inside dimensions)</TableCell>
                         {variants.length > 0 ? (
                           variants.flatMap((variant) => {
                             const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -395,21 +396,21 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                             
                             if (variantSets.length === 0 && generalSets.length > 0) {
                               return generalSets.map((sizeSet, index) => (
-                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
+                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
                                   {formatSizeValue(sizeSet.depth)}
                                 </TableCell>
                               ));
                             }
                             
                             return variantSets.map((sizeSet, index) => (
-                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
+                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
                                 {formatSizeValue(sizeSet.depth)}
                               </TableCell>
                             ));
                           })
                         ) : (
                           sizeSetsByVariant['general']?.map((sizeSet, index) => (
-                            <TableCell key={`general-${index}`} className="text-center border text-sm">
+                            <TableCell key={`general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2">
                               {formatSizeValue(sizeSet.depth)}
                             </TableCell>
                           )) || <TableCell className="text-center border">-</TableCell>
@@ -428,14 +429,14 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                       <SortableContext items={specificationOrder.map(s => s.id)} strategy={verticalListSortingStrategy}>
                         {specificationOrder.map((spec) => (
                           <TableRow key={spec.id} {...(effectiveIsAdmin ? { } : {})}>
-                            <TableCell className="border font-medium bg-muted/30 min-w-[120px]">
+                            <TableCell className="border font-medium bg-muted/30 min-w-[120px] sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 text-xs sm:text-sm px-2 sm:px-4 py-2">
                               <div className="flex items-center space-x-2">
                                 {effectiveIsAdmin && (
-                                  <button className="cursor-grab hover:cursor-grabbing">
+                                  <button className="cursor-grab hover:cursor-grabbing hidden sm:block">
                                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                                   </button>
                                 )}
-                                <span>{spec.specification_key}</span>
+                                <span className="break-words">{spec.specification_key}</span>
                               </div>
                             </TableCell>
                             {variants.length > 0 ? (
@@ -448,16 +449,16 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                                 return (
                                   <TableCell 
                                     key={variant.id} 
-                                    className="text-center border"
+                                    className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]"
                                     colSpan={colSpan}
                                   >
-                                    {spec.variantValues[variant.id] || spec.generalValue || '-'}
+                                    <span className="break-words">{spec.variantValues[variant.id] || spec.generalValue || '-'}</span>
                                   </TableCell>
                                 );
                               })
                             ) : (
-                              <TableCell className="text-center border">
-                                {spec.generalValue || spec.specification_value || '-'}
+                              <TableCell className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2">
+                                <span className="break-words">{spec.generalValue || spec.specification_value || '-'}</span>
                               </TableCell>
                             )}
                           </TableRow>
@@ -468,8 +469,8 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                     <>
                       {specificationOrder.map((spec) => (
                         <TableRow key={spec.id}>
-                          <TableCell className="border font-medium bg-muted/30 min-w-[120px]">
-                            {spec.specification_key}
+                          <TableCell className="border font-medium bg-muted/30 min-w-[120px] sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 text-xs sm:text-sm px-2 sm:px-4 py-2">
+                            <span className="break-words">{spec.specification_key}</span>
                           </TableCell>
                           {variants.length > 0 ? (
                             variants.map((variant) => {
@@ -481,16 +482,16 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                               return (
                                 <TableCell 
                                   key={variant.id} 
-                                  className="text-center border"
+                                  className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]"
                                   colSpan={colSpan}
                                 >
-                                  {spec.variantValues[variant.id] || spec.generalValue || '-'}
+                                  <span className="break-words">{spec.variantValues[variant.id] || spec.generalValue || '-'}</span>
                                 </TableCell>
                               );
                             })
                           ) : (
-                            <TableCell className="text-center border">
-                              {spec.generalValue || spec.specification_value || '-'}
+                            <TableCell className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2">
+                              <span className="break-words">{spec.generalValue || spec.specification_value || '-'}</span>
                             </TableCell>
                           )}
                         </TableRow>
@@ -499,11 +500,13 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                   )}
                 </TableBody>
               </Table>
+              </div>
             </div>
             
             {/* Footer note */}
-            <div className="mt-4 text-sm text-muted-foreground">
+            <div className="mt-4 text-xs sm:text-sm text-muted-foreground px-4 sm:px-0">
               <p>Custom sizes available upon request</p>
+              <p className="mt-1 sm:hidden text-xs">Scroll horizontally to view all specifications</p>
             </div>
           </CardContent>
         </Card>

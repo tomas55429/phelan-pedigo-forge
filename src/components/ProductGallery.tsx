@@ -500,12 +500,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             </Accordion>}
           
           <div className="flex space-x-2 mt-4">
-            <Button size="sm" className="flex-1" onClick={() => setSelectedProduct(productWithDetails)}>
+            <Button size="sm" className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" onClick={() => setSelectedProduct(productWithDetails)}>
               <Eye className="h-4 w-4 mr-1" />
-              View Details
+              <span className="hidden sm:inline">View Details</span>
+              <span className="sm:hidden">View</span>
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)}>
+            <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)} className="px-2 sm:px-3">
               <FileText className="h-4 w-4" />
+              <span className="sr-only">Specifications</span>
             </Button>
           </div>
         </CardContent>
@@ -971,18 +973,21 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 </div>
 
                 {/* Featured Toggle */}
-                <Button variant={showFeaturedOnly ? "default" : "outline"} size="sm" onClick={() => setShowFeaturedOnly(!showFeaturedOnly)}>
+                <Button variant={showFeaturedOnly ? "default" : "outline"} size="sm" onClick={() => setShowFeaturedOnly(!showFeaturedOnly)} className="text-xs sm:text-sm">
                   <Star className="h-4 w-4 mr-1" />
-                  Featured Only
+                  <span className="hidden sm:inline">Featured Only</span>
+                  <span className="sm:hidden">Featured</span>
                 </Button>
 
                 {/* View Mode */}
                 <div className="flex items-center space-x-1 border border-border rounded-md p-1">
-                  <Button variant={viewMode === 'grid' ? "default" : "ghost"} size="sm" onClick={() => setViewMode('grid')}>
+                  <Button variant={viewMode === 'grid' ? "default" : "ghost"} size="sm" onClick={() => setViewMode('grid')} className="px-2 sm:px-3">
                     <Grid3X3 className="h-4 w-4" />
+                    <span className="ml-1 hidden sm:inline">Grid</span>
                   </Button>
-                  <Button variant={viewMode === 'list' ? "default" : "ghost"} size="sm" onClick={() => setViewMode('list')}>
+                  <Button variant={viewMode === 'list' ? "default" : "ghost"} size="sm" onClick={() => setViewMode('list')} className="px-2 sm:px-3">
                     <List className="h-4 w-4" />
+                    <span className="ml-1 hidden sm:inline">List</span>
                   </Button>
                 </div>
               </div>
@@ -999,9 +1004,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         </div>
 
         {/* Products Grid/List */}
-        {viewMode === 'grid' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {viewMode === 'grid' ? <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredProducts.map(productWithDetails => <ProductCard key={productWithDetails.product.id} productWithDetails={productWithDetails} />)}
-          </div> : <div className="space-y-4">
+          </div> : <div className="space-y-4 sm:space-y-6">
             {filteredProducts.map(productWithDetails => <ProductListItem key={productWithDetails.product.id} productWithDetails={productWithDetails} />)}
           </div>}
 
@@ -1022,19 +1027,20 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           </div>}
 
         {/* Call to Action */}
-        <div className="mt-16">
+        <div className="mt-12 sm:mt-16 px-4 sm:px-0">
           <Card className="bg-primary/5 border border-primary/20">
-            <CardContent className="p-8 text-center">
-              <h3 className="text-2xl font-bold text-foreground mb-4">
+            <CardContent className="p-4 sm:p-6 lg:p-8 text-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-3 sm:mb-4">
                 Need a Custom Solution?
               </h3>
-              <p className="text-lg text-muted-foreground mb-6">
+              <p className="text-base sm:text-lg text-muted-foreground mb-4 sm:mb-6 leading-relaxed">
                 We specialize in custom medical equipment design and manufacturing. 
                 Contact our specialists to discuss your unique requirements.
               </p>
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
-                <Phone className="mr-2 h-5 w-5" />
-                Call 1-800-328-2358
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark text-sm sm:text-base">
+                <Phone className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">Call 1-800-328-2358</span>
+                <span className="sm:hidden">Call Us</span>
               </Button>
             </CardContent>
           </Card>
