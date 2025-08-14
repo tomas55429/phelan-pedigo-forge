@@ -115,19 +115,19 @@ const SortableRow: React.FC<SortableRowProps> = ({
   );
 };
 
-interface SizeSetsTableProps {
-  productId: string;
-  variants: ProductVariant[];
-  isAdmin?: boolean;
-}
 
-const SizeSetsTable: React.FC<SizeSetsTableProps> = ({
+export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   productId,
   variants,
-  isAdmin,
+  specifications,
+  isAdmin = false,
+  onSpecificationOrderChange,
 }) => {
+  const { isAdmin: userIsAdmin } = useAuth();
+  const effectiveIsAdmin = isAdmin || userIsAdmin;
   const [sizeSets, setSizeSets] = useState<SizeSet[]>([]);
 
+  // Fetch size sets
   useEffect(() => {
     fetchSizeSets();
   }, [productId]);
@@ -184,181 +184,6 @@ const SizeSetsTable: React.FC<SizeSetsTableProps> = ({
     acc[key].push(sizeSet);
     return acc;
   }, {} as Record<string, SizeSet[]>);
-
-  // Get maximum number of size sets across all variants/general
-  const maxSets = Math.max(
-    1,
-    ...Object.values(sizeSetsByVariant).map(sets => sets.length)
-  );
-
-  const formatVariantName = (variantName: string) => {
-    // If name starts with hyphen, return the full name
-    if (variantName.startsWith('-')) {
-      return variantName;
-    }
-    // Otherwise, remove hyphen and everything after it (product codes)
-    return variantName.split('-')[0].trim();
-  };
-
-  if (sizeSets.length === 0) {
-    return null;
-  }
-
-  return (
-    <Card className="mt-4">
-      <CardHeader>
-        <CardTitle>Size Sets (inside dimensions)</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table className="border-collapse">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="border bg-muted/50 font-semibold min-w-[120px]">
-                  Dimension
-                </TableHead>
-                {variants.length > 0 ? (
-                  variants.map((variant) => {
-                    const variantSets = sizeSetsByVariant[variant.id] || [];
-                    const colSpan = Math.max(1, variantSets.length);
-                    
-                    return (
-                      <TableHead 
-                        key={variant.id} 
-                        className="border bg-muted/50 text-center font-semibold"
-                        colSpan={colSpan}
-                      >
-                        <div className="space-y-1">
-                          <div className="font-bold text-sm">Product No.</div>
-                          <div className="font-bold text-base">
-                            {formatVariantName(variant.variant_name)}
-                          </div>
-                          {variant.variant_description && (
-                            <div className="text-xs text-muted-foreground font-normal">
-                              {variant.variant_description}
-                            </div>
-                          )}
-                        </div>
-                      </TableHead>
-                    );
-                  })
-                ) : (
-                  <TableHead className="border bg-muted/50 text-center font-semibold" colSpan={maxSets}>
-                    Size Sets
-                  </TableHead>
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {/* Width Row */}
-              <TableRow>
-                <TableCell className="border font-medium bg-muted/30">Width</TableCell>
-                {variants.length > 0 ? (
-                  variants.flatMap((variant) => {
-                    const variantSets = sizeSetsByVariant[variant.id] || [];
-                    const generalSets = sizeSetsByVariant['general'] || [];
-                    
-                    if (variantSets.length === 0 && generalSets.length > 0) {
-                      return generalSets.map((sizeSet, index) => (
-                        <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
-                          {formatSizeValue(sizeSet.width)}
-                        </TableCell>
-                      ));
-                    }
-                    
-                    return variantSets.map((sizeSet, index) => (
-                      <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
-                        {formatSizeValue(sizeSet.width)}
-                      </TableCell>
-                    ));
-                  })
-                ) : (
-                  sizeSetsByVariant['general']?.map((sizeSet, index) => (
-                    <TableCell key={`general-${index}`} className="text-center border text-sm">
-                      {formatSizeValue(sizeSet.width)}
-                    </TableCell>
-                  )) || <TableCell className="text-center border">-</TableCell>
-                )}
-              </TableRow>
-
-              {/* Length Row */}
-              <TableRow>
-                <TableCell className="border font-medium bg-muted/30">Length</TableCell>
-                {variants.length > 0 ? (
-                  variants.flatMap((variant) => {
-                    const variantSets = sizeSetsByVariant[variant.id] || [];
-                    const generalSets = sizeSetsByVariant['general'] || [];
-                    
-                    if (variantSets.length === 0 && generalSets.length > 0) {
-                      return generalSets.map((sizeSet, index) => (
-                        <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
-                          {formatSizeValue(sizeSet.length)}
-                        </TableCell>
-                      ));
-                    }
-                    
-                    return variantSets.map((sizeSet, index) => (
-                      <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
-                        {formatSizeValue(sizeSet.length)}
-                      </TableCell>
-                    ));
-                  })
-                ) : (
-                  sizeSetsByVariant['general']?.map((sizeSet, index) => (
-                    <TableCell key={`general-${index}`} className="text-center border text-sm">
-                      {formatSizeValue(sizeSet.length)}
-                    </TableCell>
-                  )) || <TableCell className="text-center border">-</TableCell>
-                )}
-              </TableRow>
-
-              {/* Depth Row */}
-              <TableRow>
-                <TableCell className="border font-medium bg-muted/30">Depth</TableCell>
-                {variants.length > 0 ? (
-                  variants.flatMap((variant) => {
-                    const variantSets = sizeSetsByVariant[variant.id] || [];
-                    const generalSets = sizeSetsByVariant['general'] || [];
-                    
-                    if (variantSets.length === 0 && generalSets.length > 0) {
-                      return generalSets.map((sizeSet, index) => (
-                        <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
-                          {formatSizeValue(sizeSet.depth)}
-                        </TableCell>
-                      ));
-                    }
-                    
-                    return variantSets.map((sizeSet, index) => (
-                      <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
-                        {formatSizeValue(sizeSet.depth)}
-                      </TableCell>
-                    ));
-                  })
-                ) : (
-                  sizeSetsByVariant['general']?.map((sizeSet, index) => (
-                    <TableCell key={`general-${index}`} className="text-center border text-sm">
-                      {formatSizeValue(sizeSet.depth)}
-                    </TableCell>
-                  )) || <TableCell className="text-center border">-</TableCell>
-                )}
-              </TableRow>
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
-  productId,
-  variants,
-  specifications,
-  isAdmin = false,
-  onSpecificationOrderChange,
-}) => {
-  const { isAdmin: userIsAdmin } = useAuth();
-  const effectiveIsAdmin = isAdmin || userIsAdmin;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -446,18 +271,11 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Size Sets Table */}
-      <SizeSetsTable 
-        productId={productId}
-        variants={variants}
-        isAdmin={effectiveIsAdmin}
-      />
-
-      {/* Non-Size Specifications Table */}
-      {uniqueSpecs.length > 0 && (
+      {/* Combined Specifications Table */}
+      {(sizeSets.length > 0 || uniqueSpecs.length > 0) && (
         <Card>
           <CardHeader>
-            <CardTitle>Additional Specifications</CardTitle>
+            <CardTitle>Specifications</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -468,63 +286,175 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                       Specification
                     </TableHead>
                     {variants.length > 0 ? (
-                      variants.map((variant) => (
-                        <TableHead 
-                          key={variant.id} 
-                          className="border bg-muted/50 text-center font-semibold"
-                        >
-                          <div className="space-y-1">
-                            <div className="font-bold text-sm">Product No.</div>
-                            <div className="font-bold text-base">
-                              {formatVariantName(variant.variant_name)}
-                            </div>
-                            {variant.variant_description && (
-                              <div className="text-xs text-muted-foreground font-normal">
-                                {variant.variant_description}
+                      variants.map((variant) => {
+                        const variantSets = sizeSetsByVariant[variant.id] || [];
+                        const generalSets = sizeSetsByVariant['general'] || [];
+                        const effectiveSets = variantSets.length > 0 ? variantSets : generalSets;
+                        const colSpan = Math.max(1, effectiveSets.length);
+                        
+                        return (
+                          <TableHead 
+                            key={variant.id} 
+                            className="border bg-muted/50 text-center font-semibold"
+                            colSpan={colSpan}
+                          >
+                            <div className="space-y-1">
+                              <div className="font-bold text-sm">Product No.</div>
+                              <div className="font-bold text-base">
+                                {formatVariantName(variant.variant_name)}
                               </div>
-                            )}
-                          </div>
-                        </TableHead>
-                      ))
+                              {variant.variant_description && (
+                                <div className="text-xs text-muted-foreground font-normal">
+                                  {variant.variant_description}
+                                </div>
+                              )}
+                            </div>
+                          </TableHead>
+                        );
+                      })
                     ) : (
-                      <TableHead className="border bg-muted/50 text-center font-semibold">
+                      <TableHead className="border bg-muted/50 text-center font-semibold" colSpan={Math.max(1, sizeSetsByVariant['general']?.length || 1)}>
                         Value
                       </TableHead>
                     )}
                   </TableRow>
                 </TableHeader>
-                {effectiveIsAdmin ? (
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext items={specificationOrder.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                      <TableBody>
+                <TableBody>
+                  {/* Size Set Rows - Width, Length, Depth */}
+                  {sizeSets.length > 0 && (
+                    <>
+                      {/* Width Row */}
+                      <TableRow>
+                        <TableCell className="border font-medium bg-muted/30">Width (inside dimensions)</TableCell>
+                        {variants.length > 0 ? (
+                          variants.flatMap((variant) => {
+                            const variantSets = sizeSetsByVariant[variant.id] || [];
+                            const generalSets = sizeSetsByVariant['general'] || [];
+                            
+                            if (variantSets.length === 0 && generalSets.length > 0) {
+                              return generalSets.map((sizeSet, index) => (
+                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
+                                  {formatSizeValue(sizeSet.width)}
+                                </TableCell>
+                              ));
+                            }
+                            
+                            return variantSets.map((sizeSet, index) => (
+                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
+                                {formatSizeValue(sizeSet.width)}
+                              </TableCell>
+                            ));
+                          })
+                        ) : (
+                          sizeSetsByVariant['general']?.map((sizeSet, index) => (
+                            <TableCell key={`general-${index}`} className="text-center border text-sm">
+                              {formatSizeValue(sizeSet.width)}
+                            </TableCell>
+                          )) || <TableCell className="text-center border">-</TableCell>
+                        )}
+                      </TableRow>
+
+                      {/* Length Row */}
+                      <TableRow>
+                        <TableCell className="border font-medium bg-muted/30">Length (inside dimensions)</TableCell>
+                        {variants.length > 0 ? (
+                          variants.flatMap((variant) => {
+                            const variantSets = sizeSetsByVariant[variant.id] || [];
+                            const generalSets = sizeSetsByVariant['general'] || [];
+                            
+                            if (variantSets.length === 0 && generalSets.length > 0) {
+                              return generalSets.map((sizeSet, index) => (
+                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
+                                  {formatSizeValue(sizeSet.length)}
+                                </TableCell>
+                              ));
+                            }
+                            
+                            return variantSets.map((sizeSet, index) => (
+                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
+                                {formatSizeValue(sizeSet.length)}
+                              </TableCell>
+                            ));
+                          })
+                        ) : (
+                          sizeSetsByVariant['general']?.map((sizeSet, index) => (
+                            <TableCell key={`general-${index}`} className="text-center border text-sm">
+                              {formatSizeValue(sizeSet.length)}
+                            </TableCell>
+                          )) || <TableCell className="text-center border">-</TableCell>
+                        )}
+                      </TableRow>
+
+                      {/* Depth Row */}
+                      <TableRow>
+                        <TableCell className="border font-medium bg-muted/30">Depth (inside dimensions)</TableCell>
+                        {variants.length > 0 ? (
+                          variants.flatMap((variant) => {
+                            const variantSets = sizeSetsByVariant[variant.id] || [];
+                            const generalSets = sizeSetsByVariant['general'] || [];
+                            
+                            if (variantSets.length === 0 && generalSets.length > 0) {
+                              return generalSets.map((sizeSet, index) => (
+                                <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-sm">
+                                  {formatSizeValue(sizeSet.depth)}
+                                </TableCell>
+                              ));
+                            }
+                            
+                            return variantSets.map((sizeSet, index) => (
+                              <TableCell key={`${variant.id}-${index}`} className="text-center border text-sm">
+                                {formatSizeValue(sizeSet.depth)}
+                              </TableCell>
+                            ));
+                          })
+                        ) : (
+                          sizeSetsByVariant['general']?.map((sizeSet, index) => (
+                            <TableCell key={`general-${index}`} className="text-center border text-sm">
+                              {formatSizeValue(sizeSet.depth)}
+                            </TableCell>
+                          )) || <TableCell className="text-center border">-</TableCell>
+                        )}
+                      </TableRow>
+                    </>
+                  )}
+
+                  {/* Additional Specifications Rows */}
+                  {effectiveIsAdmin ? (
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext items={specificationOrder.map(s => s.id)} strategy={verticalListSortingStrategy}>
                         {specificationOrder.map((spec) => (
-                           <SortableRow
-                             key={spec.id}
-                             spec={spec}
-                             variants={variants}
-                             isAdmin={effectiveIsAdmin}
-                           />
+                          <SortableRow
+                            key={spec.id}
+                            spec={spec}
+                            variants={variants}
+                            isAdmin={effectiveIsAdmin}
+                          />
                         ))}
-                      </TableBody>
-                    </SortableContext>
-                  </DndContext>
-                ) : (
-                  <TableBody>
-                    {specificationOrder.map((spec) => (
-                       <SortableRow
-                         key={spec.id}
-                         spec={spec}
-                         variants={variants}
-                         isAdmin={effectiveIsAdmin}
-                       />
-                    ))}
-                  </TableBody>
-                )}
+                      </SortableContext>
+                    </DndContext>
+                  ) : (
+                    <>
+                      {specificationOrder.map((spec) => (
+                        <SortableRow
+                          key={spec.id}
+                          spec={spec}
+                          variants={variants}
+                          isAdmin={effectiveIsAdmin}
+                        />
+                      ))}
+                    </>
+                  )}
+                </TableBody>
               </Table>
+            </div>
+            
+            {/* Footer note */}
+            <div className="mt-4 text-sm text-muted-foreground">
+              <p>Custom sizes available upon request</p>
             </div>
           </CardContent>
         </Card>
