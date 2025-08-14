@@ -847,7 +847,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 {selectedProduct.specifications.length > 0 && (
                   <div className="mt-12">
                     <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
-                    <div className="border-2 border-muted rounded-lg p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                    <div className="w-full">
                       <div className="w-full">
                         <ProductVariantsTableNew productId={selectedProduct.product.id} variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
                       </div>
