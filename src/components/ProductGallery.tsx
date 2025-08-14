@@ -637,7 +637,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               </Button>
               
               {/* Scrollable Content */}
-              <div className="p-8 overflow-y-auto max-h-[90vh]">
+              <div className="p-0 md:p-8 overflow-y-auto max-h-[90vh]">
               
               {/* Product Header */}
               <div className="mb-8">
