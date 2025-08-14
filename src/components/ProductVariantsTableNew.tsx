@@ -427,24 +427,73 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                     >
                       <SortableContext items={specificationOrder.map(s => s.id)} strategy={verticalListSortingStrategy}>
                         {specificationOrder.map((spec) => (
-                          <SortableRow
-                            key={spec.id}
-                            spec={spec}
-                            variants={variants}
-                            isAdmin={effectiveIsAdmin}
-                          />
+                          <TableRow key={spec.id} {...(effectiveIsAdmin ? { } : {})}>
+                            <TableCell className="border font-medium bg-muted/30 min-w-[120px]">
+                              <div className="flex items-center space-x-2">
+                                {effectiveIsAdmin && (
+                                  <button className="cursor-grab hover:cursor-grabbing">
+                                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                  </button>
+                                )}
+                                <span>{spec.specification_key}</span>
+                              </div>
+                            </TableCell>
+                            {variants.length > 0 ? (
+                              variants.map((variant) => {
+                                const variantSets = sizeSetsByVariant[variant.id] || [];
+                                const generalSets = sizeSetsByVariant['general'] || [];
+                                const effectiveSets = variantSets.length > 0 ? variantSets : generalSets;
+                                const colSpan = Math.max(1, effectiveSets.length);
+                                
+                                return (
+                                  <TableCell 
+                                    key={variant.id} 
+                                    className="text-center border"
+                                    colSpan={colSpan}
+                                  >
+                                    {spec.variantValues[variant.id] || spec.generalValue || '-'}
+                                  </TableCell>
+                                );
+                              })
+                            ) : (
+                              <TableCell className="text-center border">
+                                {spec.generalValue || spec.specification_value || '-'}
+                              </TableCell>
+                            )}
+                          </TableRow>
                         ))}
                       </SortableContext>
                     </DndContext>
                   ) : (
                     <>
                       {specificationOrder.map((spec) => (
-                        <SortableRow
-                          key={spec.id}
-                          spec={spec}
-                          variants={variants}
-                          isAdmin={effectiveIsAdmin}
-                        />
+                        <TableRow key={spec.id}>
+                          <TableCell className="border font-medium bg-muted/30 min-w-[120px]">
+                            {spec.specification_key}
+                          </TableCell>
+                          {variants.length > 0 ? (
+                            variants.map((variant) => {
+                              const variantSets = sizeSetsByVariant[variant.id] || [];
+                              const generalSets = sizeSetsByVariant['general'] || [];
+                              const effectiveSets = variantSets.length > 0 ? variantSets : generalSets;
+                              const colSpan = Math.max(1, effectiveSets.length);
+                              
+                              return (
+                                <TableCell 
+                                  key={variant.id} 
+                                  className="text-center border"
+                                  colSpan={colSpan}
+                                >
+                                  {spec.variantValues[variant.id] || spec.generalValue || '-'}
+                                </TableCell>
+                              );
+                            })
+                          ) : (
+                            <TableCell className="text-center border">
+                              {spec.generalValue || spec.specification_value || '-'}
+                            </TableCell>
+                          )}
+                        </TableRow>
                       ))}
                     </>
                   )}
