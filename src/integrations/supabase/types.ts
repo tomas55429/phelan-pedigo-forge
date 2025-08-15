@@ -227,6 +227,7 @@ export type Database = {
         Row: {
           created_at: string
           depth: string | null
+          height: string | null
           id: string
           length: string | null
           product_id: string
@@ -238,6 +239,7 @@ export type Database = {
         Insert: {
           created_at?: string
           depth?: string | null
+          height?: string | null
           id?: string
           length?: string | null
           product_id: string
@@ -249,6 +251,7 @@ export type Database = {
         Update: {
           created_at?: string
           depth?: string | null
+          height?: string | null
           id?: string
           length?: string | null
           product_id?: string

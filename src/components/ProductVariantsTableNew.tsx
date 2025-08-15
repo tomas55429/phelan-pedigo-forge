@@ -39,6 +39,7 @@ interface SizeSet {
   width?: string;
   length?: string;
   depth?: string;
+  height?: string;
 }
 
 interface ProductSpecification {
@@ -130,7 +131,8 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   customDimensions = [
     { key: 'width', label: 'Width', enabled: true },
     { key: 'length', label: 'Length', enabled: true },
-    { key: 'depth', label: 'Depth', enabled: true }
+    { key: 'depth', label: 'Depth', enabled: true },
+    { key: 'height', label: 'Height', enabled: false }
   ],
 }) => {
   const { isAdmin: userIsAdmin } = useAuth();

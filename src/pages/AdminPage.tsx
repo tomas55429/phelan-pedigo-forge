@@ -161,6 +161,10 @@ const AdminPage = () => {
     key: 'depth',
     label: 'Depth',
     enabled: true
+  }, {
+    key: 'height',
+    label: 'Height',
+    enabled: false
   }]);
 
   // State for custom products
@@ -1605,7 +1609,7 @@ const AdminPage = () => {
                         <p className="text-sm text-muted-foreground">
                           Customize the labels for dimensions in the specifications table.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                           {productDimensions.map((dimension, index) => (
                             <div key={dimension.key} className="space-y-2">
                               <div className="flex items-center space-x-2">
