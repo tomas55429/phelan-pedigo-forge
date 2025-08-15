@@ -1595,12 +1595,59 @@ const AdminPage = () => {
                     </CardContent>
                   </Card>
 
+                  {/* Dimension Configuration */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Dimension Labels Configuration</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Customize the labels for dimensions in the specifications table.
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          {productDimensions.map((dimension, index) => (
+                            <div key={dimension.key} className="space-y-2">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`dimension-${dimension.key}`}
+                                  checked={dimension.enabled}
+                                  onCheckedChange={(checked) => {
+                                    const updated = [...productDimensions];
+                                    updated[index].enabled = !!checked;
+                                    setProductDimensions(updated);
+                                  }}
+                                />
+                                <Label htmlFor={`dimension-${dimension.key}`} className="text-sm font-medium">
+                                  {dimension.key.charAt(0).toUpperCase() + dimension.key.slice(1)}
+                                </Label>
+                              </div>
+                              {dimension.enabled && (
+                                <Input
+                                  value={dimension.label}
+                                  onChange={(e) => {
+                                    const updated = [...productDimensions];
+                                    updated[index].label = e.target.value;
+                                    setProductDimensions(updated);
+                                  }}
+                                  placeholder={`${dimension.key.charAt(0).toUpperCase() + dimension.key.slice(1)} label`}
+                                  className="text-sm"
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Specifications Table Display */}
                   <ProductVariantsTableNew 
                     productId={selectedProduct.id}
                     variants={variants} 
                     specifications={specifications} 
-                    onSpecificationOrderChange={handleSpecificationOrderChange} 
+                    onSpecificationOrderChange={handleSpecificationOrderChange}
+                    customDimensions={productDimensions}
                   />
 
                   {/* Size Specifications - Full Width Row */}
