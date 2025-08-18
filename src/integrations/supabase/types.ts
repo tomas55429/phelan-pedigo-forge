@@ -210,7 +210,7 @@ export type Database = {
           image_url: string | null
           is_optional: boolean | null
           product_id: string
-          variant_id: string
+          variant_id: string | null
         }
         Insert: {
           created_at?: string
@@ -219,7 +219,7 @@ export type Database = {
           image_url?: string | null
           is_optional?: boolean | null
           product_id: string
-          variant_id: string
+          variant_id?: string | null
         }
         Update: {
           created_at?: string
@@ -228,7 +228,7 @@ export type Database = {
           image_url?: string | null
           is_optional?: boolean | null
           product_id?: string
-          variant_id?: string
+          variant_id?: string | null
         }
         Relationships: [
           {

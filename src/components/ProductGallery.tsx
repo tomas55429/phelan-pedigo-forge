@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ProductVariantsTableNew } from './ProductVariantsTableNew';
+import { ProductFeatures } from './ProductFeatures';
 import VariantDetail from './VariantDetail';
 import Product3DViewer from './Product3DViewer';
 type Product = Tables<'products'>;
@@ -841,8 +842,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                       />
                     </div>
                   </div>
-                )}
+                 )}
 
+                 {/* Product Features Section */}
+                 <ProductFeatures productId={selectedProduct.product.id} className="mt-12" />
                 {/* Specifications Section - Only show if there are specifications */}
                 {selectedProduct.specifications.length > 0 && (
                   <div className="mt-12">
