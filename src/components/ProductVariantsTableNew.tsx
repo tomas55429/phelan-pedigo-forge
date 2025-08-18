@@ -273,12 +273,8 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   };
 
   const formatVariantName = (variantName: string) => {
-    // If name starts with hyphen, return the full name
-    if (variantName.startsWith('-')) {
-      return variantName;
-    }
-    // Otherwise, remove hyphen and everything after it (product codes)
-    return variantName.split('-')[0].trim();
+    // Return the full variant name without truncation
+    return variantName.trim();
   };
 
   return (

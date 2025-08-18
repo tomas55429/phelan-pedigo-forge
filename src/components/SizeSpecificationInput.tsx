@@ -252,15 +252,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   };
 
   const formatVariantName = (variantName: string) => {
-    const name = variantName || '';
-    
-    // If name starts with hyphen, return the full name
-    if (name.startsWith('-')) {
-      return name;
-    }
-    
-    // Otherwise, remove hyphen and everything after it (product codes)
-    return name.split('-')[0].trim();
+    // Return the full variant name without truncation
+    return variantName.trim();
   };
 
   const generateSpecifications = () => {
