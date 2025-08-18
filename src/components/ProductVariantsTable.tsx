@@ -395,7 +395,7 @@ export const ProductVariantsTable: React.FC<ProductVariantsTableProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Specifications: Standard Sizes (inside dimensions)</CardTitle>
+        <CardTitle>Specifications: Standard Sizes</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
