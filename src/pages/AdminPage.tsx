@@ -184,7 +184,51 @@ const AdminPage = () => {
     fetchCategories();
     fetchProducts();
     fetchCustomProducts();
+    loadDimensionSettings();
   }, []);
+
+  // Load dimension settings on component mount
+  const loadDimensionSettings = async () => {
+    try {
+      const { data } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'dimension_labels')
+        .maybeSingle();
+      
+      if (data?.setting_value && Array.isArray(data.setting_value)) {
+        setProductDimensions(data.setting_value as { key: string; label: string; enabled: boolean; }[]);
+      }
+    } catch (error) {
+      console.log('No saved dimension settings found, using defaults');
+    }
+  };
+
+  // Save dimension settings to database
+  const saveDimensionSettings = async (dimensions: typeof productDimensions) => {
+    try {
+      await supabase
+        .from('admin_settings')
+        .upsert({
+          setting_key: 'dimension_labels',
+          setting_value: dimensions
+        }, {
+          onConflict: 'setting_key'
+        });
+      
+      toast({
+        title: "Settings saved",
+        description: "Dimension label configuration has been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving dimension settings:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save dimension settings.",
+        variant: "destructive",
+      });
+    }
+  };
   const fetchCategories = async () => {
     try {
       const {
@@ -1609,38 +1653,46 @@ const AdminPage = () => {
                         <p className="text-sm text-muted-foreground">
                           Customize the labels for dimensions in the specifications table.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                          {productDimensions.map((dimension, index) => (
-                            <div key={dimension.key} className="space-y-2">
-                              <div className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={`dimension-${dimension.key}`}
-                                  checked={dimension.enabled}
-                                  onCheckedChange={(checked) => {
-                                    const updated = [...productDimensions];
-                                    updated[index].enabled = !!checked;
-                                    setProductDimensions(updated);
-                                  }}
-                                />
-                                <Label htmlFor={`dimension-${dimension.key}`} className="text-sm font-medium">
-                                  {dimension.key.charAt(0).toUpperCase() + dimension.key.slice(1)}
-                                </Label>
-                              </div>
-                              {dimension.enabled && (
-                                <Input
-                                  value={dimension.label}
-                                  onChange={(e) => {
-                                    const updated = [...productDimensions];
-                                    updated[index].label = e.target.value;
-                                    setProductDimensions(updated);
-                                  }}
-                                  placeholder={`${dimension.key.charAt(0).toUpperCase() + dimension.key.slice(1)} label`}
-                                  className="text-sm"
-                                />
-                              )}
-                            </div>
-                          ))}
-                        </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                           {productDimensions.map((dimension, index) => (
+                             <div key={dimension.key} className="space-y-2">
+                               <div className="flex items-center space-x-2">
+                                 <Checkbox
+                                   id={`dimension-${dimension.key}`}
+                                   checked={dimension.enabled}
+                                   onCheckedChange={(checked) => {
+                                     const updated = [...productDimensions];
+                                     updated[index].enabled = !!checked;
+                                     setProductDimensions(updated);
+                                   }}
+                                 />
+                                 <Label htmlFor={`dimension-${dimension.key}`} className="text-sm font-medium">
+                                   {dimension.key.charAt(0).toUpperCase() + dimension.key.slice(1)}
+                                 </Label>
+                               </div>
+                               {dimension.enabled && (
+                                 <Input
+                                   value={dimension.label}
+                                   onChange={(e) => {
+                                     const updated = [...productDimensions];
+                                     updated[index].label = e.target.value;
+                                     setProductDimensions(updated);
+                                   }}
+                                   placeholder={`${dimension.key.charAt(0).toUpperCase() + dimension.key.slice(1)} label`}
+                                   className="text-sm"
+                                 />
+                               )}
+                             </div>
+                           ))}
+                         </div>
+                         <div className="pt-4">
+                           <Button 
+                             onClick={() => saveDimensionSettings(productDimensions)}
+                             className="w-full"
+                           >
+                             Save Dimension Configuration
+                           </Button>
+                         </div>
                       </div>
                     </CardContent>
                   </Card>
