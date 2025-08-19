@@ -31,6 +31,7 @@ interface SizeSet {
   width: string;
   length: string;
   depth: string;
+  weight: string;
   set_index: number;
 }
 
@@ -87,7 +88,7 @@ const SortableSizeSet: React.FC<SortableSizeSetProps> = ({
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
       
-      <div className="grid grid-cols-3 gap-2 flex-1">
+      <div className="grid grid-cols-4 gap-2 flex-1">
         <div>
           <Label htmlFor={`width-${index}`} className="text-xs">Width</Label>
           <Input
@@ -115,6 +116,16 @@ const SortableSizeSet: React.FC<SortableSizeSetProps> = ({
             value={sizeSet.depth}
             onChange={(e) => onUpdate(index, 'depth', e.target.value)}
             placeholder="e.g., 12, 12⅝"
+            className="h-8"
+          />
+        </div>
+        <div>
+          <Label htmlFor={`weight-${index}`} className="text-xs">Weight</Label>
+          <Input
+            id={`weight-${index}`}
+            value={sizeSet.weight}
+            onChange={(e) => onUpdate(index, 'weight', e.target.value)}
+            placeholder="e.g., 25 lbs"
             className="h-8"
           />
         </div>
@@ -186,6 +197,7 @@ export const SizeSetInput: React.FC<SizeSetInputProps> = ({
       width: '',
       length: '',
       depth: '',
+      weight: '',
       set_index: sizeSets.length,
     };
     setSizeSets([...sizeSets, newSizeSet]);
@@ -259,7 +271,7 @@ export const SizeSetInput: React.FC<SizeSetInputProps> = ({
       // Insert new size sets
       if (sizeSets.length > 0) {
         const sizeSetData = sizeSets
-          .filter(set => set.width || set.length || set.depth)
+          .filter(set => set.width || set.length || set.depth || set.weight)
           .map((set, index) => ({
             product_id: productId,
             variant_id: selectedVariantId,
@@ -267,6 +279,7 @@ export const SizeSetInput: React.FC<SizeSetInputProps> = ({
             width: set.width || null,
             length: set.length || null,
             depth: set.depth || null,
+            weight: set.weight || null,
           }));
 
         if (sizeSetData.length > 0) {
