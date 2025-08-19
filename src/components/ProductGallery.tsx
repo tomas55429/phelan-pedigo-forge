@@ -722,7 +722,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
                     // Multiple images - 2-column grid layout
                     return (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         {allImages.map((image, index) => (
                           <div key={index} className="rounded-xl overflow-hidden border border-muted bg-gradient-to-br from-background to-muted/10 p-4">
                             <div className="relative group">
