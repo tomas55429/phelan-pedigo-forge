@@ -39,6 +39,7 @@ interface DimensionConfig {
   key: string;
   label: string;
   enabled: boolean;
+  visible: boolean;
 }
 
 export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
@@ -55,11 +56,11 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   const [tableDescription, setTableDescription] = useState("Standard Sizes (inside dimensions)");
   const [dimensions, setDimensions] = useState<DimensionConfig[]>(
     customDimensions || [
-      { key: 'width', label: 'Width', enabled: true },
-      { key: 'length', label: 'Length', enabled: true },
-      { key: 'depth', label: 'Depth', enabled: true },
-      { key: 'height', label: 'Height', enabled: true },
-      { key: 'weight', label: 'Weight', enabled: true }
+      { key: 'width', label: 'Width', enabled: true, visible: true },
+      { key: 'length', label: 'Length', enabled: true, visible: true },
+      { key: 'depth', label: 'Depth', enabled: true, visible: true },
+      { key: 'height', label: 'Height', enabled: true, visible: true },
+      { key: 'weight', label: 'Weight', enabled: true, visible: true }
     ]
   );
   const { toast } = useToast();
@@ -274,6 +275,16 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     }
   };
 
+  const toggleDimensionVisibility = (dimensionKey: string) => {
+    const newDimensions = dimensions.map(dim => 
+      dim.key === dimensionKey ? { ...dim, visible: !dim.visible } : dim
+    );
+    setDimensions(newDimensions);
+    if (onDimensionsChange) {
+      onDimensionsChange(newDimensions);
+    }
+  };
+
   const updateDimensionLabel = (dimensionKey: string, newLabel: string) => {
     const newDimensions = dimensions.map(dim => 
       dim.key === dimensionKey ? { ...dim, label: newLabel } : dim
@@ -450,30 +461,42 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
             <div className="space-y-3">
               {dimensions.map((dim) => (
                 <div key={dim.key} className="flex items-center space-x-3 p-3 border rounded-lg bg-muted/20">
-                  <Checkbox
-                    id={`dim-${dim.key}`}
-                    checked={dim.enabled}
-                    onCheckedChange={() => toggleDimension(dim.key)}
-                  />
-                  <Label htmlFor={`dim-${dim.key}`} className="text-sm font-medium min-w-[60px]">
-                    {dim.key === 'width' ? 'Dim 1:' : 
-                     dim.key === 'length' ? 'Dim 2:' : 
-                     dim.key === 'depth' ? 'Dim 3:' :
-                     dim.key === 'height' ? 'Dim 4:' : 'Dim 5:'}
-                  </Label>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`dim-${dim.key}`}
+                      checked={dim.enabled}
+                      onCheckedChange={() => toggleDimension(dim.key)}
+                    />
+                    <Label htmlFor={`dim-${dim.key}`} className="text-sm font-medium min-w-[60px]">
+                      {dim.key === 'width' ? 'Dim 1:' : 
+                       dim.key === 'length' ? 'Dim 2:' : 
+                       dim.key === 'depth' ? 'Dim 3:' :
+                       dim.key === 'height' ? 'Dim 4:' : 'Dim 5:'}
+                    </Label>
+                  </div>
                   <Input
                     value={dim.label}
                     onChange={(e) => updateDimensionLabel(dim.key, e.target.value)}
                     placeholder="e.g., Width, Height, Length"
                     className="flex-1 max-w-[200px]"
                   />
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor={`visible-${dim.key}`} className="text-sm whitespace-nowrap">
+                      Show in table
+                    </Label>
+                    <Checkbox
+                      id={`visible-${dim.key}`}
+                      checked={dim.visible}
+                      onCheckedChange={() => toggleDimensionVisibility(dim.key)}
+                    />
+                  </div>
                   <Badge variant={dim.enabled ? "default" : "secondary"}>
                     {dim.enabled ? "Active" : "Disabled"}
                   </Badge>
                 </div>
               ))}
               <p className="text-xs text-muted-foreground">
-                Customize dimension names (e.g., change "Depth" to "Height" for vertical products)
+                Enable checkboxes to include dimensions in specifications. Use "Show in table" to control visibility in the display table.
               </p>
             </div>
           </div>

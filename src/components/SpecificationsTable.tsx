@@ -31,19 +31,38 @@ interface SizeSet {
   weight?: string;
 }
 
+interface DimensionConfig {
+  key: string;
+  label: string;
+  enabled: boolean;
+  visible: boolean;
+}
+
 interface SpecificationsTableProps {
   productId?: string;
   variants: ProductVariant[];
   specifications: ProductSpecification[];
   title?: string;
+  dimensionVisibility?: DimensionConfig[];
 }
 
 export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
   productId,
   variants,
   specifications,
-  title = "Specifications: Standard Sizes (inside dimensions)"
+  title = "Specifications: Standard Sizes (inside dimensions)",
+  dimensionVisibility
 }) => {
+  // Default visibility if not provided
+  const defaultVisibility: DimensionConfig[] = [
+    { key: 'width', label: 'Width', enabled: true, visible: true },
+    { key: 'length', label: 'Length', enabled: true, visible: true },
+    { key: 'depth', label: 'Depth', enabled: true, visible: true },
+    { key: 'height', label: 'Height', enabled: true, visible: true },
+    { key: 'weight', label: 'Weight', enabled: true, visible: true }
+  ];
+  
+  const dimConfig = dimensionVisibility || defaultVisibility;
   const [sizeSets, setSizeSets] = useState<SizeSet[]>([]);
 
   useEffect(() => {
@@ -216,8 +235,11 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                 </TableHeader>
                 <TableBody>
                   {/* Width Row */}
+                  {dimConfig.find(d => d.key === 'width')?.visible && (
                   <TableRow>
-                    <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">Width</TableCell>
+                    <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
+                      {dimConfig.find(d => d.key === 'width')?.label || 'Width'}
+                    </TableCell>
                     {variants.length > 0 ? (
                       variants.flatMap((variant) => {
                         const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -245,10 +267,14 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                       )) || <TableCell className="border border-border text-center px-4 py-3">-</TableCell>
                     )}
                   </TableRow>
+                  )}
 
                   {/* Length Row */}
+                  {dimConfig.find(d => d.key === 'length')?.visible && (
                   <TableRow>
-                    <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">Length</TableCell>
+                    <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
+                      {dimConfig.find(d => d.key === 'length')?.label || 'Length'}
+                    </TableCell>
                     {variants.length > 0 ? (
                       variants.flatMap((variant) => {
                         const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -276,10 +302,14 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                       )) || <TableCell className="border border-border text-center px-4 py-3">-</TableCell>
                     )}
                   </TableRow>
+                  )}
 
                   {/* Depth Row */}
+                  {dimConfig.find(d => d.key === 'depth')?.visible && (
                   <TableRow>
-                    <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">Depth</TableCell>
+                    <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
+                      {dimConfig.find(d => d.key === 'depth')?.label || 'Depth'}
+                    </TableCell>
                     {variants.length > 0 ? (
                       variants.flatMap((variant) => {
                         const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -307,10 +337,14 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                       )) || <TableCell className="border border-border text-center px-4 py-3">-</TableCell>
                     )}
                    </TableRow>
+                   )}
 
                    {/* Height Row */}
+                   {dimConfig.find(d => d.key === 'height')?.visible && (
                    <TableRow>
-                     <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">Height</TableCell>
+                     <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
+                       {dimConfig.find(d => d.key === 'height')?.label || 'Height'}
+                     </TableCell>
                      {variants.length > 0 ? (
                        variants.flatMap((variant) => {
                          const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -338,10 +372,14 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                        )) || <TableCell className="border border-border text-center px-4 py-3">-</TableCell>
                      )}
                    </TableRow>
+                   )}
 
                    {/* Weight Row */}
+                   {dimConfig.find(d => d.key === 'weight')?.visible && (
                    <TableRow>
-                     <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">Weight</TableCell>
+                     <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
+                       {dimConfig.find(d => d.key === 'weight')?.label || 'Weight'}
+                     </TableCell>
                      {variants.length > 0 ? (
                        variants.flatMap((variant) => {
                          const variantSets = sizeSetsByVariant[variant.id] || [];
@@ -369,7 +407,8 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
                        )) || <TableCell className="border border-border text-center px-4 py-3">-</TableCell>
                      )}
                    </TableRow>
-                 </TableBody>
+                   )}
+                  </TableBody>
               </Table>
             </div>
             
