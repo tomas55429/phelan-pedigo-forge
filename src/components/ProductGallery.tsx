@@ -779,10 +779,11 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                                   <img
                                     src={acc.image_url}
                                     alt={acc.feature}
-                                    className="w-10 h-10 rounded border object-cover"
+                                    className="w-10 h-10 rounded border object-cover cursor-pointer hover:opacity-90 transition-opacity"
                                     loading="lazy"
                                     decoding="async"
                                     sizes="40px"
+                                    onClick={() => window.open(acc.image_url, '_blank')}
                                   />
                                 )}
                                 <span className="text-sm text-muted-foreground">{acc.feature}</span>
