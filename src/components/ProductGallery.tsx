@@ -640,302 +640,191 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   }
   return <div className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        {/* Product Details Modal */}
-        {selectedProduct && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-background rounded-lg max-w-7xl w-full max-h-[90vh] relative">
-              {/* Fixed Close Button - Always Visible */}
-              <Button variant="outline" size="sm" onClick={() => {
-                setSelectedProduct(null);
-                setMainImageUrl('');
-              }} className="absolute top-4 right-4 z-20 bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2">
-                <X className="h-4 w-4" />
-              </Button>
-              
-              {/* Scrollable Content */}
-              <div className="p-4 md:p-8 overflow-y-auto max-h-[90vh]">
-              
-              {/* Product Header */}
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold mb-2">{selectedProduct.product.name}</h1>
-                <p className="text-xl text-muted-foreground">{selectedProduct.categories.length > 0 ? selectedProduct.categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
+        {/* Product Details Full-Page */}
+        {selectedProduct && <div className="fixed inset-0 bg-background z-50 overflow-y-auto">
+            <div className="min-h-screen w-full">
+              {/* Header */}
+              <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b z-10">
+                <div className="flex justify-between items-center p-6">
+                  <div>
+                    <h1 className="text-4xl font-bold text-foreground">{selectedProduct.product.name}</h1>
+                    <p className="text-xl text-muted-foreground mt-1">{selectedProduct.categories.length > 0 ? selectedProduct.categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      setSelectedProduct(null);
+                      setMainImageUrl('');
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-6 w-6" />
+                  </Button>
+                </div>
               </div>
-              
-              <div className="grid lg:grid-cols-2 gap-12">
-                {/* Left Column - Product Images */}
-                <div>
-                  <h2 className="text-xl font-semibold mb-4">
-                    {selectedProduct.additionalImages && selectedProduct.additionalImages.length > 0 ? 'Product Images' : 'Product Image'}
-                  </h2>
-                  {(() => {
-                    const allImages = [
-                      ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
-                      ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-                    ];
 
-                    const isCustomProduct = selectedProduct.product.id.toString().startsWith('custom-') || 
-                                           selectedProduct.additionalImages && selectedProduct.additionalImages.length > 0;
+              <div className="p-6 space-y-8">
+                {/* Images Grid - 2 per row */}
+                {(() => {
+                  const allImages = [
+                    ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
+                    ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+                  ];
 
-                    if (allImages.length === 0) {
-                      return (
-                        <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                          <div className="text-center text-muted-foreground">
-                            <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                            <p>No image available</p>
-                            <p className="text-sm mt-2">
-                              {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Custom products with multiple images: horizontal layout
-                    if (isCustomProduct && allImages.length > 1) {
-                      const [mainImage, ...additionalImages] = allImages;
-                      const currentMainImageUrl = mainImageUrl || mainImage.url;
-                      return (
-                        <div className="flex flex-col lg:flex-row gap-4">
-                          {/* Main Image */}
-                          <div className="flex-1">
-                            <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
-                              <div className="relative group w-full">
-                                <img 
-                                  src={currentMainImageUrl}
-                                  alt={`${selectedProduct.product.name} - Main Image`}
-                                  className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
-                                  onClick={() => setEnlargedImage(currentMainImageUrl)} 
-                                  loading="lazy" 
-                                  decoding="async" 
-                                  sizes="(max-width: 768px) 100vw, 60vw" 
-                                />
-                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="bg-background/90 backdrop-blur-sm pointer-events-auto"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEnlargedImage(currentMainImageUrl);
-                                    }}
-                                  >
-                                    <ZoomIn className="h-4 w-4 mr-2" />
-                                    Enlarge
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Additional Images Thumbnails */}
-                          <div className="lg:w-64 flex lg:flex-col flex-row gap-2 overflow-x-auto lg:overflow-y-auto lg:max-h-96">
-                            {additionalImages.map((image, index) => (
-                              <div 
-                                key={index + 1} 
-                                className="flex-shrink-0 lg:w-full w-20 h-20 lg:h-24 border border-muted rounded-lg p-2 bg-muted/10 cursor-pointer hover:bg-muted/30 transition-colors"
-                                onClick={() => setMainImageUrl(image.url)}
-                              >
-                                <img 
-                                  src={image.url} 
-                                  alt={`${selectedProduct.product.name} - ${image.description}`}
-                                  className="w-full h-full object-contain rounded" 
-                                  loading="lazy" 
-                                />
-                                {image.description && image.description !== 'Additional Image' && (
-                                  <p className="text-xs text-muted-foreground mt-1 truncate lg:block hidden">
-                                    {image.description}
-                                  </p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    }
-
-                    // Regular products or single image: vertical layout
+                  if (allImages.length === 0) {
                     return (
-                      <div className="space-y-4">
-                        {allImages.map((image, index) => (
-                          <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
-                            <div className="relative group w-full">
-                              <img 
-                                src={image.url} 
-                                alt={`${selectedProduct.product.name} - ${image.description}`}
-                                className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
-                                onClick={() => setEnlargedImage(image.url)} 
-                                loading="lazy" 
-                                decoding="async" 
-                                sizes="(max-width: 768px) 100vw, 50vw" 
-                              />
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="bg-background/90 backdrop-blur-sm pointer-events-auto"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEnlargedImage(image.url);
-                                  }}
-                                >
-                                  <ZoomIn className="h-4 w-4 mr-2" />
-                                  Enlarge
-                                </Button>
-                              </div>
-                              {image.description && image.description !== 'Main Image' && (
-                                <div className="mt-2 text-center">
-                                  <p className="text-sm text-muted-foreground bg-background/80 rounded px-2 py-1">
-                                    {image.description}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                      <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
+                        <div className="text-center text-muted-foreground">
+                          <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                          <p>No image available</p>
+                          <p className="text-sm mt-2">
+                            {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
+                          </p>
+                        </div>
                       </div>
                     );
-                  })()}
-                </div>
-                
-                {/* Right Column - Product Information */}
-                <div className="space-y-8">
-                  {/* Description - Only show for regular products with actual descriptions */}
-                  {!selectedProduct.product.id.toString().startsWith('custom-') && selectedProduct.product.description && (
-                    <div>
-                      <h2 className="text-xl font-semibold mb-4">Product Description</h2>
-                       <p className="text-muted-foreground leading-relaxed">
-                         {(() => {
-                           const description = selectedProduct.product.description;
-                           // Remove custom product ID from description if present
-                           const cleanDescription = description.replace(/\n\n\[Custom Product ID: [^\]]+\]/g, '');
-                           return cleanDescription;
-                         })()}
-                       </p>
-                    </div>
-                  )}
-                   
-                    {/* Combined Features from All Variants - deduplicated */}
-                    {(() => {
-                      // Get all features from all variants, deduplicated by feature text
-                      const allFeatures = selectedProduct.features.filter(feature => !feature.is_optional);
-                      const deduplicatedFeatures = allFeatures.reduce((acc, feature) => {
-                        if (!acc.some(f => f.feature === feature.feature)) {
-                          acc.push(feature);
-                        }
-                        return acc;
-                      }, [] as typeof allFeatures);
-                      
-                      return deduplicatedFeatures.length > 0 && (
-                        <div>
-                          <h2 className="text-xl font-semibold mb-4">Features</h2>
-                          <p className="text-sm text-muted-foreground mb-3">Combined features from all variants</p>
-                          <ul className="space-y-2">
-                            {deduplicatedFeatures.map(feature => (
-                              <li key={feature.id} className="flex items-start space-x-2">
-                                <span className="text-lg leading-none mt-1">-</span>
-                                <span>{feature.feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    })()}
-                    
-                    {/* Available Accessories - deduplicated across variants */}
-                    {(() => {
-                      const accessories = selectedProduct.features.filter(f => f.is_optional);
-                      const deduped = accessories.reduce((acc, item) => {
-                        if (!acc.some(a => a.feature === item.feature)) acc.push(item);
-                        return acc;
-                      }, [] as typeof accessories);
-                      return deduped.length > 0 && (
-                        <div>
-                          <h2 className="text-xl font-semibold mb-4">Available Accessories</h2>
-                          <ul className="space-y-3">
-                            {deduped.map(acc => (
-                              <li key={acc.id} className="flex items-center gap-3">
-                                {acc.image_url && (
-                                  <img
-                                    src={acc.image_url}
-                                    alt={acc.feature}
-                                    className="w-10 h-10 rounded border object-cover"
-                                    loading="lazy"
-                                    decoding="async"
-                                    sizes="40px"
-                                  />
-                                )}
-                                <span className="text-sm text-muted-foreground">{acc.feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    })()}
-                   
-                    {/* Variants - Only show if there are variants */}
-                   {selectedProduct.variants.length > 0 && (
-                     <div>
-                       <h2 className="text-xl font-semibold mb-4">Variants</h2>
-                       <div className="space-y-3">
-                         {selectedProduct.variants.map(variant => (
-                           <button 
-                             key={variant.id} 
-                             className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all" 
-                             onClick={() => {
-                               setSelectedVariant(variant);
-                               setSelectedVariantProduct(selectedProduct);
-                             }}
-                           >
-                             <div className="font-medium text-lg">
-                               {formatVariantName(variant)}
-                             </div>
-                           </button>
-                         ))}
-                       </div>
-                     </div>
-                   )}
-                  
-                  
-                  {/* Special Notes */}
-                  {selectedProduct.product.special_notes && <div className="p-4 bg-warning/10 border border-warning/20 rounded-lg">
-                      <h4 className="font-medium text-warning-foreground mb-2 flex items-center">
-                        <FileText className="h-4 w-4 mr-2" />
-                        Special Notes
-                      </h4>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {selectedProduct.product.special_notes}
-                      </p>
-                    </div>}
-                </div>
-               </div>
-                
-                {/* 3D Model Section - Only show if model exists */}
-                {selectedProduct.product.model_3d_url && (
-                  <div className="mt-12">
-                    <h2 className="text-xl font-semibold mb-4">3D Model</h2>
-                    <div className="border-2 border-muted rounded-lg overflow-hidden">
-                      <Product3DViewer 
-                        modelUrl={selectedProduct.product.model_3d_url}
-                        productName={selectedProduct.product.name}
-                        className="w-full h-[600px]"
-                      />
-                    </div>
-                  </div>
-                )}
+                  }
 
-                {/* Specifications Section - Only show if there are specifications */}
-                {selectedProduct.specifications.length > 0 && (
-                  <div className="mt-12">
-                    <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
-                    <div className="w-full">
-                      <div className="w-full">
-                        <ProductVariantsTableNew productId={selectedProduct.product.id} variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {allImages.map((image, index) => (
+                        <div key={index} className="space-y-3">
+                          <div className="relative group">
+                            <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
+                              <img
+                                src={image.url}
+                                alt={`${selectedProduct.product.name} - ${image.description}`}
+                                className="w-full h-auto object-contain max-h-80 rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => setEnlargedImage(image.url)}
+                                loading="lazy"
+                                decoding="async"
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                              />
+                            </div>
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => setEnlargedImage(image.url)}
+                            >
+                              <ZoomIn className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          {image.description && (
+                            <p className="text-sm text-muted-foreground text-center">{image.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Product Information */}
+                <div className="max-w-4xl mx-auto space-y-8">
+                  <div>
+                    <h2 className="text-2xl font-semibold text-foreground mb-4">Description</h2>
+                    <p className="text-muted-foreground leading-relaxed text-lg">
+                      {selectedProduct.product.description?.replace(/\[Custom Product ID:\s*([^\]]+)\]/gi, '').replace(/\s{2,}/g, ' ').trim() || 'No description available.'}
+                    </p>
+                  </div>
+
+                  {/* Special Notes */}
+                  {selectedProduct.product.special_notes && (
+                    <div>
+                      <h2 className="text-2xl font-semibold text-foreground mb-4 text-amber-600">Special Notes</h2>
+                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6">
+                        <p className="text-amber-800 dark:text-amber-200 leading-relaxed whitespace-pre-line text-lg">
+                          {selectedProduct.product.special_notes}
+                        </p>
                       </div>
                     </div>
-                  </div>
-                )}
-                 </div>
-             </div>
-           </div>}
+                  )}
+
+                  {/* Features */}
+                  {selectedProduct.features.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-semibold text-foreground mb-4">Key Features</h2>
+                      <ul className="space-y-3">
+                        {selectedProduct.features.map((feature, index) => (
+                          <li key={index} className="flex items-start gap-3">
+                            <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
+                            <div className="flex-1">
+                              <span className="text-muted-foreground text-lg">{feature.feature}</span>
+                              {feature.image_url && (
+                                <img 
+                                  src={feature.image_url} 
+                                  alt={feature.feature} 
+                                  className="mt-3 w-full max-w-md h-auto rounded-lg border"
+                                  loading="lazy"
+                                />
+                              )}
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Variants */}
+                  {selectedProduct.variants.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-semibold text-foreground mb-4">Available Variants</h2>
+                      <div className="grid gap-4">
+                        {selectedProduct.variants.map((variant, index) => (
+                          <Card key={index} className="p-6 cursor-pointer hover:bg-muted/50 transition-colors">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h3 className="text-lg font-medium text-foreground">{formatVariantName(variant)}</h3>
+                                {variant.description && (
+                                  <p className="text-muted-foreground mt-2">{variant.description}</p>
+                                )}
+                                {variant.size && (
+                                  <p className="text-sm text-muted-foreground mt-1">Size: {variant.size}</p>
+                                )}
+                              </div>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedVariant(variant);
+                                  setSelectedVariantProduct(selectedProduct);
+                                }}
+                              >
+                                View Details
+                              </Button>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3D Model Section */}
+                  {selectedProduct.product.model_3d_url && (
+                    <div>
+                      <h2 className="text-2xl font-semibold text-foreground mb-4">3D Model</h2>
+                      <div className="border-2 border-muted rounded-lg overflow-hidden">
+                        <Product3DViewer 
+                          modelUrl={selectedProduct.product.model_3d_url}
+                          productName={selectedProduct.product.name}
+                          className="w-full h-[600px]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Technical Specifications */}
+                  {selectedProduct.specifications.length > 0 && (
+                    <div>
+                      <h2 className="text-2xl font-semibold text-foreground mb-4">Technical Specifications</h2>
+                      <ProductVariantsTableNew productId={selectedProduct.product.id} variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>}
 
         {/* Enlarged Image Dialog with Zoom */}
         <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
