@@ -167,7 +167,7 @@ const AdminPage = () => {
   const [customProducts, setCustomProducts] = useState<CustomProduct[]>([]);
   const [customProductImages, setCustomProductImages] = useState<CustomProductImage[]>([]);
   const [customProductName, setCustomProductName] = useState('');
-  // Description state removed - using images instead
+  const [customProductDescription, setCustomProductDescription] = useState('');
   const [customProductMainImage, setCustomProductMainImage] = useState<File | null>(null);
   const [customProductAdditionalImages, setCustomProductAdditionalImages] = useState<{
     file: File;
@@ -462,7 +462,7 @@ const AdminPage = () => {
       }
       const productData = {
         name: customProductName,
-        description: null, // Using images instead of description
+        description: customProductDescription || null,
         main_image_url: mainImageUrl
       };
       let customProductId: string;
@@ -543,6 +543,7 @@ const AdminPage = () => {
   };
   const resetCustomProductForm = () => {
     setCustomProductName('');
+    setCustomProductDescription('');
     setCustomProductMainImage(null);
     setCustomProductAdditionalImages([]);
     setCustomProductImages([]);
@@ -551,6 +552,7 @@ const AdminPage = () => {
   };
   const handleEditCustomProduct = async (customProduct: CustomProduct) => {
     setCustomProductName(customProduct.name);
+    setCustomProductDescription(customProduct.description || '');
     setEditingCustomProduct(customProduct);
 
     // Fetch existing images for this custom product
@@ -1127,9 +1129,8 @@ const AdminPage = () => {
       });
     }
   };
-   return (
-     <ProtectedRoute adminOnly>
-       <div className="min-h-screen bg-background">
+  return <ProtectedRoute adminOnly>
+      <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="border-b border-border">
           <div className="container mx-auto px-4 py-4">
@@ -1866,66 +1867,33 @@ const AdminPage = () => {
               <div className="grid gap-4">
                 {customProducts.map(customProduct => <Card key={customProduct.id}>
                     <CardContent className="p-4">
-                      <div className="space-y-3">
-                         <div className="flex items-center justify-between">
-                           <div className="flex items-center space-x-3">
-                             {customProduct.main_image_url && <img src={customProduct.main_image_url} alt={customProduct.name} className="w-16 h-16 object-cover rounded" />}
-                             <div>
-                               <h3 className="font-medium">{customProduct.name}</h3>
-                               <p className="text-xs text-muted-foreground">
-                                 Created: {new Date(customProduct.created_at).toLocaleDateString()}
-                               </p>
-                             </div>
-                           </div>
-                           <div className="flex space-x-2">
-                             <Button size="sm" variant="outline" onClick={() => handleEditCustomProduct(customProduct)}>
-                               <Edit className="h-4 w-4" />
-                             </Button>
-                             <Button size="sm" variant="destructive" onClick={() => handleDeleteCustomProduct(customProduct.id)}>
-                               <Trash2 className="h-4 w-4" />
-                             </Button>
-                           </div>
-                         </div>
-                         
-                         {/* Additional Images Preview */}
-                         <div>
-                           <Button
-                             size="sm"
-                             variant="outline"
-                             onClick={async () => {
-                               await fetchCustomProductImages(customProduct.id);
-                             }}
-                             className="text-xs h-6 px-2 mb-2"
-                           >
-                             <Camera className="h-3 w-3 mr-1" />
-                             View All Images
-                           </Button>
-                           
-                           {/* Show first 3 additional images as preview */}
-                           <div className="grid grid-cols-3 gap-2 max-w-48">
-                             {customProductImages
-                               .filter(img => img.custom_product_id === customProduct.id)
-                               .slice(0, 3)
-                               .map(image => (
-                                 <img
-                                   key={image.id}
-                                   src={image.image_url}
-                                   alt={image.description || 'Additional view'}
-                                   className="w-16 h-16 object-cover rounded border"
-                                 />
-                               ))}
-                           </div>
-                         </div>
-                       </div>
-                     </CardContent>
-                   </Card>)}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          {customProduct.main_image_url && <img src={customProduct.main_image_url} alt={customProduct.name} className="w-16 h-16 object-cover rounded" />}
+                          <div>
+                            <h3 className="font-medium">{customProduct.name}</h3>
+                            {customProduct.description && <p className="text-sm text-muted-foreground">{customProduct.description}</p>}
+                            <p className="text-xs text-muted-foreground">
+                              Created: {new Date(customProduct.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline" onClick={() => handleEditCustomProduct(customProduct)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleDeleteCustomProduct(customProduct.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>)}
               </div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
-     </ProtectedRoute>
-   );
- };
- 
- export default AdminPage;
+    </ProtectedRoute>;
+};
+export default AdminPage;
