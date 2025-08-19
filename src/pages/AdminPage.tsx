@@ -195,7 +195,23 @@ const AdminPage = () => {
         .maybeSingle();
       
       if (data?.setting_value && Array.isArray(data.setting_value)) {
-        setProductDimensions(data.setting_value as { key: string; label: string; enabled: boolean; }[]);
+        const savedDimensions = data.setting_value as { key: string; label: string; enabled: boolean; }[];
+        
+        // Merge with default dimensions to ensure new dimensions are included
+        const defaultDimensions = [
+          { key: 'width', label: 'Width', enabled: true },
+          { key: 'length', label: 'Length', enabled: true },
+          { key: 'depth', label: 'Depth', enabled: true },
+          { key: 'height', label: 'Height', enabled: false },
+          { key: 'weight', label: 'Weight', enabled: false }
+        ];
+        
+        const mergedDimensions = defaultDimensions.map(defaultDim => {
+          const saved = savedDimensions.find(saved => saved.key === defaultDim.key);
+          return saved || defaultDim;
+        });
+        
+        setProductDimensions(mergedDimensions);
       }
     } catch (error) {
       console.log('No saved dimension settings found, using defaults');
