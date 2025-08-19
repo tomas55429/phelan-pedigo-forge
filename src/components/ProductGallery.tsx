@@ -159,33 +159,17 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           const customProductIdFromPrefix = isPrefixedCustom
             ? product.id.toString().replace('custom-', '')
             : null;
-          const customProductIdFromDescription = product.description
-            ? (product.description.match(/\[Custom Product ID:\s*([^\]]+)\]/i)?.[1] || null)
-            : null;
-          const customProductId = customProductIdFromPrefix || customProductIdFromDescription;
+          
+          // Also check if this is a regular product that matches a custom product by name
+          const matchingCustomProduct = customProducts.find(cp => product.name === cp.name);
+          const customProductIdFromName = matchingCustomProduct?.id;
+          
+          const customProductId = customProductIdFromPrefix || customProductIdFromName;
 
           // Collect additional images if this is (or references) a custom product
-          console.log('🔍 FILTERING DEBUG:', {
-            productName: product.name,
-            productId: product.id,
-            customProductIdFromPrefix,
-            customProductIdFromDescription,
-            finalCustomProductId: customProductId,
-            customProductImagesCount: customProductImages.length,
-            customProductImagesData: customProductImages.map(img => ({ id: img.custom_product_id, url: img.image_url }))
-          });
-
           const additionalImages = customProductId
             ? customProductImages
-                .filter(img => {
-                  const match = img.custom_product_id?.toString() === customProductId.toString();
-                  console.log('🔍 FILTER CHECK:', {
-                    imgCustomProductId: img.custom_product_id,
-                    lookingFor: customProductId,
-                    match
-                  });
-                  return match;
-                })
+                .filter(img => img.custom_product_id?.toString() === customProductId.toString())
                 .map(img => ({
                   id: img.id,
                   image_url: img.image_url,
@@ -200,17 +184,17 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             ...additionalImages.map(img => ({ url: img.image_url, description: img.description || 'Additional Image' })),
           ].filter(img => img.url);
 
-          console.log('CUSTOM IMAGE MAP DEBUG:', {
-            productId: product.id,
-            productName: product.name,
-            isPrefixedCustom,
-            customProductIdFromPrefix,
-            customProductIdFromDescription,
-            resolvedCustomProductId: customProductId,
-            additionalImagesCount: additionalImages.length,
-          });
+           console.log('CUSTOM IMAGE MAP DEBUG:', {
+             productId: product.id,
+             productName: product.name,
+             isPrefixedCustom,
+             customProductIdFromPrefix,
+             customProductIdFromName,
+             resolvedCustomProductId: customProductId,
+             additionalImagesCount: additionalImages.length,
+           });
 
-          if (isPrefixedCustom || customProductIdFromDescription) {
+          if (isPrefixedCustom || customProductIdFromName) {
             // Ensure custom category for custom items
             const customCategoryArray = customCategory ? [customCategory] : [];
             return {
