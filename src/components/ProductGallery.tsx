@@ -414,9 +414,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           <p className="text-sm text-muted-foreground">{categories.length > 0 ? categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {displayDescription || 'No description available'}
-          </p>
+          {/* Only show description for regular products, not custom products */}
+          {!product.id.toString().startsWith('custom-') && (
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              {displayDescription || 'No description available'}
+            </p>
+          )}
           
           {/* Product Details Accordion */}
           {(features.length > 0 || variants.length > 0 || product.special_notes) && <Accordion type="single" collapsible className="mb-4">
@@ -721,18 +724,20 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 
                 {/* Right Column - Product Information */}
                 <div className="space-y-8">
-                  {/* Description */}
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Product Description</h2>
-                     <p className="text-muted-foreground leading-relaxed">
-                       {(() => {
-                         const description = selectedProduct.product.description || 'No description available';
-                         // Remove custom product ID from description if present
-                         const cleanDescription = description.replace(/\n\n\[Custom Product ID: [^\]]+\]/g, '');
-                         return cleanDescription;
-                       })()}
-                     </p>
-                  </div>
+                  {/* Description - Only show for regular products, not custom products */}
+                  {!selectedProduct.product.id.toString().startsWith('custom-') && (
+                    <div>
+                      <h2 className="text-xl font-semibold mb-4">Product Description</h2>
+                       <p className="text-muted-foreground leading-relaxed">
+                         {(() => {
+                           const description = selectedProduct.product.description || 'No description available';
+                           // Remove custom product ID from description if present
+                           const cleanDescription = description.replace(/\n\n\[Custom Product ID: [^\]]+\]/g, '');
+                           return cleanDescription;
+                         })()}
+                       </p>
+                    </div>
+                  )}
                    
                     {/* Combined Features from All Variants - deduplicated */}
                     {(() => {
