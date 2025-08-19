@@ -159,6 +159,10 @@ const AdminPage = () => {
     key: 'height',
     label: 'Height',
     enabled: false
+  }, {
+    key: 'weight',
+    label: 'Weight',
+    enabled: false
   }]);
 
   // State for custom products
