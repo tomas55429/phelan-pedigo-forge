@@ -95,7 +95,8 @@ export const ProductFeatures: React.FC<ProductFeaturesProps> = ({
                         <img 
                           src={feature.image_url} 
                           alt={feature.feature}
-                          className="w-full h-24 object-cover rounded border"
+                          className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(feature.image_url, '_blank')}
                         />
                       </div>
                     )}

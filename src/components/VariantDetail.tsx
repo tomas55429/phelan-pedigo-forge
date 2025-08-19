@@ -89,13 +89,29 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
             <div>
               <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Variant Features</h2>
               
-              {variantFeatures.length > 0 ? <ul className="space-y-2">
-                  {variantFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
+              {variantFeatures.length > 0 ? <div className="space-y-3">
+                  {variantFeatures.map(feature => (
+                    <div key={feature.id} className="flex items-start space-x-2">
                       <span className="text-lg leading-none mt-1">-</span>
-                      <span>{feature.feature}</span>
-                      {feature.is_optional && <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>}
-                    </li>)}
-                </ul> : <ul className="space-y-2 text-muted-foreground">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span>{feature.feature}</span>
+                          {feature.is_optional && <Badge variant="secondary" className="text-xs">Optional</Badge>}
+                        </div>
+                        {feature.image_url && (
+                          <div className="mt-2">
+                            <img 
+                              src={feature.image_url} 
+                              alt={feature.feature}
+                              className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => window.open(feature.image_url, '_blank')}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div> : <ul className="space-y-2 text-muted-foreground">
                   
                 </ul>}
             </div>
