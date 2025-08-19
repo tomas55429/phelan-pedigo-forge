@@ -721,18 +721,21 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 
                 {/* Right Column - Product Information */}
                 <div className="space-y-8">
-                  {/* Description */}
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Product Description</h2>
-                     <p className="text-muted-foreground leading-relaxed">
-                       {(() => {
-                         const description = selectedProduct.product.description || 'No description available';
-                         // Remove custom product ID from description if present
-                         const cleanDescription = description.replace(/\n\n\[Custom Product ID: [^\]]+\]/g, '');
-                         return cleanDescription;
-                       })()}
-                     </p>
-                  </div>
+                  {/* Description - Only show if description exists */}
+                  {(() => {
+                    const description = selectedProduct.product.description || '';
+                    // Remove custom product ID from description if present
+                    const cleanDescription = description.replace(/\n\n\[Custom Product ID: [^\]]+\]/g, '').trim();
+                    
+                    return cleanDescription && (
+                      <div>
+                        <h2 className="text-xl font-semibold mb-4">Product Description</h2>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {cleanDescription}
+                        </p>
+                      </div>
+                    );
+                  })()}
                    
                     {/* Combined Features from All Variants - deduplicated */}
                     {(() => {
