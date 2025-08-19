@@ -21,7 +21,6 @@ interface SizeSpecification {
   width: string[];
   length: string[];
   depth: string[];
-  weight: string[];
 }
 
 interface SizeSpecificationInputProps {
@@ -56,8 +55,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     customDimensions || [
       { key: 'width', label: 'Width', enabled: true },
       { key: 'length', label: 'Length', enabled: true },
-      { key: 'depth', label: 'Depth', enabled: true },
-      { key: 'weight', label: 'Weight', enabled: false }
+      { key: 'depth', label: 'Depth', enabled: true }
     ]
   );
   const { toast } = useToast();
@@ -89,25 +87,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           .map(spec => spec.specification_value)
           .filter(val => val);
 
-        const existingWeight = existingSpecifications
-          .filter(spec => spec.variant_id === variant.id && spec.specification_key === 'Weight')
-          .map(spec => spec.specification_value)
-          .filter(val => val);
-
         // Normalize arrays so each size set stays aligned across dimensions
-        const maxLen = Math.max(existingWidth.length, existingLength.length, existingDepth.length, existingWeight.length, 1);
+        const maxLen = Math.max(existingWidth.length, existingLength.length, existingDepth.length, 1);
         const pad = (arr: string[]) => arr.length >= maxLen ? arr : [...arr, ...Array(maxLen - arr.length).fill('')];
         const widthArr = pad(existingWidth);
         const lengthArr = pad(existingLength);
         const depthArr = pad(existingDepth);
-        const weightArr = pad(existingWeight);
 
         return {
           variantId: variant.id,
           width: widthArr,
           length: lengthArr,
-          depth: depthArr,
-          weight: weightArr
+          depth: depthArr
         };
       });
       setSizeSpecs(initialSpecs);
@@ -117,8 +108,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   // Initialize for general product (no variants)
   useEffect(() => {
     if (variants.length === 0) {
-      const labelFor = (key: 'width' | 'length' | 'depth' | 'weight') =>
-        dimensions.find(d => d.key === key)?.label || (key === 'width' ? 'Width' : key === 'length' ? 'Length' : key === 'depth' ? 'Depth' : 'Weight');
+      const labelFor = (key: 'width' | 'length' | 'depth') =>
+        dimensions.find(d => d.key === key)?.label || (key === 'width' ? 'Width' : key === 'length' ? 'Length' : 'Depth');
 
       const getValuesByLabel = (label: string) =>
         existingSpecifications
@@ -129,9 +120,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       const widthRaw = getValuesByLabel(labelFor('width'));
       const lengthRaw = getValuesByLabel(labelFor('length'));
       const depthRaw = getValuesByLabel(labelFor('depth'));
-      const weightRaw = getValuesByLabel(labelFor('weight'));
 
-      const maxLen = Math.max(widthRaw.length, lengthRaw.length, depthRaw.length, weightRaw.length, 1);
+      const maxLen = Math.max(widthRaw.length, lengthRaw.length, depthRaw.length, 1);
       const pad = (arr: string[]) => (arr.length >= maxLen ? arr : [...arr, ...Array(maxLen - arr.length).fill('')]);
 
       setSizeSpecs([
@@ -140,13 +130,12 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           width: pad(widthRaw),
           length: pad(lengthRaw),
           depth: pad(depthRaw),
-          weight: pad(weightRaw),
         },
       ]);
     }
   }, [variants, existingSpecifications, dimensions]);
 
-  const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth' | 'weight', index: number, value: string) => {
+  const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth', index: number, value: string) => {
     setSizeSpecs(prev => prev.map(spec => {
       if (spec.variantId !== variantId) return spec;
       const current = [...(spec[dimension] as string[])];
@@ -162,7 +151,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     }));
   };
 
-  const addSizeOption = (variantId: string, dimension: 'width' | 'length' | 'depth' | 'weight') => {
+  const addSizeOption = (variantId: string, dimension: 'width' | 'length' | 'depth') => {
     setSizeSpecs(prev => prev.map(spec => 
       spec.variantId === variantId 
         ? { ...spec, [dimension]: [...spec[dimension], ''] }
@@ -177,19 +166,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
             ...spec, 
             width: [...spec.width, ''],
             length: [...spec.length, ''],
-            depth: [...spec.depth, ''],
-            weight: [...spec.weight, '']
+            depth: [...spec.depth, '']
           }
         : spec
     ));
   };
 
-  const removeSizeOption = async (variantId: string, dimension: 'width' | 'length' | 'depth' | 'weight', index: number) => {
+  const removeSizeOption = async (variantId: string, dimension: 'width' | 'length' | 'depth', index: number) => {
     const spec = sizeSpecs.find(s => s.variantId === variantId);
     if (!spec) return;
 
     // Helper to delete a single spec from DB
-    const deleteFromDB = async (dimKey: 'width' | 'length' | 'depth' | 'weight', value: string) => {
+    const deleteFromDB = async (dimKey: 'width' | 'length' | 'depth', value: string) => {
       if (!value || !value.trim() || !onSpecificationDelete) return;
       const label = dimensions.find(d => d.key === dimKey)?.label || dimKey;
       await onSpecificationDelete(productId, variantId, label, value);
@@ -199,7 +187,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       if (isVertical) {
         // In vertical mode we treat each sizeIndex as a complete set across all dimensions
         // Attempt DB deletion for each enabled dimension value at this index
-        const enabledDims = dimensions.filter(d => d.enabled).map(d => d.key as 'width' | 'length' | 'depth' | 'weight');
+        const enabledDims = dimensions.filter(d => d.enabled).map(d => d.key as 'width' | 'length' | 'depth');
         for (const dimKey of enabledDims) {
           const arr = (spec[dimKey] as string[]) || [];
           const val = arr[index];
@@ -213,13 +201,11 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           const nextWidth = (s.width || []).filter((_, i) => i !== index);
           const nextLength = (s.length || []).filter((_, i) => i !== index);
           const nextDepth = (s.depth || []).filter((_, i) => i !== index);
-          const nextWeight = (s.weight || []).filter((_, i) => i !== index);
           return {
             ...s,
             width: nextWidth.length ? nextWidth : [''],
             length: nextLength.length ? nextLength : [''],
             depth: nextDepth.length ? nextDepth : [''],
-            weight: nextWeight.length ? nextWeight : [''],
           };
         }));
         toast({ title: 'Success', description: 'Size set removed' });
@@ -231,7 +217,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       const valueToDelete = values[index];
       if (values.length > 1) {
         if (valueToDelete && valueToDelete.trim()) {
-          await deleteFromDB(dimension as 'width' | 'length' | 'depth' | 'weight', valueToDelete);
+          await deleteFromDB(dimension, valueToDelete);
         }
         setSizeSpecs(prev => prev.map(s => 
           s.variantId === variantId
@@ -282,7 +268,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
 
     // Determine enabled dimensions and their labels once
     const enabledDimsConfig = dimensions.filter((d) => d.enabled);
-    const enabledKeys = enabledDimsConfig.map((d) => d.key as 'width' | 'length' | 'depth' | 'weight');
+    const enabledKeys = enabledDimsConfig.map((d) => d.key as 'width' | 'length' | 'depth');
     const enabledLabels = enabledDimsConfig.map((d) => d.label);
 
     // Build a lookup of existing size-set signatures per group (variant or general), grouped by sort_order
@@ -321,11 +307,10 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       const maxLen = Math.max(0, ...enabledKeys.map((key) => ((spec[key] as string[]) || []).length));
 
       for (let i = 0; i < maxLen; i++) {
-        const valuesByKey: Record<'width' | 'length' | 'depth' | 'weight', string> = {
+        const valuesByKey: Record<'width' | 'length' | 'depth', string> = {
           width: (spec.width[i] || '').trim(),
           length: (spec.length[i] || '').trim(),
           depth: (spec.depth[i] || '').trim(),
-          weight: (spec.weight[i] || '').trim(),
         };
 
         const hasAll = enabledKeys.every((k) => {
@@ -336,7 +321,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
 
         // Signature of the full size set in the current enabled dimension order
         const sig = enabledDimsConfig
-          .map((d) => valuesByKey[d.key as 'width' | 'length' | 'depth' | 'weight'] || '')
+          .map((d) => valuesByKey[d.key as 'width' | 'length' | 'depth'] || '')
           .join('||');
         const existingSigs = existingSignaturesByGroup.get(groupId) || new Set<string>();
         const pendingSigs = pendingSignaturesByGroup.get(groupId) || new Set<string>();
@@ -384,8 +369,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       ...spec,
       width: [''],
       length: [''],
-      depth: [''],
-      weight: ['']
+      depth: ['']
     })));
   };
 
@@ -435,7 +419,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                     onCheckedChange={() => toggleDimension(dim.key)}
                   />
                   <Label htmlFor={`dim-${dim.key}`} className="text-sm font-medium min-w-[60px]">
-                    {dim.key === 'width' ? 'Dim 1:' : dim.key === 'length' ? 'Dim 2:' : dim.key === 'depth' ? 'Dim 3:' : 'Dim 4:'}
+                    {dim.key === 'width' ? 'Dim 1:' : dim.key === 'length' ? 'Dim 2:' : 'Dim 3:'}
                   </Label>
                   <Input
                     value={dim.label}
@@ -515,18 +499,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                                            <div key={`${d.key}-${sizeIndex}`} className="space-y-1">
                                              <Label className="text-xs text-muted-foreground">{d.label}</Label>
                                              <div className="flex items-center space-x-2">
-                                                <Input
-                                                  value={value}
-                                                  onChange={(e) => handleSpecChange(variant.id, d.key as 'width' | 'length' | 'depth' | 'weight', sizeIndex, e.target.value)}
-                                                  placeholder={`e.g., 12″, 15¼″`}
-                                                  className="text-sm"
-                                                />
+                                               <Input
+                                                 value={value}
+                                                 onChange={(e) => handleSpecChange(variant.id, d.key as 'width' | 'length' | 'depth', sizeIndex, e.target.value)}
+                                                 placeholder={`e.g., 12″, 15¼″`}
+                                                 className="text-sm"
+                                               />
                                                {values.length > 1 && (
                                                  <Button
                                                    type="button"
                                                    variant="outline"
                                                    size="sm"
-                                                   onClick={() => removeSizeOption(variant.id, d.key as 'width' | 'length' | 'depth' | 'weight', sizeIndex)}
+                                                   onClick={() => removeSizeOption(variant.id, d.key as 'width' | 'length' | 'depth', sizeIndex)}
                                                  >
                                                    <Trash2 className="h-4 w-4" />
                                                  </Button>
@@ -596,7 +580,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                         </TableCell>
                         {variants.map((variant) => {
                           const spec = sizeSpecs.find(s => s.variantId === variant.id);
-                          const dimensionKey = dimension.key as 'width' | 'length' | 'depth' | 'weight';
+                          const dimensionKey = dimension.key as 'width' | 'length' | 'depth';
                           return (
                             <TableCell 
                               key={variant.id} 
@@ -664,21 +648,21 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                     <CardTitle className="text-base">General Product</CardTitle>
                   </CardHeader>
                   <CardContent className={`grid gap-4 ${dimensions.filter(d => d.enabled).length === 3 ? 'grid-cols-3' : dimensions.filter(d => d.enabled).length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                     {dimensions.filter(dim => dim.enabled).map((dim) => {
-                       const spec = sizeSpecs[0];
-                       const allForDim = (spec?.[dim.key as 'width' | 'length' | 'depth' | 'weight'] as string[]) || [];
-                       const maxLen = Math.max(
-                         ...dimensions.filter(d => d.enabled).map(d => ((sizeSpecs[0]?.[d.key as 'width' | 'length' | 'depth' | 'weight'] as string[]) || []).length),
-                         1
-                       );
+                    {dimensions.filter(dim => dim.enabled).map((dim) => {
+                      const spec = sizeSpecs[0];
+                      const allForDim = (spec?.[dim.key as 'width' | 'length' | 'depth'] as string[]) || [];
+                      const maxLen = Math.max(
+                        ...dimensions.filter(d => d.enabled).map(d => ((sizeSpecs[0]?.[d.key as 'width' | 'length' | 'depth'] as string[]) || []).length),
+                        1
+                      );
                       return (
                         <div key={dim.key} className="space-y-2">
                           <Label htmlFor={`${dim.key}-general`}>{dim.label}</Label>
                           <div className="space-y-3">
-                             {Array.from({ length: maxLen }).map((_, sizeIndex) => {
-                               const hasAnyValue = dimensions.filter(d => d.enabled).some(d =>
-                                 ((sizeSpecs[0]?.[d.key as 'width' | 'length' | 'depth' | 'weight'] as string[])?.[sizeIndex] || '').trim()
-                               );
+                            {Array.from({ length: maxLen }).map((_, sizeIndex) => {
+                              const hasAnyValue = dimensions.filter(d => d.enabled).some(d =>
+                                ((sizeSpecs[0]?.[d.key as 'width' | 'length' | 'depth'] as string[])?.[sizeIndex] || '').trim()
+                              );
                               if (!hasAnyValue && sizeIndex > 0) return null;
                               const value = allForDim[sizeIndex] || '';
                               return (
@@ -687,18 +671,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                                     <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rounded-full"></div>
                                   )}
                                   <div className="flex items-center space-x-2">
-                                     <Input
-                                       value={value}
-                                       onChange={(e) => handleSpecChange('', dim.key as 'width' | 'length' | 'depth' | 'weight', sizeIndex, e.target.value)}
-                                       placeholder={`e.g., 12″, 15¼″`}
-                                       className="text-sm"
-                                     />
+                                    <Input
+                                      value={value}
+                                      onChange={(e) => handleSpecChange('', dim.key as 'width' | 'length' | 'depth', sizeIndex, e.target.value)}
+                                      placeholder={`e.g., 12″, 15¼″`}
+                                      className="text-sm"
+                                    />
                                     {allForDim.length > 1 && (
                                       <Button
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => removeSizeOption('', dim.key as 'width' | 'length' | 'depth' | 'weight', sizeIndex)}
+                                        onClick={() => removeSizeOption('', dim.key as 'width' | 'length' | 'depth', sizeIndex)}
                                       >
                                         <Trash2 className="h-4 w-4" />
                                       </Button>
@@ -742,10 +726,10 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                     {dimensions.filter(dim => dim.enabled).map((dimension, index) => {
-                       const spec = sizeSpecs[0];
-                       const dimensionKey = dimension.key as 'width' | 'length' | 'depth' | 'weight';
-                       const values = (spec?.[dimensionKey] as string[]) || [''];
+                    {dimensions.filter(dim => dim.enabled).map((dimension, index) => {
+                      const spec = sizeSpecs[0];
+                      const dimensionKey = dimension.key as 'width' | 'length' | 'depth';
+                      const values = (spec?.[dimensionKey] as string[]) || [''];
                       return (
                         <TableRow key={dimension.key} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                           <TableCell className="border border-border font-medium px-4 py-3 bg-muted/30">
