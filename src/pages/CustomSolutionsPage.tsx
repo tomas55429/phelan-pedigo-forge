@@ -237,24 +237,18 @@ const CustomSolutionsPage = () => {
                       {additionalImages.length > 0 && (
                         <div>
                           <h4 className="text-lg font-medium text-foreground mb-4">Additional Views</h4>
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          <div className="grid grid-cols-2 gap-4">
                             {additionalImages.map((image) => (
-                              <div key={image.id} className="relative group">
-                                <img
-                                  src={image.image_url}
-                                  alt={image.description || 'Additional view'}
-                                  className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => {
-                                    setEnlargedImage(image.image_url);
-                                    setEnlargedImageDescription(image.description || null);
-                                  }}
-                                />
-                                {image.description && (
-                                  <div className="absolute bottom-1 left-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs truncate">
-                                    {image.description}
-                                  </div>
-                                )}
-                              </div>
+                              <img
+                                key={image.id}
+                                src={image.image_url}
+                                alt={image.description || 'Additional view'}
+                                className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => {
+                                  setEnlargedImage(image.image_url);
+                                  setEnlargedImageDescription(image.description || null);
+                                }}
+                              />
                             ))}
                           </div>
                         </div>
