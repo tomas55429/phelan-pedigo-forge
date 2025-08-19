@@ -39,6 +39,8 @@ interface SizeSet {
   width?: string;
   length?: string;
   depth?: string;
+  height?: string;
+  weight?: string;
 }
 
 interface ProductSpecification {
@@ -195,7 +197,7 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   // Filter out size-related specifications since they're now handled by SizeSetsTable
   const nonSizeSpecs = specifications.filter(spec => {
     const key = spec.specification_key.toLowerCase();
-    return !key.includes('width') && !key.includes('length') && !key.includes('depth') && !key.includes('height');
+    return !key.includes('width') && !key.includes('length') && !key.includes('depth') && !key.includes('height') && !key.includes('weight');
   });
 
   // Group specifications by key to avoid duplicates - each spec key should appear only once
@@ -415,11 +417,73 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                             </TableCell>
                           )) || <TableCell className="text-center border">-</TableCell>
                         )}
-                      </TableRow>
-                    </>
-                  )}
+                       </TableRow>
 
-                  {/* Additional Specifications Rows */}
+                       {/* Height Row */}
+                       <TableRow>
+                         <TableCell className="border font-medium bg-muted/30 sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 min-w-[120px] text-xs sm:text-sm">Height (inside dimensions)</TableCell>
+                         {variants.length > 0 ? (
+                           variants.flatMap((variant) => {
+                             const variantSets = sizeSetsByVariant[variant.id] || [];
+                             const generalSets = sizeSetsByVariant['general'] || [];
+                             
+                             if (variantSets.length === 0 && generalSets.length > 0) {
+                               return generalSets.map((sizeSet, index) => (
+                                 <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
+                                   {formatSizeValue(sizeSet.height)}
+                                 </TableCell>
+                               ));
+                             }
+                             
+                             return variantSets.map((sizeSet, index) => (
+                               <TableCell key={`${variant.id}-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
+                                 {formatSizeValue(sizeSet.height)}
+                               </TableCell>
+                             ));
+                           })
+                         ) : (
+                           sizeSetsByVariant['general']?.map((sizeSet, index) => (
+                             <TableCell key={`general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2">
+                               {formatSizeValue(sizeSet.height)}
+                             </TableCell>
+                           )) || <TableCell className="text-center border">-</TableCell>
+                         )}
+                       </TableRow>
+
+                       {/* Weight Row */}
+                       <TableRow>
+                         <TableCell className="border font-medium bg-muted/30 sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 min-w-[120px] text-xs sm:text-sm">Weight</TableCell>
+                         {variants.length > 0 ? (
+                           variants.flatMap((variant) => {
+                             const variantSets = sizeSetsByVariant[variant.id] || [];
+                             const generalSets = sizeSetsByVariant['general'] || [];
+                             
+                             if (variantSets.length === 0 && generalSets.length > 0) {
+                               return generalSets.map((sizeSet, index) => (
+                                 <TableCell key={`${variant.id}-general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
+                                   {formatSizeValue(sizeSet.weight)}
+                                 </TableCell>
+                               ));
+                             }
+                             
+                             return variantSets.map((sizeSet, index) => (
+                               <TableCell key={`${variant.id}-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2 min-w-[80px]">
+                                 {formatSizeValue(sizeSet.weight)}
+                               </TableCell>
+                             ));
+                           })
+                         ) : (
+                           sizeSetsByVariant['general']?.map((sizeSet, index) => (
+                             <TableCell key={`general-${index}`} className="text-center border text-xs sm:text-sm px-1 sm:px-3 py-2">
+                               {formatSizeValue(sizeSet.weight)}
+                             </TableCell>
+                           )) || <TableCell className="text-center border">-</TableCell>
+                         )}
+                       </TableRow>
+                     </>
+                   )}
+
+                   {/* Additional Specifications Rows */}
                   {effectiveIsAdmin ? (
                     <DndContext
                       sensors={sensors}
