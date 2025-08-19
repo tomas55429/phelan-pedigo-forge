@@ -558,9 +558,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <p className="text-xl text-muted-foreground">{selectedProduct.categories.length > 0 ? selectedProduct.categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
               </div>
               
-              <div className="grid lg:grid-cols-2 gap-8">
-                {/* Left Column - Product Images */}
-                <div>
+               <div>
+                 {/* Product Images Section - Full Width */}
+                 <div className="mb-8">
                   <h2 className="text-xl font-semibold mb-6">
                     {selectedProduct.additionalImages && selectedProduct.additionalImages.length > 0 ? 'Product Images' : 'Product Image'}
                   </h2>
@@ -638,10 +638,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 })()}
                 </div>
                 
-                {/* Right Column - Product Information */}
-                
-               </div>
-                
                 {/* 3D Model Section - Only show if model exists */}
                 {selectedProduct.product.model_3d_url && <div className="mt-12">
                     <h2 className="text-xl font-semibold mb-4">3D Model</h2>
@@ -661,9 +657,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                       </div>
                     </div>
                   </div>}
-                 </div>
-             </div>
-           </div>}
+                  </div>
+                </div>
+              </div>
+            </div>}
 
         {/* Enlarged Image Dialog with Zoom */}
         <Dialog open={!!enlargedImage} onOpenChange={() => setEnlargedImage(null)}>
