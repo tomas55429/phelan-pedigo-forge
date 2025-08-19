@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Phone, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 type CustomProduct = Tables<'custom_products'>;
 type CustomProductImage = Tables<'custom_product_images'>;
@@ -16,6 +17,7 @@ interface CustomProductWithImages {
 }
 
 const CustomSolutionsPage = () => {
+  const navigate = useNavigate();
   const [customProducts, setCustomProducts] = useState<CustomProductWithImages[]>([]);
   const [loading, setLoading] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
@@ -190,9 +192,9 @@ const CustomSolutionsPage = () => {
                   <p className="text-muted-foreground mb-6">
                     Contact our specialists to discuss your unique requirements and see how we can help.
                   </p>
-                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark" onClick={() => navigate('/contact')}>
                     <Phone className="mr-2 h-5 w-5" />
-                    Call 1-800-328-2358
+                    Contact Us
                   </Button>
                 </CardContent>
               </Card>
@@ -269,7 +271,7 @@ const CustomSolutionsPage = () => {
                       Each project starts with understanding your unique needs. 
                       Contact our team to discuss how we can create the perfect solution for you.
                     </p>
-                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
+                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark" onClick={() => navigate('/contact')}>
                       <Phone className="mr-2 h-5 w-5" />
                       Contact Our Specialists
                     </Button>
