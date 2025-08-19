@@ -649,75 +649,119 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               <div className="grid lg:grid-cols-2 gap-12">
                 {/* Left Column - Product Images */}
                 <div>
-                  <h2 className="text-xl font-semibold mb-4">
+                  <h2 className="text-xl font-semibold mb-6">
                     {selectedProduct.additionalImages && selectedProduct.additionalImages.length > 0 ? 'Product Images' : 'Product Image'}
                   </h2>
-                  <div className="space-y-4">
-                    {(() => {
-                      const allImages = [
-                        ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
-                        ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-                      ];
+                  {(() => {
+                    const allImages = [
+                      ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
+                      ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+                    ];
 
-                      console.log('Detail view images for', selectedProduct.product.name, ':', {
-                        productImageUrl: selectedProduct.product.image_url,
-                        additionalImages: selectedProduct.additionalImages,
-                        allImages: allImages.length,
-                        allImagesData: allImages
-                      });
+                    console.log('Detail view images for', selectedProduct.product.name, ':', {
+                      productImageUrl: selectedProduct.product.image_url,
+                      additionalImages: selectedProduct.additionalImages,
+                      allImages: allImages.length,
+                      allImagesData: allImages
+                    });
 
-                      if (allImages.length === 0) {
-                        return (
-                          <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                            <div className="text-center text-muted-foreground">
-                              <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                              <p>No image available</p>
-                              <p className="text-sm mt-2">
-                                {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
-                              </p>
-                            </div>
+                    if (allImages.length === 0) {
+                      return (
+                        <div className="rounded-xl border-2 border-dashed border-muted p-12 bg-muted/10 flex items-center justify-center min-h-[400px]">
+                          <div className="text-center text-muted-foreground">
+                            <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                            <p className="text-lg font-medium">No image available</p>
+                            <p className="text-sm mt-2">
+                              {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
+                            </p>
                           </div>
-                        );
-                      }
+                        </div>
+                      );
+                    }
 
-                      return allImages.map((image, index) => (
-                        <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
-                          <div className="relative group w-full">
+                    if (allImages.length === 1) {
+                      // Single image - display prominently
+                      const image = allImages[0];
+                      return (
+                        <div className="rounded-xl overflow-hidden border border-muted bg-gradient-to-br from-background to-muted/20 p-6">
+                          <div className="relative group">
                             <img 
                               src={image.url} 
                               alt={`${selectedProduct.product.name} - ${image.description}`}
-                              className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
+                              className="w-full h-auto object-contain max-h-[500px] rounded-lg shadow-lg cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02]" 
                               onClick={() => setEnlargedImage(image.url)} 
                               loading="lazy" 
                               decoding="async" 
                               sizes="(max-width: 768px) 100vw, 50vw" 
                             />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
+                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/5 rounded-lg">
                               <Button 
-                                variant="outline" 
+                                variant="secondary" 
                                 size="sm" 
-                                className="bg-background/90 backdrop-blur-sm pointer-events-auto"
+                                className="bg-background/95 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   setEnlargedImage(image.url);
                                 }}
                               >
                                 <ZoomIn className="h-4 w-4 mr-2" />
-                                Enlarge
+                                View Full Size
                               </Button>
                             </div>
+                          </div>
+                          {image.description && image.description !== 'Main Image' && (
+                            <div className="mt-4 text-center">
+                              <Badge variant="outline" className="text-xs px-3 py-1">
+                                {image.description}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Multiple images - gallery layout
+                    return (
+                      <div className="space-y-6">
+                        {allImages.map((image, index) => (
+                          <div key={index} className="rounded-xl overflow-hidden border border-muted bg-gradient-to-br from-background to-muted/10 p-4">
+                            <div className="relative group">
+                              <img 
+                                src={image.url} 
+                                alt={`${selectedProduct.product.name} - ${image.description}`}
+                                className="w-full h-auto object-contain max-h-[350px] rounded-lg cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.01]" 
+                                onClick={() => setEnlargedImage(image.url)} 
+                                loading="lazy" 
+                                decoding="async" 
+                                sizes="(max-width: 768px) 100vw, 50vw" 
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/5 rounded-lg">
+                                <Button 
+                                  variant="secondary" 
+                                  size="sm" 
+                                  className="bg-background/95 backdrop-blur-sm shadow-lg transition-all duration-300"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEnlargedImage(image.url);
+                                  }}
+                                >
+                                  <ZoomIn className="h-4 w-4 mr-2" />
+                                  Enlarge
+                                </Button>
+                              </div>
+                            </div>
                             {image.description && image.description !== 'Main Image' && (
-                              <div className="mt-2 text-center">
-                                <p className="text-sm text-muted-foreground bg-background/80 rounded px-2 py-1">
+                              <div className="mt-3 text-center">
+                                <Badge variant="outline" className="text-xs px-3 py-1">
                                   {image.description}
-                                </p>
+                                </Badge>
                               </div>
                             )}
                           </div>
-                        </div>
-                      ));
-                    })()}
-                  </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
                 
                 {/* Right Column - Product Information */}
