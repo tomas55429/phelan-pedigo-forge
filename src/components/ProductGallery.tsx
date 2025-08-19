@@ -368,7 +368,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     } = productWithDetails;
     
     const allImages = [
-      ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : [])
+      ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : []),
+      ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
     ];
 
     console.log('ProductCard images for', product.name, ':', {
