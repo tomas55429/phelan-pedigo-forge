@@ -46,7 +46,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-primary-light" />
-                <span>Made in the USA</span>
+                <span>2523 Minnehaha Ave, Minneapolis, MN 55404</span>
               </div>
             </div>
           </div>
