@@ -783,7 +783,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                                     loading="lazy"
                                     decoding="async"
                                     sizes="40px"
-                                    onClick={() => window.open(acc.image_url, '_blank')}
+                                    onClick={() => setEnlargedImage(acc.image_url)}
                                   />
                                 )}
                                 <span className="text-sm text-muted-foreground">{acc.feature}</span>
