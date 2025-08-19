@@ -390,23 +390,25 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               <img 
                 src={allImages[0].url} 
                 alt={product.name} 
-                className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" 
+                className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover cursor-pointer hover:opacity-90 transition-opacity" 
                 loading="lazy" 
                 decoding="async" 
-                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" 
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                onClick={() => setEnlargedImage(allImages[0].url)}
               />
             ) : (
               <div className="relative">
                 <div className="grid grid-cols-2 gap-1">
                   {allImages.slice(0, 4).map((image, index) => (
                     <div key={index} className={`relative ${index === 0 ? 'col-span-2' : ''}`}>
-                      <img 
-                        src={image.url} 
-                        alt={`${product.name} - ${image.description}`}
-                        className={`w-full object-cover ${index === 0 ? 'h-40 sm:h-36 md:h-40' : 'h-20 sm:h-18 md:h-20'}`}
-                        loading="lazy" 
-                        decoding="async"
-                      />
+                       <img 
+                         src={image.url} 
+                         alt={`${product.name} - ${image.description}`}
+                         className={`w-full object-cover cursor-pointer hover:opacity-90 transition-opacity ${index === 0 ? 'h-40 sm:h-36 md:h-40' : 'h-20 sm:h-18 md:h-20'}`}
+                         loading="lazy" 
+                         decoding="async"
+                         onClick={() => setEnlargedImage(image.url)}
+                       />
                       {index === 3 && allImages.length > 4 && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                           <span className="text-white font-semibold">+{allImages.length - 4}</span>
@@ -563,10 +565,11 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   <img 
                     src={allImages[0].url} 
                     alt={product.name} 
-                    className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded" 
+                    className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity" 
                     loading="lazy" 
                     decoding="async" 
-                    sizes="(max-width: 768px) 100vw, 25vw" 
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                    onClick={() => setEnlargedImage(allImages[0].url)}
                   />
                 ) : (
                   <div className="grid grid-cols-2 gap-1 rounded overflow-hidden">
@@ -575,9 +578,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                         <img 
                           src={image.url} 
                           alt={`${product.name} - ${image.description}`}
-                          className="w-full h-20 object-cover"
+                          className="w-full h-20 object-cover cursor-pointer hover:opacity-90 transition-opacity"
                           loading="lazy" 
                           decoding="async"
+                          onClick={() => setEnlargedImage(image.url)}
                         />
                         {index === 3 && allImages.length > 4 && (
                           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
