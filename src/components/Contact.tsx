@@ -30,14 +30,14 @@ const Contact = () => {
     {
       icon: <MapPin className="h-6 w-6" />,
       title: "Location",
-      details: "Made in the USA",
-      description: "Manufacturing facility location"
+      details: "2523 Minnehaha Ave, Minneapolis, MN 55404",
+      description: "Our manufacturing facility"
     },
     {
       icon: <Clock className="h-6 w-6" />,
-      title: "Hours",
-      details: "Monday - Friday",
-      description: "Business hours available"
+      title: "Business Hours",
+      details: "Monday - Friday: 7AM - 5PM",
+      description: "Saturday & Sunday: Closed"
     }
   ];
 
