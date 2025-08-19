@@ -165,9 +165,27 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           const customProductId = customProductIdFromPrefix || customProductIdFromDescription;
 
           // Collect additional images if this is (or references) a custom product
+          console.log('🔍 FILTERING DEBUG:', {
+            productName: product.name,
+            productId: product.id,
+            customProductIdFromPrefix,
+            customProductIdFromDescription,
+            finalCustomProductId: customProductId,
+            customProductImagesCount: customProductImages.length,
+            customProductImagesData: customProductImages.map(img => ({ id: img.custom_product_id, url: img.image_url }))
+          });
+
           const additionalImages = customProductId
             ? customProductImages
-                .filter(img => img.custom_product_id?.toString() === customProductId.toString())
+                .filter(img => {
+                  const match = img.custom_product_id?.toString() === customProductId.toString();
+                  console.log('🔍 FILTER CHECK:', {
+                    imgCustomProductId: img.custom_product_id,
+                    lookingFor: customProductId,
+                    match
+                  });
+                  return match;
+                })
                 .map(img => ({
                   id: img.id,
                   image_url: img.image_url,
