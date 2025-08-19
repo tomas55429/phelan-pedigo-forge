@@ -47,6 +47,7 @@ const Hero = () => {
               <Button 
                 size="lg" 
                 className="bg-white text-primary hover:bg-gray-100 shadow-elevated font-semibold px-8 py-4 text-lg"
+                onClick={() => window.open('tel:1-800-328-2358', '_self')}
               >
                 <Phone className="mr-2 h-5 w-5" />
                 Call 1-800-328-2358
