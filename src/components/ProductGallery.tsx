@@ -558,7 +558,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <p className="text-xl text-muted-foreground">{selectedProduct.categories.length > 0 ? selectedProduct.categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
               </div>
               
-              <div className="grid lg:grid-cols-2 gap-12">
+              <div className="grid lg:grid-cols-2 gap-8">
                 {/* Left Column - Product Images */}
                 <div>
                   <h2 className="text-xl font-semibold mb-6">
@@ -614,10 +614,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   }
 
                   // Multiple images - 2-column grid layout
-                  return <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {allImages.map((image, index) => <div key={index} className="rounded-xl overflow-hidden border border-muted bg-gradient-to-br from-background to-muted/10 p-4">
+                  return <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {allImages.map((image, index) => <div key={index} className="rounded-xl overflow-hidden border border-muted bg-gradient-to-br from-background to-muted/10 p-3">
                             <div className="relative group">
-                              <img src={image.url} alt={`${selectedProduct.product.name} - ${image.description}`} className="w-full h-auto object-contain max-h-[280px] rounded-lg cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]" onClick={() => setEnlargedImage(image.url)} loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 25vw" />
+                              <img src={image.url} alt={`${selectedProduct.product.name} - ${image.description}`} className="w-full h-auto object-contain max-h-[320px] rounded-lg cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02]" onClick={() => setEnlargedImage(image.url)} loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 25vw" />
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/5 rounded-lg">
                                 <Button variant="secondary" size="sm" className="bg-background/95 backdrop-blur-sm shadow-lg transition-all duration-300" onClick={e => {
                             e.stopPropagation();
