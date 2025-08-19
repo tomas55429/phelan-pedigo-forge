@@ -41,6 +41,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
+  const [mainImageUrl, setMainImageUrl] = useState<string>('');
   const [imageZoom, setImageZoom] = useState(1);
   const [imagePan, setImagePan] = useState({
     x: 0,
@@ -505,7 +506,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             </Accordion>}
           
           <div className="flex space-x-2 mt-4">
-            <Button size="sm" className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" onClick={() => setSelectedProduct(productWithDetails)}>
+            <Button size="sm" className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" onClick={() => {
+              setSelectedProduct(productWithDetails);
+              setMainImageUrl('');
+            }}>
               <Eye className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">View Details</span>
               <span className="sm:hidden">View</span>
@@ -608,7 +612,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             </div>
             
             <div className="flex flex-col space-y-2">
-              <Button size="sm" onClick={() => setSelectedProduct(productWithDetails)}>
+              <Button size="sm" onClick={() => {
+                setSelectedProduct(productWithDetails);
+                setMainImageUrl('');
+              }}>
                 <Eye className="h-4 w-4 mr-1" />
                 View Details
               </Button>
@@ -637,7 +644,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         {selectedProduct && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div className="bg-background rounded-lg max-w-7xl w-full max-h-[90vh] relative">
               {/* Fixed Close Button - Always Visible */}
-              <Button variant="outline" size="sm" onClick={() => setSelectedProduct(null)} className="absolute top-4 right-4 z-20 bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2">
+              <Button variant="outline" size="sm" onClick={() => {
+                setSelectedProduct(null);
+                setMainImageUrl('');
+              }} className="absolute top-4 right-4 z-20 bg-background/95 backdrop-blur-sm hover:bg-background shadow-lg border-2">
                 <X className="h-4 w-4" />
               </Button>
               
@@ -656,72 +666,134 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   <h2 className="text-xl font-semibold mb-4">
                     {selectedProduct.additionalImages && selectedProduct.additionalImages.length > 0 ? 'Product Images' : 'Product Image'}
                   </h2>
-                  <div className="space-y-4">
-                    {(() => {
-                      const allImages = [
-                        ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
-                        ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-                      ];
+                  {(() => {
+                    const allImages = [
+                      ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
+                      ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+                    ];
 
-                      console.log('Detail view images for', selectedProduct.product.name, ':', {
-                        productImageUrl: selectedProduct.product.image_url,
-                        additionalImages: selectedProduct.additionalImages,
-                        allImages: allImages.length,
-                        allImagesData: allImages
-                      });
+                    const isCustomProduct = selectedProduct.product.id.toString().startsWith('custom-') || 
+                                           selectedProduct.additionalImages && selectedProduct.additionalImages.length > 0;
 
-                      if (allImages.length === 0) {
-                        return (
-                          <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                            <div className="text-center text-muted-foreground">
-                              <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                              <p>No image available</p>
-                              <p className="text-sm mt-2">
-                                {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      }
-
-                      return allImages.map((image, index) => (
-                        <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
-                          <div className="relative group w-full">
-                            <img 
-                              src={image.url} 
-                              alt={`${selectedProduct.product.name} - ${image.description}`}
-                              className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
-                              onClick={() => setEnlargedImage(image.url)} 
-                              loading="lazy" 
-                              decoding="async" 
-                              sizes="(max-width: 768px) 100vw, 50vw" 
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="bg-background/90 backdrop-blur-sm pointer-events-auto"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEnlargedImage(image.url);
-                                }}
-                              >
-                                <ZoomIn className="h-4 w-4 mr-2" />
-                                Enlarge
-                              </Button>
-                            </div>
-                            {image.description && image.description !== 'Main Image' && (
-                              <div className="mt-2 text-center">
-                                <p className="text-sm text-muted-foreground bg-background/80 rounded px-2 py-1">
-                                  {image.description}
-                                </p>
-                              </div>
-                            )}
+                    if (allImages.length === 0) {
+                      return (
+                        <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
+                          <div className="text-center text-muted-foreground">
+                            <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                            <p>No image available</p>
+                            <p className="text-sm mt-2">
+                              {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
+                            </p>
                           </div>
                         </div>
-                      ));
-                    })()}
-                  </div>
+                      );
+                    }
+
+                    // Custom products with multiple images: horizontal layout
+                    if (isCustomProduct && allImages.length > 1) {
+                      const [mainImage, ...additionalImages] = allImages;
+                      const currentMainImageUrl = mainImageUrl || mainImage.url;
+                      return (
+                        <div className="flex flex-col lg:flex-row gap-4">
+                          {/* Main Image */}
+                          <div className="flex-1">
+                            <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
+                              <div className="relative group w-full">
+                                <img 
+                                  src={currentMainImageUrl}
+                                  alt={`${selectedProduct.product.name} - Main Image`}
+                                  className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
+                                  onClick={() => setEnlargedImage(currentMainImageUrl)} 
+                                  loading="lazy" 
+                                  decoding="async" 
+                                  sizes="(max-width: 768px) 100vw, 60vw" 
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="bg-background/90 backdrop-blur-sm pointer-events-auto"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEnlargedImage(currentMainImageUrl);
+                                    }}
+                                  >
+                                    <ZoomIn className="h-4 w-4 mr-2" />
+                                    Enlarge
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Additional Images Thumbnails */}
+                          <div className="lg:w-64 flex lg:flex-col flex-row gap-2 overflow-x-auto lg:overflow-y-auto lg:max-h-96">
+                            {additionalImages.map((image, index) => (
+                              <div 
+                                key={index + 1} 
+                                className="flex-shrink-0 lg:w-full w-20 h-20 lg:h-24 border border-muted rounded-lg p-2 bg-muted/10 cursor-pointer hover:bg-muted/30 transition-colors"
+                                onClick={() => setMainImageUrl(image.url)}
+                              >
+                                <img 
+                                  src={image.url} 
+                                  alt={`${selectedProduct.product.name} - ${image.description}`}
+                                  className="w-full h-full object-contain rounded" 
+                                  loading="lazy" 
+                                />
+                                {image.description && image.description !== 'Additional Image' && (
+                                  <p className="text-xs text-muted-foreground mt-1 truncate lg:block hidden">
+                                    {image.description}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+
+                    // Regular products or single image: vertical layout
+                    return (
+                      <div className="space-y-4">
+                        {allImages.map((image, index) => (
+                          <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
+                            <div className="relative group w-full">
+                              <img 
+                                src={image.url} 
+                                alt={`${selectedProduct.product.name} - ${image.description}`}
+                                className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
+                                onClick={() => setEnlargedImage(image.url)} 
+                                loading="lazy" 
+                                decoding="async" 
+                                sizes="(max-width: 768px) 100vw, 50vw" 
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="bg-background/90 backdrop-blur-sm pointer-events-auto"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEnlargedImage(image.url);
+                                  }}
+                                >
+                                  <ZoomIn className="h-4 w-4 mr-2" />
+                                  Enlarge
+                                </Button>
+                              </div>
+                              {image.description && image.description !== 'Main Image' && (
+                                <div className="mt-2 text-center">
+                                  <p className="text-sm text-muted-foreground bg-background/80 rounded px-2 py-1">
+                                    {image.description}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
                 </div>
                 
                 {/* Right Column - Product Information */}
