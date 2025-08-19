@@ -258,6 +258,7 @@ export type Database = {
           set_index: number
           updated_at: string
           variant_id: string | null
+          weight: string | null
           width: string | null
         }
         Insert: {
@@ -270,6 +271,7 @@ export type Database = {
           set_index?: number
           updated_at?: string
           variant_id?: string | null
+          weight?: string | null
           width?: string | null
         }
         Update: {
@@ -282,6 +284,7 @@ export type Database = {
           set_index?: number
           updated_at?: string
           variant_id?: string | null
+          weight?: string | null
           width?: string | null
         }
         Relationships: []
