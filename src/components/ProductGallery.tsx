@@ -167,7 +167,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           // Collect additional images if this is (or references) a custom product
           const additionalImages = customProductId
             ? customProductImages
-                .filter(img => img.custom_product_id === customProductId)
+                .filter(img => img.custom_product_id?.toString() === customProductId.toString())
                 .map(img => ({
                   id: img.id,
                   image_url: img.image_url,
