@@ -664,64 +664,66 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 </div>
               </div>
 
-              <div className="p-6 space-y-8">
-                {/* Images Grid - 2 per row */}
-                {(() => {
-                  const allImages = [
-                    ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
-                    ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-                  ];
+              <div className="grid lg:grid-cols-2 gap-8">
+                {/* Left Column - Images Grid */}
+                <div>
+                  {(() => {
+                    const allImages = [
+                      ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
+                      ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
+                    ];
 
-                  if (allImages.length === 0) {
-                    return (
-                      <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                        <div className="text-center text-muted-foreground">
-                          <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                          <p>No image available</p>
-                          <p className="text-sm mt-2">
-                            {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
-                          </p>
+                    if (allImages.length === 0) {
+                      return (
+                        <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
+                          <div className="text-center text-muted-foreground">
+                            <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                            <p>No image available</p>
+                            <p className="text-sm mt-2">
+                              {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
+                            </p>
+                          </div>
                         </div>
+                      );
+                    }
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {allImages.map((image, index) => (
+                          <div key={index} className="space-y-3">
+                            <div className="relative group">
+                              <div className="border-2 border-muted rounded-lg p-4 bg-muted/20 min-h-[250px] flex items-center justify-center">
+                                <img
+                                  src={image.url}
+                                  alt={`${selectedProduct.product.name} - ${image.description}`}
+                                  className="w-full h-auto object-contain max-h-60 rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => setEnlargedImage(image.url)}
+                                  loading="lazy"
+                                  decoding="async"
+                                  sizes="(max-width: 768px) 100vw, 25vw"
+                                />
+                              </div>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => setEnlargedImage(image.url)}
+                              >
+                                <ZoomIn className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            {image.description && (
+                              <p className="text-sm text-muted-foreground text-center">{image.description}</p>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     );
-                  }
+                  })()}
+                </div>
 
-                  return (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {allImages.map((image, index) => (
-                        <div key={index} className="space-y-3">
-                          <div className="relative group">
-                            <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
-                              <img
-                                src={image.url}
-                                alt={`${selectedProduct.product.name} - ${image.description}`}
-                                className="w-full h-auto object-contain max-h-80 rounded cursor-pointer hover:opacity-90 transition-opacity"
-                                onClick={() => setEnlargedImage(image.url)}
-                                loading="lazy"
-                                decoding="async"
-                                sizes="(max-width: 768px) 100vw, 50vw"
-                              />
-                            </div>
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={() => setEnlargedImage(image.url)}
-                            >
-                              <ZoomIn className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          {image.description && (
-                            <p className="text-sm text-muted-foreground text-center">{image.description}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })()}
-
-                {/* Product Information */}
-                <div className="max-w-4xl mx-auto space-y-8">
+                {/* Right Column - Product Information */}
+                <div className="space-y-6">
                   <div>
                     <h2 className="text-2xl font-semibold text-foreground mb-4">Description</h2>
                     <p className="text-muted-foreground leading-relaxed text-lg">
@@ -732,9 +734,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {/* Special Notes */}
                   {selectedProduct.product.special_notes && (
                     <div>
-                      <h2 className="text-2xl font-semibold text-foreground mb-4 text-amber-600">Special Notes</h2>
-                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6">
-                        <p className="text-amber-800 dark:text-amber-200 leading-relaxed whitespace-pre-line text-lg">
+                      <h2 className="text-xl font-semibold text-foreground mb-3 text-amber-600">Special Notes</h2>
+                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                        <p className="text-amber-800 dark:text-amber-200 leading-relaxed whitespace-pre-line">
                           {selectedProduct.product.special_notes}
                         </p>
                       </div>
@@ -744,18 +746,18 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {/* Features */}
                   {selectedProduct.features.length > 0 && (
                     <div>
-                      <h2 className="text-2xl font-semibold text-foreground mb-4">Key Features</h2>
-                      <ul className="space-y-3">
+                      <h2 className="text-xl font-semibold text-foreground mb-3">Key Features</h2>
+                      <ul className="space-y-2">
                         {selectedProduct.features.map((feature, index) => (
                           <li key={index} className="flex items-start gap-3">
                             <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                             <div className="flex-1">
-                              <span className="text-muted-foreground text-lg">{feature.feature}</span>
+                              <span className="text-muted-foreground">{feature.feature}</span>
                               {feature.image_url && (
                                 <img 
                                   src={feature.image_url} 
                                   alt={feature.feature} 
-                                  className="mt-3 w-full max-w-md h-auto rounded-lg border"
+                                  className="mt-2 w-full max-w-sm h-auto rounded-lg border"
                                   loading="lazy"
                                 />
                               )}
@@ -769,18 +771,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {/* Variants */}
                   {selectedProduct.variants.length > 0 && (
                     <div>
-                      <h2 className="text-2xl font-semibold text-foreground mb-4">Available Variants</h2>
-                      <div className="grid gap-4">
+                      <h2 className="text-xl font-semibold text-foreground mb-3">Available Variants</h2>
+                      <div className="space-y-3">
                         {selectedProduct.variants.map((variant, index) => (
-                          <Card key={index} className="p-6 cursor-pointer hover:bg-muted/50 transition-colors">
+                          <Card key={index} className="p-4 cursor-pointer hover:bg-muted/50 transition-colors">
                             <div className="flex justify-between items-start">
                               <div>
-                                <h3 className="text-lg font-medium text-foreground">{formatVariantName(variant)}</h3>
-                                {variant.description && (
-                                  <p className="text-muted-foreground mt-2">{variant.description}</p>
-                                )}
-                                {variant.size && (
-                                  <p className="text-sm text-muted-foreground mt-1">Size: {variant.size}</p>
+                                <h3 className="font-medium text-foreground">{formatVariantName(variant)}</h3>
+                                {variant.variant_description && (
+                                  <p className="text-sm text-muted-foreground mt-1">{variant.variant_description}</p>
                                 )}
                               </div>
                               <Button 
@@ -803,12 +802,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {/* 3D Model Section */}
                   {selectedProduct.product.model_3d_url && (
                     <div>
-                      <h2 className="text-2xl font-semibold text-foreground mb-4">3D Model</h2>
+                      <h2 className="text-xl font-semibold text-foreground mb-3">3D Model</h2>
                       <div className="border-2 border-muted rounded-lg overflow-hidden">
                         <Product3DViewer 
                           modelUrl={selectedProduct.product.model_3d_url}
                           productName={selectedProduct.product.name}
-                          className="w-full h-[600px]"
+                          className="w-full h-[400px]"
                         />
                       </div>
                     </div>
@@ -817,7 +816,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   {/* Technical Specifications */}
                   {selectedProduct.specifications.length > 0 && (
                     <div>
-                      <h2 className="text-2xl font-semibold text-foreground mb-4">Technical Specifications</h2>
+                      <h2 className="text-xl font-semibold text-foreground mb-3">Technical Specifications</h2>
                       <ProductVariantsTableNew productId={selectedProduct.product.id} variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
                     </div>
                   )}
