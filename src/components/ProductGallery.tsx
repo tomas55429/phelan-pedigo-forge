@@ -490,17 +490,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                            <div className="space-y-2">
                              {deduplicatedAccessories.slice(0, 3).map(accessory => (
                                <div key={accessory.id} className="flex items-center space-x-2">
-                                   {accessory.image_url && (
-                                     <img 
-                                       src={accessory.image_url} 
-                                       alt={accessory.feature}
-                                       className="w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                                       loading="lazy"
-                                       decoding="async"
-                                       sizes="48px"
-                                       onClick={() => setEnlargedImage(accessory.image_url)}
-                                     />
-                                   )}
+                                  {accessory.image_url && (
+                                    <img 
+                                      src={accessory.image_url} 
+                                      alt={accessory.feature}
+                                      className="w-6 h-6 object-cover rounded border"
+                                      loading="lazy"
+                                      decoding="async"
+                                      sizes="24px"
+                                    />
+                                  )}
                                  <span className="text-xs text-muted-foreground">{accessory.feature}</span>
                                </div>
                              ))}
@@ -806,17 +805,16 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                           <ul className="space-y-3">
                             {deduped.map(acc => (
                               <li key={acc.id} className="flex items-center gap-3">
-                                 {acc.image_url && (
-                                   <img
-                                     src={acc.image_url}
-                                     alt={acc.feature}
-                                     className="w-16 h-16 rounded border object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                                     loading="lazy"
-                                     decoding="async"
-                                     sizes="64px"
-                                     onClick={() => setEnlargedImage(acc.image_url)}
-                                   />
-                                 )}
+                                {acc.image_url && (
+                                  <img
+                                    src={acc.image_url}
+                                    alt={acc.feature}
+                                    className="w-10 h-10 rounded border object-cover"
+                                    loading="lazy"
+                                    decoding="async"
+                                    sizes="40px"
+                                  />
+                                )}
                                 <span className="text-sm text-muted-foreground">{acc.feature}</span>
                               </li>
                             ))}
