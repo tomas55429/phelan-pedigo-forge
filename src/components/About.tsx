@@ -2,8 +2,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Award, Users, Globe, Wrench } from 'lucide-react';
 import operatingRoomImage from '@/assets/operating-room.jpg';
+import { useNavigate } from 'react-router-dom';
 
 const About = () => {
+  const navigate = useNavigate();
   const stats = [
     {
       icon: <Award className="h-8 w-8" />,
@@ -71,7 +73,7 @@ const About = () => {
               We occupy a unique niche in the medical field, specializing in limited distribution 
               products that require the highest standards of quality and innovation.
             </p>
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
+            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark" onClick={() => navigate('/history')}>
               Learn About Our History
             </Button>
           </div>
