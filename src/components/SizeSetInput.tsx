@@ -31,7 +31,6 @@ interface SizeSet {
   width: string;
   length: string;
   depth: string;
-  height: string;
   set_index: number;
 }
 
@@ -88,7 +87,7 @@ const SortableSizeSet: React.FC<SortableSizeSetProps> = ({
         <GripVertical className="h-4 w-4 text-muted-foreground" />
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 flex-1">
+      <div className="grid grid-cols-3 gap-2 flex-1">
         <div>
           <Label htmlFor={`width-${index}`} className="text-xs">Width</Label>
           <Input
@@ -116,16 +115,6 @@ const SortableSizeSet: React.FC<SortableSizeSetProps> = ({
             value={sizeSet.depth}
             onChange={(e) => onUpdate(index, 'depth', e.target.value)}
             placeholder="e.g., 12, 12⅝"
-            className="h-8"
-          />
-        </div>
-        <div>
-          <Label htmlFor={`height-${index}`} className="text-xs">Height</Label>
-          <Input
-            id={`height-${index}`}
-            value={sizeSet.height}
-            onChange={(e) => onUpdate(index, 'height', e.target.value)}
-            placeholder="e.g., 8, 8½"
             className="h-8"
           />
         </div>
@@ -197,7 +186,6 @@ export const SizeSetInput: React.FC<SizeSetInputProps> = ({
       width: '',
       length: '',
       depth: '',
-      height: '',
       set_index: sizeSets.length,
     };
     setSizeSets([...sizeSets, newSizeSet]);
@@ -271,7 +259,7 @@ export const SizeSetInput: React.FC<SizeSetInputProps> = ({
       // Insert new size sets
       if (sizeSets.length > 0) {
         const sizeSetData = sizeSets
-          .filter(set => set.width || set.length || set.depth || set.height)
+          .filter(set => set.width || set.length || set.depth)
           .map((set, index) => ({
             product_id: productId,
             variant_id: selectedVariantId,
@@ -279,7 +267,6 @@ export const SizeSetInput: React.FC<SizeSetInputProps> = ({
             width: set.width || null,
             length: set.length || null,
             depth: set.depth || null,
-            height: set.height || null,
           }));
 
         if (sizeSetData.length > 0) {

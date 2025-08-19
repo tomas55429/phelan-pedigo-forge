@@ -46,7 +46,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4 text-primary-light" />
-                <span>2523 Minnehaha Ave, Minneapolis, MN 55404</span>
+                <span>Made in the USA</span>
               </div>
             </div>
           </div>
@@ -55,11 +55,11 @@ const Footer = () => {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-primary-light">Quick Links</h4>
             <nav className="flex flex-col space-y-2">
-              <button onClick={() => navigate('/')} className="text-background/80 hover:text-primary-light transition-colors text-left">Home</button>
-              <button onClick={() => navigate('/products')} className="text-background/80 hover:text-primary-light transition-colors text-left">Products</button>
-              <button onClick={() => navigate('/about')} className="text-background/80 hover:text-primary-light transition-colors text-left">About</button>
-              <button onClick={() => navigate('/history')} className="text-background/80 hover:text-primary-light transition-colors text-left">History</button>
-              <button onClick={() => navigate('/contact')} className="text-background/80 hover:text-primary-light transition-colors text-left">Contact</button>
+              <a href="#" className="text-background/80 hover:text-primary-light transition-colors">Home</a>
+              <a href="#products" className="text-background/80 hover:text-primary-light transition-colors">Products</a>
+              <a href="#about" className="text-background/80 hover:text-primary-light transition-colors">About</a>
+              <a href="#history" className="text-background/80 hover:text-primary-light transition-colors">History</a>
+              <a href="#contact" className="text-background/80 hover:text-primary-light transition-colors">Contact</a>
             </nav>
           </div>
 

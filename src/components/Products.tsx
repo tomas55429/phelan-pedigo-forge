@@ -92,7 +92,7 @@ const Products = () => {
               We can help you when perhaps no one else can.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark" onClick={() => navigate('/contact')}>
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
                 <Phone className="mr-2 h-5 w-5" />
                 Contact Our Specialists
               </Button>

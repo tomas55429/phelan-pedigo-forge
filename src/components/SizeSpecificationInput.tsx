@@ -50,7 +50,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
 }) => {
   const [isVertical, setIsVertical] = useState(false);
   const [sizeSpecs, setSizeSpecs] = useState<SizeSpecification[]>([]);
-  const [tableDescription, setTableDescription] = useState("Standard Sizes");
+  const [tableDescription, setTableDescription] = useState("Standard Sizes (inside dimensions)");
   const [dimensions, setDimensions] = useState<DimensionConfig[]>(
     customDimensions || [
       { key: 'width', label: 'Width', enabled: true },
@@ -252,8 +252,15 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   };
 
   const formatVariantName = (variantName: string) => {
-    // Return the full variant name without truncation
-    return variantName.trim();
+    const name = variantName || '';
+    
+    // If name starts with hyphen, return the full name
+    if (name.startsWith('-')) {
+      return name;
+    }
+    
+    // Otherwise, remove hyphen and everything after it (product codes)
+    return name.split('-')[0].trim();
   };
 
   const generateSpecifications = () => {
@@ -397,7 +404,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
               id="table-description"
               value={tableDescription}
               onChange={(e) => setTableDescription(e.target.value)}
-              placeholder="e.g., Standard Sizes"
+              placeholder="e.g., Standard Sizes (inside dimensions)"
             />
           </div>
           

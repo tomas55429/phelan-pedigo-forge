@@ -40,7 +40,7 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
   productId,
   variants,
   specifications,
-  title = "Specifications: Standard Sizes"
+  title = "Specifications: Standard Sizes (inside dimensions)"
 }) => {
   const [sizeSets, setSizeSets] = useState<SizeSet[]>([]);
 
@@ -170,7 +170,7 @@ export const SpecificationsTable: React.FC<SpecificationsTableProps> = ({
       {sizeSets.length > 0 && (
         <Card className="w-full">
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-semibold">Size Sets</CardTitle>
+            <CardTitle className="text-lg font-semibold">Size Sets (inside dimensions)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">

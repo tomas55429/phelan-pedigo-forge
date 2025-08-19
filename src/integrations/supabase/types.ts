@@ -14,30 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      admin_settings: {
-        Row: {
-          created_at: string
-          id: string
-          setting_key: string
-          setting_value: Json
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          setting_key: string
-          setting_value: Json
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          setting_key?: string
-          setting_value?: Json
-          updated_at?: string
-        }
-        Relationships: []
-      }
       categories: {
         Row: {
           created_at: string
@@ -210,7 +186,7 @@ export type Database = {
           image_url: string | null
           is_optional: boolean | null
           product_id: string
-          variant_id: string | null
+          variant_id: string
         }
         Insert: {
           created_at?: string
@@ -219,7 +195,7 @@ export type Database = {
           image_url?: string | null
           is_optional?: boolean | null
           product_id: string
-          variant_id?: string | null
+          variant_id: string
         }
         Update: {
           created_at?: string
@@ -228,7 +204,7 @@ export type Database = {
           image_url?: string | null
           is_optional?: boolean | null
           product_id?: string
-          variant_id?: string | null
+          variant_id?: string
         }
         Relationships: [
           {
@@ -251,7 +227,6 @@ export type Database = {
         Row: {
           created_at: string
           depth: string | null
-          height: string | null
           id: string
           length: string | null
           product_id: string
@@ -263,7 +238,6 @@ export type Database = {
         Insert: {
           created_at?: string
           depth?: string | null
-          height?: string | null
           id?: string
           length?: string | null
           product_id: string
@@ -275,7 +249,6 @@ export type Database = {
         Update: {
           created_at?: string
           depth?: string | null
-          height?: string | null
           id?: string
           length?: string | null
           product_id?: string

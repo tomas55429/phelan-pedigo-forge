@@ -6,7 +6,6 @@ import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Phone, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 
 type CustomProduct = Tables<'custom_products'>;
 type CustomProductImage = Tables<'custom_product_images'>;
@@ -17,7 +16,6 @@ interface CustomProductWithImages {
 }
 
 const CustomSolutionsPage = () => {
-  const navigate = useNavigate();
   const [customProducts, setCustomProducts] = useState<CustomProductWithImages[]>([]);
   const [loading, setLoading] = useState(true);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
@@ -192,9 +190,9 @@ const CustomSolutionsPage = () => {
                   <p className="text-muted-foreground mb-6">
                     Contact our specialists to discuss your unique requirements and see how we can help.
                   </p>
-                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark" onClick={() => navigate('/contact')}>
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
                     <Phone className="mr-2 h-5 w-5" />
-                    Contact Us
+                    Call 1-800-328-2358
                   </Button>
                 </CardContent>
               </Card>
@@ -239,18 +237,24 @@ const CustomSolutionsPage = () => {
                       {additionalImages.length > 0 && (
                         <div>
                           <h4 className="text-lg font-medium text-foreground mb-4">Additional Views</h4>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             {additionalImages.map((image) => (
-                              <img
-                                key={image.id}
-                                src={image.image_url}
-                                alt={image.description || 'Additional view'}
-                                className="w-full h-64 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                onClick={() => {
-                                  setEnlargedImage(image.image_url);
-                                  setEnlargedImageDescription(image.description || null);
-                                }}
-                              />
+                              <div key={image.id} className="relative group">
+                                <img
+                                  src={image.image_url}
+                                  alt={image.description || 'Additional view'}
+                                  className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => {
+                                    setEnlargedImage(image.image_url);
+                                    setEnlargedImageDescription(image.description || null);
+                                  }}
+                                />
+                                {image.description && (
+                                  <div className="absolute bottom-1 left-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs truncate">
+                                    {image.description}
+                                  </div>
+                                )}
+                              </div>
                             ))}
                           </div>
                         </div>
@@ -271,7 +275,7 @@ const CustomSolutionsPage = () => {
                       Each project starts with understanding your unique needs. 
                       Contact our team to discuss how we can create the perfect solution for you.
                     </p>
-                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark" onClick={() => navigate('/contact')}>
+                    <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
                       <Phone className="mr-2 h-5 w-5" />
                       Contact Our Specialists
                     </Button>
