@@ -164,44 +164,41 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             : null;
           const customProductId = customProductIdFromPrefix || customProductIdFromDescription;
 
-          // Enhanced debugging for custom product images
-          console.log('CUSTOM PRODUCT DEBUG - Before filtering:', {
-            productId: product.id,
-            productName: product.name,
-            customProductId,
-            customProductImages: customProductImages.map(img => ({
-              id: img.id,
-              custom_product_id: img.custom_product_id,
-              image_url: img.image_url
-            }))
-          });
-
           // Collect additional images if this is (or references) a custom product
-          const additionalImages = customProductId
-            ? customProductImages
-                .filter(img => {
-                  // Enhanced ID matching with proper string comparison
-                  const imgCustomProductId = String(img.custom_product_id).trim();
-                  const targetCustomProductId = String(customProductId).trim();
-                  const matches = imgCustomProductId === targetCustomProductId;
-                  
-                  console.log('ID MATCH CHECK:', {
-                    imgCustomProductId,
-                    targetCustomProductId,
-                    matches,
-                    imgId: img.id
-                  });
-                  
-                  return matches;
-                })
+          let additionalImages: any[] = [];
+          
+          if (customProductId) {
+            // Try matching by custom product ID first
+            additionalImages = customProductImages
+              .filter(img => String(img.custom_product_id).trim() === String(customProductId).trim())
+              .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+              .map(img => ({
+                id: img.id,
+                image_url: img.image_url,
+                description: img.description || 'Additional Image',
+                sort_order: img.sort_order,
+              }));
+          }
+          
+          // Fallback: Try matching by product name if no images found and this looks like a custom product
+          if (additionalImages.length === 0 && (isPrefixedCustom || product.name.toLowerCase().includes('custom'))) {
+            const matchingCustomProduct = customProducts.find(cp => 
+              cp.name.toLowerCase().replace(/[^a-z0-9]/g, '') === 
+              product.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+            );
+            
+            if (matchingCustomProduct) {
+              additionalImages = customProductImages
+                .filter(img => String(img.custom_product_id).trim() === String(matchingCustomProduct.id).trim())
                 .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
                 .map(img => ({
                   id: img.id,
                   image_url: img.image_url,
-                  description: img.description,
+                  description: img.description || 'Additional Image',
                   sort_order: img.sort_order,
-                }))
-            : [];
+                }));
+            }
+          }
 
           // Build all images list (main + additional)
           const allImageData = [
@@ -209,17 +206,14 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             ...additionalImages.map(img => ({ url: img.image_url, description: img.description || 'Additional Image' })),
           ].filter(img => img.url);
 
-          console.log('CUSTOM IMAGE MAP RESULT:', {
-            productId: product.id,
-            productName: product.name,
-            isPrefixedCustom,
-            customProductIdFromPrefix,
-            customProductIdFromDescription,
-            resolvedCustomProductId: customProductId,
-            additionalImagesCount: additionalImages.length,
-            allImageDataCount: allImageData.length,
-            additionalImages: additionalImages.map(img => ({ url: img.image_url, description: img.description }))
-          });
+          // Debug logging for custom products only
+          if (isPrefixedCustom || customProductIdFromDescription || additionalImages.length > 0) {
+            console.log('Custom product images loaded:', {
+              productName: product.name,
+              additionalImagesCount: additionalImages.length,
+              totalImages: allImageData.length
+            });
+          }
 
           if (isPrefixedCustom || customProductIdFromDescription) {
             // Ensure custom category for custom items
