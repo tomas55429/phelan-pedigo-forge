@@ -174,6 +174,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   }, [variants, productId]);
 
   const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth' | 'height' | 'weight', index: number, value: string) => {
+    console.log('handleSpecChange called with:', { variantId, dimension, index, value });
     setSizeSpecs(prev => {
       const updated = prev.map(spec => {
         if (spec.variantId !== variantId) return spec;
@@ -188,6 +189,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           [dimension]: current
         };
       });
+      console.log('Updated sizeSpecs:', updated);
       return updated;
     });
   };
@@ -318,100 +320,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     
     // Otherwise, remove hyphen and everything after it (product codes)
     return name.split('-')[0].trim();
-  };
-
-  const saveDimensionConfigurations = async () => {
-    try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
-      // First, delete existing size sets for this product
-      if (variants.length > 0) {
-        // Delete for all variants
-        for (const variant of variants) {
-          await supabase
-            .from('product_size_sets')
-            .delete()
-            .eq('product_id', productId)
-            .eq('variant_id', variant.id);
-        }
-      } else {
-        // Delete for general product
-        await supabase
-          .from('product_size_sets')
-          .delete()
-          .eq('product_id', productId)
-          .is('variant_id', null);
-      }
-
-      // Prepare new size sets from current state
-      const newSizeSets: any[] = [];
-
-      sizeSpecs.forEach((spec) => {
-        // Get the maximum length across all dimensions
-        const maxLen = Math.max(
-          (spec.width || []).length,
-          (spec.length || []).length,
-          (spec.depth || []).length,
-          (spec.height || []).length,
-          (spec.weight || []).length,
-          1
-        );
-
-        for (let i = 0; i < maxLen; i++) {
-          const valuesByKey = {
-            width: (spec.width[i] || '').trim(),
-            length: (spec.length[i] || '').trim(),
-            depth: (spec.depth[i] || '').trim(),
-            height: (spec.height[i] || '').trim(),
-            weight: (spec.weight[i] || '').trim(),
-          };
-
-          // Check if this size set has any non-empty values
-          const hasAnyValue = Object.values(valuesByKey).some(v => v.length > 0);
-
-          if (hasAnyValue) {
-            const sizeSetRecord: any = {
-              product_id: productId,
-              set_index: i,
-              width: valuesByKey.width || null,
-              length: valuesByKey.length || null,
-              depth: valuesByKey.depth || null,
-              height: valuesByKey.height || null,
-              weight: valuesByKey.weight || null,
-            };
-
-            if (spec.variantId) {
-              sizeSetRecord.variant_id = spec.variantId;
-            }
-
-            newSizeSets.push(sizeSetRecord);
-          }
-        }
-      });
-
-      // Insert new size sets
-      if (newSizeSets.length > 0) {
-        const { error } = await supabase
-          .from('product_size_sets')
-          .insert(newSizeSets);
-
-        if (error) {
-          throw error;
-        }
-      }
-
-      toast({ 
-        title: 'Success', 
-        description: `Dimension configurations saved successfully (${newSizeSets.length} size sets)` 
-      });
-    } catch (error) {
-      console.error('Error saving dimension configurations:', error);
-      toast({ 
-        title: 'Error', 
-        description: 'Failed to save dimension configurations. Please try again.',
-        variant: 'destructive'
-      });
-    }
   };
 
   const generateSpecifications = () => {
@@ -574,9 +482,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button onClick={saveDimensionConfigurations} variant="outline" className="flex items-center space-x-2">
-            <span>Save</span>
-          </Button>
           <Button onClick={generateSpecifications} className="flex items-center space-x-2">
             <Plus className="h-4 w-4" />
             <span>Apply to Specifications</span>
