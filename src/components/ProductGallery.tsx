@@ -1070,7 +1070,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 We specialize in custom medical equipment design and manufacturing. 
                 Contact our specialists to discuss your unique requirements.
               </p>
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark text-sm sm:text-base" onClick={() => window.location.href = 'tel:18003282358'}>
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark text-sm sm:text-base" onClick={() => window.open('tel:18003282358', '_self')}>
                 <Phone className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="hidden sm:inline">Call 1-800-328-2358</span>
                 <span className="sm:hidden">Call Us</span>
