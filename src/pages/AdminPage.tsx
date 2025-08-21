@@ -1800,7 +1800,8 @@ const AdminPage = () => {
                     productId={selectedProduct.id}
                     variants={variants} 
                     specifications={specifications} 
-                    onSpecificationOrderChange={handleSpecificationOrderChange} 
+                    onSpecificationOrderChange={handleSpecificationOrderChange}
+                    dimensionConfig={productDimensions}
                   />
 
                   {/* Size Specifications - Full Width Row */}
