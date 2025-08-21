@@ -872,6 +872,42 @@ const AdminPage = () => {
     }
   };
 
+  const handleSizeSetsChange = async (newSizeSets: any[]) => {
+    if (!selectedProduct || newSizeSets.length === 0) return;
+    
+    try {
+      // First, delete existing size sets for this product to avoid duplicates
+      const deleteQuery = supabase
+        .from('product_size_sets')
+        .delete()
+        .eq('product_id', selectedProduct.id);
+      
+      const { error: deleteError } = await deleteQuery;
+      if (deleteError) throw deleteError;
+      
+      // Then insert the new size sets
+      const { error } = await supabase
+        .from('product_size_sets')
+        .insert(newSizeSets);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Size sets saved successfully"
+      });
+      
+      // Refresh the product details
+      fetchProductDetails(selectedProduct.id);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleSpecificationDelete = async (productId: string, variantId: string, specKey: string, specValue: string) => {
     try {
       let query = supabase
@@ -1817,8 +1853,8 @@ const AdminPage = () => {
                   <SizeSpecificationInput
                     productId={selectedProduct.id}
                     variants={variants}
-                    onSpecificationsChange={handleSpecificationsChange}
-                    existingSpecifications={specifications}
+                    onSpecificationsChange={handleSizeSetsChange}
+                    existingSpecifications={[]}
                     customDimensions={productDimensions}
                     onDimensionsChange={handleDimensionsChange}
                     onSpecificationDelete={handleSpecificationDelete}
