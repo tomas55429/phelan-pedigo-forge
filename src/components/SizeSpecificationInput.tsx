@@ -174,7 +174,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   }, [variants, productId]);
 
   const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth' | 'height' | 'weight', index: number, value: string) => {
-    console.log('handleSpecChange called with:', { variantId, dimension, index, value });
     setSizeSpecs(prev => {
       const updated = prev.map(spec => {
         if (spec.variantId !== variantId) return spec;
@@ -189,7 +188,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           [dimension]: current
         };
       });
-      console.log('Updated sizeSpecs:', updated);
       return updated;
     });
   };
@@ -401,6 +399,83 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     })));
   };
 
+  const saveChanges = async () => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Delete existing size sets for this product
+      const deleteQuery = supabase
+        .from('product_size_sets')
+        .delete()
+        .eq('product_id', productId);
+      
+      const { error: deleteError } = await deleteQuery;
+      if (deleteError) throw deleteError;
+
+      // Prepare new size sets from current state
+      const newSizeSets: any[] = [];
+      
+      sizeSpecs.forEach((spec) => {
+        // Get the maximum length across all dimensions for this spec
+        const maxLen = Math.max(
+          spec.width?.length || 0,
+          spec.length?.length || 0,
+          spec.depth?.length || 0,
+          spec.height?.length || 0,
+          spec.weight?.length || 0,
+          1
+        );
+
+        for (let i = 0; i < maxLen; i++) {
+          const sizeSetRecord: any = {
+            product_id: productId,
+            set_index: i,
+            width: spec.width?.[i] || null,
+            length: spec.length?.[i] || null,
+            depth: spec.depth?.[i] || null,
+            height: spec.height?.[i] || null,
+            weight: spec.weight?.[i] || null,
+          };
+
+          if (spec.variantId) {
+            sizeSetRecord.variant_id = spec.variantId;
+          }
+
+          // Only add if at least one dimension has a value
+          const hasValue = Object.values(sizeSetRecord).some(
+            val => val && typeof val === 'string' && val.trim().length > 0
+          );
+          
+          if (hasValue) {
+            newSizeSets.push(sizeSetRecord);
+          }
+        }
+      });
+
+      // Insert new size sets
+      if (newSizeSets.length > 0) {
+        const { error } = await supabase
+          .from('product_size_sets')
+          .insert(newSizeSets);
+        
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: `Size specifications saved successfully`
+      });
+
+    } catch (error: any) {
+      console.error('Error saving size specifications:', error);
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to save size specifications',
+        variant: "destructive"
+      });
+    }
+  };
+
 
   return (
     <Card>
@@ -418,6 +493,9 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                 onCheckedChange={setIsVertical}
               />
             </div>
+            <Button onClick={saveChanges} variant="default" size="sm">
+              Save Changes
+            </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
               <RotateCcw className="h-4 w-4 mr-2" />
               Clear All
