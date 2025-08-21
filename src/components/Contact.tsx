@@ -30,7 +30,7 @@ const Contact = () => {
     {
       icon: <MapPin className="h-6 w-6" />,
       title: "Location",
-      details: "Made in the USA",
+      details: "2523 Minnehaha Avenue, Minneapolis, MN 55404",
       description: "Manufacturing facility location"
     },
     {
