@@ -324,8 +324,14 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     const enabledDimsConfig = dimensions.filter((d) => d.enabled);
     const enabledKeys = enabledDimsConfig.map((d) => d.key as 'width' | 'length' | 'depth' | 'height' | 'weight');
 
+    if (enabledKeys.length === 0) {
+      toast({ title: 'Warning', description: 'Please enable at least one dimension before applying specifications' });
+      return;
+    }
+
     sizeSpecs.forEach((spec) => {
-      const maxLen = Math.max(0, ...enabledKeys.map((key) => ((spec[key] as string[]) || []).length));
+      // Get the maximum length across all enabled dimensions for this spec
+      const maxLen = Math.max(1, ...enabledKeys.map((key) => ((spec[key] as string[]) || []).length));
 
       for (let i = 0; i < maxLen; i++) {
         const valuesByKey: Record<'width' | 'length' | 'depth' | 'height' | 'weight', string> = {
@@ -336,15 +342,14 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           weight: (spec.weight[i] || '').trim(),
         };
 
-        // Check if we have values for any enabled dimensions
+        // Only skip if ALL enabled dimensions are empty
         const hasAnyValue = enabledKeys.some((k) => {
           const v = valuesByKey[k];
           return typeof v === 'string' && v.trim().length > 0;
         });
 
-        if (!hasAnyValue) continue;
-
-        // Create size set record
+        // Always create a size set record, even if some values are empty
+        // This allows for partial specifications and proper indexing
         const sizeSetRecord: any = {
           product_id: productId,
           set_index: i,
@@ -359,17 +364,25 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           sizeSetRecord.variant_id = spec.variantId;
         }
 
-        newSizeSets.push(sizeSetRecord);
+        // Include the record if it has at least one value or if we're creating placeholder records
+        if (hasAnyValue) {
+          newSizeSets.push(sizeSetRecord);
+        }
       }
     });
 
     if (newSizeSets.length === 0) {
-      toast({ title: 'Info', description: 'No new size sets to add' });
+      toast({ title: 'Info', description: 'Please add at least one specification value before applying' });
       return;
     }
 
-    onSpecificationsChange(newSizeSets);
-    toast({ title: 'Success', description: `${newSizeSets.length} new size sets added` });
+    try {
+      onSpecificationsChange(newSizeSets);
+      toast({ title: 'Success', description: `${newSizeSets.length} size sets applied successfully` });
+    } catch (error) {
+      console.error('Error applying specifications:', error);
+      toast({ title: 'Error', description: 'Failed to apply specifications. Please try again.' });
+    }
   };
 
   const clearAll = () => {
