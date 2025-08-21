@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Upload, ArrowLeft, Package, FolderOpen, Settings, Image as ImageIcon, GripVertical, X, Camera } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, ArrowLeft, Package, FolderOpen, Settings, Image as ImageIcon, GripVertical, X, Camera, MessageSquare, Trash } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -79,6 +79,18 @@ interface CustomProductImage {
   description?: string;
   sort_order: number;
   created_at: string;
+}
+
+interface ContactSubmission {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  subject: string;
+  message: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Helper function to format variant name - only removes trailing product codes after hyphens
@@ -176,11 +188,15 @@ const AdminPage = () => {
   }[]>([]);
   const [editingCustomProduct, setEditingCustomProduct] = useState<CustomProduct | null>(null);
   const [customProductDialogOpen, setCustomProductDialogOpen] = useState(false);
+
+  // State for contact submissions
+  const [contactSubmissions, setContactSubmissions] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     fetchCategories();
     fetchProducts();
     fetchCustomProducts();
+    fetchContactSubmissions();
   }, []);
   const fetchCategories = async () => {
     try {
@@ -231,6 +247,22 @@ const AdminPage = () => {
       toast({
         title: "Error",
         description: "Failed to fetch custom products",
+        variant: "destructive"
+      });
+    }
+  };
+  const fetchContactSubmissions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('contact_submissions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      setContactSubmissions(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch contact submissions",
         variant: "destructive"
       });
     }
@@ -777,6 +809,29 @@ const AdminPage = () => {
       });
     }
   };
+  
+  const handleDeleteContactSubmission = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this contact submission?')) return;
+    try {
+      const { error } = await supabase
+        .from('contact_submissions')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      toast({
+        title: "Success",
+        description: "Contact submission deleted successfully"
+      });
+      fetchContactSubmissions();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleAddFeature = async (isOptional: boolean = false) => {
     const featureText = isOptional ? newOptionalFeature : newFeature;
     if (!selectedProduct || !featureText.trim()) {
@@ -1154,7 +1209,7 @@ const AdminPage = () => {
 
         <div className="container mx-auto px-4 py-8">
           <Tabs defaultValue="categories" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="categories" className="flex items-center space-x-2">
                 <FolderOpen className="h-4 w-4" />
                 <span>Categories</span>
@@ -1166,6 +1221,10 @@ const AdminPage = () => {
               <TabsTrigger value="custom-products" className="flex items-center space-x-2">
                 <Camera className="h-4 w-4" />
                 <span>Custom Products</span>
+              </TabsTrigger>
+              <TabsTrigger value="contact-submissions" className="flex items-center space-x-2">
+                <MessageSquare className="h-4 w-4" />
+                <span>Contact Forms</span>
               </TabsTrigger>
               <TabsTrigger value="details" className="flex items-center space-x-2">
                 <Settings className="h-4 w-4" />
@@ -1449,6 +1508,70 @@ const AdminPage = () => {
                             </div>
                           </TableCell>
                         </TableRow>)}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Contact Submissions Tab */}
+            <TabsContent value="contact-submissions" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">Contact Form Submissions</h2>
+                <Button onClick={fetchContactSubmissions} variant="outline">
+                  Refresh
+                </Button>
+              </div>
+
+              <Card>
+                <CardContent className="p-6">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Company</TableHead>
+                        <TableHead>Subject</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {contactSubmissions.map(submission => (
+                        <TableRow key={submission.id}>
+                          <TableCell className="font-medium">{submission.name}</TableCell>
+                          <TableCell>{submission.email}</TableCell>
+                          <TableCell>{submission.company || 'N/A'}</TableCell>
+                          <TableCell>{submission.subject}</TableCell>
+                          <TableCell>{new Date(submission.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button size="sm" variant="outline">View</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Contact Submission Details</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-4">
+                                    <div><strong>Name:</strong> {submission.name}</div>
+                                    <div><strong>Email:</strong> {submission.email}</div>
+                                    <div><strong>Phone:</strong> {submission.phone || 'N/A'}</div>
+                                    <div><strong>Company:</strong> {submission.company || 'N/A'}</div>
+                                    <div><strong>Subject:</strong> {submission.subject}</div>
+                                    <div><strong>Message:</strong><br /><div className="mt-2 p-3 bg-muted rounded">{submission.message}</div></div>
+                                    <div><strong>Received:</strong> {new Date(submission.created_at).toLocaleString()}</div>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              <Button size="sm" variant="destructive" onClick={() => handleDeleteContactSubmission(submission.id)}>
+                                <Trash className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </CardContent>

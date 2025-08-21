@@ -12,8 +12,70 @@ import {
   Send,
   FileText
 } from 'lucide-react';
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Contact = () => {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    company: '',
+    subject: '',
+    message: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { id, value } = e.target;
+    setFormData(prev => ({ ...prev, [id]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await supabase.from('contact_submissions').insert({
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        phone: formData.phone || null,
+        company: formData.company || null,
+        subject: formData.subject,
+        message: formData.message
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Message sent successfully!",
+        description: "Thank you for contacting us. We'll get back to you soon.",
+      });
+
+      // Reset form
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        company: '',
+        subject: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      toast({
+        title: "Error sending message",
+        description: "Please try again or contact us directly by phone.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const contactInfo = [
     {
       icon: <Phone className="h-6 w-6" />,
@@ -125,22 +187,28 @@ const Contact = () => {
               <CardTitle className="text-xl md:text-2xl text-foreground">Send Us a Message</CardTitle>
             </CardHeader>
             <CardContent className="p-4 md:p-6">
-              <form className="space-y-4 md:space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>
                     <Input 
                       id="firstName" 
+                      value={formData.firstName}
+                      onChange={handleInputChange}
                       placeholder="Enter your first name"
                       className="bg-background"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Last Name</Label>
                     <Input 
                       id="lastName" 
+                      value={formData.lastName}
+                      onChange={handleInputChange}
                       placeholder="Enter your last name"
                       className="bg-background"
+                      required
                     />
                   </div>
                 </div>
@@ -150,8 +218,11 @@ const Contact = () => {
                   <Input 
                     id="email" 
                     type="email" 
+                    value={formData.email}
+                    onChange={handleInputChange}
                     placeholder="Enter your email address"
                     className="bg-background"
+                    required
                   />
                 </div>
 
@@ -160,6 +231,8 @@ const Contact = () => {
                   <Input 
                     id="phone" 
                     type="tel" 
+                    value={formData.phone}
+                    onChange={handleInputChange}
                     placeholder="Enter your phone number"
                     className="bg-background"
                   />
@@ -169,6 +242,8 @@ const Contact = () => {
                   <Label htmlFor="company">Company/Hospital</Label>
                   <Input 
                     id="company" 
+                    value={formData.company}
+                    onChange={handleInputChange}
                     placeholder="Enter your organization name"
                     className="bg-background"
                   />
@@ -178,8 +253,11 @@ const Contact = () => {
                   <Label htmlFor="subject">Subject</Label>
                   <Input 
                     id="subject" 
+                    value={formData.subject}
+                    onChange={handleInputChange}
                     placeholder="What can we help you with?"
                     className="bg-background"
+                    required
                   />
                 </div>
 
@@ -187,15 +265,23 @@ const Contact = () => {
                   <Label htmlFor="message">Message</Label>
                   <Textarea 
                     id="message" 
+                    value={formData.message}
+                    onChange={handleInputChange}
                     placeholder="Tell us about your medical equipment needs..."
                     rows={5}
                     className="bg-background"
+                    required
                   />
                 </div>
 
-                <Button type="submit" size="lg" className="w-full bg-primary text-primary-foreground hover:bg-primary-dark">
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  disabled={isSubmitting}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary-dark disabled:opacity-50"
+                >
                   <Send className="mr-2 h-5 w-5" />
-                  Send Message
+                  {isSubmitting ? 'Sending...' : 'Send Message'}
                 </Button>
               </form>
             </CardContent>
