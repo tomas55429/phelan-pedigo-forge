@@ -162,18 +162,32 @@ const AdminPage = () => {
     key: string;
     label: string;
     enabled: boolean;
+    visible: boolean;
   }[]>([{
     key: 'width',
     label: 'Width',
-    enabled: true
+    enabled: true,
+    visible: true
   }, {
     key: 'length',
     label: 'Length',
-    enabled: true
+    enabled: true,
+    visible: true
   }, {
     key: 'depth',
     label: 'Depth',
-    enabled: true
+    enabled: true,
+    visible: true
+  }, {
+    key: 'height',
+    label: 'Height',
+    enabled: true,
+    visible: true
+  }, {
+    key: 'weight',
+    label: 'Weight',
+    enabled: true,
+    visible: true
   }]);
 
   // State for custom products
@@ -830,6 +844,68 @@ const AdminPage = () => {
         variant: "destructive"
       });
     }
+  };
+
+  const handleSpecificationsChange = async (newSpecifications: any[]) => {
+    if (!selectedProduct || newSpecifications.length === 0) return;
+    
+    try {
+      const { error } = await supabase
+        .from('product_specifications')
+        .insert(newSpecifications);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Specifications added successfully"
+      });
+      
+      // Refresh the specifications
+      fetchProductDetails(selectedProduct.id);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSpecificationDelete = async (productId: string, variantId: string, specKey: string, specValue: string) => {
+    try {
+      let query = supabase
+        .from('product_specifications')
+        .delete()
+        .eq('product_id', productId)
+        .eq('specification_key', specKey)
+        .eq('specification_value', specValue);
+      
+      if (variantId) {
+        query = query.eq('variant_id', variantId);
+      } else {
+        query = query.is('variant_id', null);
+      }
+      
+      const { error } = await query;
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Specification deleted successfully"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error", 
+        description: error.message,
+        variant: "destructive"
+      });
+      throw error; // Re-throw for the component to handle
+    }
+  };
+
+  const handleDimensionsChange = (dimensions: any[]) => {
+    setProductDimensions(dimensions);
   };
 
   const handleAddFeature = async (isOptional: boolean = false) => {
@@ -1740,10 +1816,11 @@ const AdminPage = () => {
                   <SizeSpecificationInput
                     productId={selectedProduct.id}
                     variants={variants}
-                    onSpecificationsChange={() => {
-                      fetchProductDetails(selectedProduct.id);
-                    }}
+                    onSpecificationsChange={handleSpecificationsChange}
                     existingSpecifications={specifications}
+                    customDimensions={productDimensions}
+                    onDimensionsChange={handleDimensionsChange}
+                    onSpecificationDelete={handleSpecificationDelete}
                   />
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
