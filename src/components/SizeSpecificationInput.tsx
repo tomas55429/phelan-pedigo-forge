@@ -174,19 +174,24 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   }, [variants, productId]);
 
   const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth' | 'height' | 'weight', index: number, value: string) => {
-    setSizeSpecs(prev => prev.map(spec => {
-      if (spec.variantId !== variantId) return spec;
-      const current = [...(spec[dimension] as string[])];
-      if (index >= current.length) {
-        const toAdd = index - current.length + 1;
-        current.push(...Array(toAdd).fill(''));
-      }
-      current[index] = value;
-      return { 
-        ...spec, 
-        [dimension]: current
-      };
-    }));
+    console.log('handleSpecChange called with:', { variantId, dimension, index, value });
+    setSizeSpecs(prev => {
+      const updated = prev.map(spec => {
+        if (spec.variantId !== variantId) return spec;
+        const current = [...(spec[dimension] as string[])];
+        if (index >= current.length) {
+          const toAdd = index - current.length + 1;
+          current.push(...Array(toAdd).fill(''));
+        }
+        current[index] = value;
+        return { 
+          ...spec, 
+          [dimension]: current
+        };
+      });
+      console.log('Updated sizeSpecs:', updated);
+      return updated;
+    });
   };
 
   const addSizeOption = (variantId: string, dimension: 'width' | 'length' | 'depth' | 'height' | 'weight') => {
