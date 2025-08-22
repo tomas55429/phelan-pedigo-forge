@@ -100,8 +100,6 @@ const CustomSolutionsPage = () => {
         // Fetch additional images for each custom product
         const customProductsWithImages = await Promise.all(
           customProductsData.map(async (customProduct) => {
-            console.log(`Fetching additional images for custom product: ${customProduct.name} (ID: ${customProduct.id})`);
-            
             const { data: additionalImages, error: imagesError } = await supabase
               .from('custom_product_images')
               .select('*')
@@ -113,7 +111,6 @@ const CustomSolutionsPage = () => {
               return { customProduct, additionalImages: [] };
             }
 
-            console.log(`Found ${additionalImages?.length || 0} additional images for ${customProduct.name}:`, additionalImages);
             return { customProduct, additionalImages: additionalImages || [] };
           })
         );
@@ -239,31 +236,26 @@ const CustomSolutionsPage = () => {
                       {/* Additional Images */}
                       {additionalImages.length > 0 && (
                         <div>
-                          <h4 className="text-lg font-medium text-foreground mb-4">
-                            Additional Views ({additionalImages.length} images)
-                          </h4>
+                          <h4 className="text-lg font-medium text-foreground mb-4">Additional Views</h4>
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {additionalImages.map((image, index) => {
-                              console.log(`Custom product ${customProduct.name} - Additional image ${index + 1}:`, image);
-                              return (
-                                <div key={image.id} className="relative group">
-                                  <img
-                                    src={image.image_url}
-                                    alt={image.description || `Additional view ${index + 1}`}
-                                    className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => {
-                                      setEnlargedImage(image.image_url);
-                                      setEnlargedImageDescription(image.description || null);
-                                    }}
-                                  />
-                                  {image.description && (
-                                    <div className="absolute bottom-1 left-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs truncate">
-                                      {image.description}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })}
+                            {additionalImages.map((image, index) => (
+                              <div key={image.id} className="relative group">
+                                <img
+                                  src={image.image_url}
+                                  alt={image.description || `Additional view ${index + 1}`}
+                                  className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                  onClick={() => {
+                                    setEnlargedImage(image.image_url);
+                                    setEnlargedImageDescription(image.description || null);
+                                  }}
+                                />
+                                {image.description && (
+                                  <div className="absolute bottom-1 left-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs truncate">
+                                    {image.description}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
                           </div>
                         </div>
                       )}
