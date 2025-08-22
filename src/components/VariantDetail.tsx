@@ -47,12 +47,12 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
   // Helper function to format variant name - only removes trailing product codes after hyphens
   const formatVariantName = (variantName: string) => {
     const name = variantName || '';
-    
+
     // If name starts with hyphen, return the full name
     if (name.startsWith('-')) {
       return name;
     }
-    
+
     // Otherwise, remove hyphen and everything after it (product codes)
     const cleanName = name.split('-')[0].trim();
     return cleanName;
@@ -92,60 +92,42 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
             <div>
               <h2 className="text-xl font-semibold mb-4">Features</h2>
               
-              {productFeatures.length > 0 && (
-                <div className="mb-6">
+              {productFeatures.length > 0 && <div className="mb-6">
                   <h3 className="text-lg font-medium mb-3">Product Features</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Applies to all variants</p>
+                  
                   <ul className="space-y-2">
-                    {productFeatures.map(feature => (
-                      <li key={feature.id} className="flex items-start space-x-2">
+                    {productFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
                         <span className="text-lg leading-none mt-1">-</span>
                         <span className="font-medium">{feature.feature}</span>
                         {feature.is_optional && <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>}
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
-                </div>
-              )}
+                </div>}
               
-              {variantFeatures.length > 0 && (
-                <div>
-                  <h3 className="text-lg font-medium mb-3">Variant-Specific Features</h3>
+              {variantFeatures.length > 0 && <div>
+                  
                   <ul className="space-y-2">
-                    {variantFeatures.map(feature => (
-                      <li key={feature.id} className="flex items-start space-x-2">
+                    {variantFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
                         <span className="text-lg leading-none mt-1">-</span>
                         <span>{feature.feature}</span>
                         {feature.is_optional && <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>}
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
-                </div>
-              )}
+                </div>}
               
-              {allFeatures.length === 0 && (
-                <p className="text-muted-foreground">No features available for this variant.</p>
-              )}
+              {allFeatures.length === 0 && <p className="text-muted-foreground">No features available for this variant.</p>}
             </div>
             
             {/* Size Chart */}
             <div>
               <h2 className="text-xl font-semibold mb-4">Size Chart</h2>
               <div className="border-2 border-muted rounded-lg overflow-hidden">
-                {specifications.length > 0 ? (
-                  <ProductVariantsTableNew 
-                    productId={productId}
-                    variants={[variant]}
-                    specifications={specifications}
-                  />
-                ) : (
-                  <div className="p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                {specifications.length > 0 ? <ProductVariantsTableNew productId={productId} variants={[variant]} specifications={specifications} /> : <div className="p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
                     <div className="text-center text-muted-foreground">
                       <div className="text-lg mb-2">Size Chart for {formatVariantName(variant.variant_name)}</div>
                       <p className="text-sm">No specifications available</p>
                     </div>
-                  </div>
-                )}
+                  </div>}
               </div>
               <div className="mt-4 text-sm text-muted-foreground text-center">
                 Custom sizes available
