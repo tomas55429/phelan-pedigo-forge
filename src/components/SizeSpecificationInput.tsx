@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, RotateCcw, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProductVariant {
@@ -573,8 +573,18 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                 onCheckedChange={setIsVertical}
               />
             </div>
-            <Button onClick={saveChanges} variant="default" size="sm" disabled={isSaving}>
-              {isSaving ? "Saving..." : "Save Changes"}
+            <Button onClick={saveChanges} variant="default" size="sm" disabled={isSaving} className="min-w-[120px]">
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent mr-2" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes
+                </>
+              )}
             </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
               <RotateCcw className="h-4 w-4 mr-2" />
