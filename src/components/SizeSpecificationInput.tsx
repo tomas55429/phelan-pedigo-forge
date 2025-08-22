@@ -77,7 +77,9 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   // Initialize with existing size sets from database
   useEffect(() => {
     const initializeSizeSpecs = async () => {
-      if (variants.length > 0) {
+      if (variants.length > 0 && productId) {
+        console.log('Initializing size specs for variants:', variants.map(v => v.id));
+        
         // Fetch size sets for each variant
         const { data: sizeSets } = await import('@/integrations/supabase/client').then(module => 
           module.supabase.from('product_size_sets')
@@ -85,6 +87,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
             .eq('product_id', productId)
             .order('set_index')
         );
+
+        console.log('Fetched size sets from database:', sizeSets);
 
         const initialSpecs = variants.map(variant => {
           // Find existing size sets for this variant
@@ -110,7 +114,7 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           const maxLen = Math.max(widthValues.length, lengthValues.length, depthValues.length, heightValues.length, weightValues.length, 1);
           const pad = (arr: string[]) => arr.length >= maxLen ? arr : [...arr, ...Array(maxLen - arr.length).fill('')];
 
-          return {
+          const spec = {
             variantId: variant.id,
             width: pad(widthValues),
             length: pad(lengthValues),
@@ -118,18 +122,28 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
             height: pad(heightValues),
             weight: pad(weightValues)
           };
+
+          console.log(`Spec for variant ${variant.id}:`, spec);
+          return spec;
         });
+        
+        console.log('Setting initial specs:', initialSpecs);
         setSizeSpecs(initialSpecs);
       }
     };
 
-    initializeSizeSpecs();
-  }, [variants, productId]);
+    // Only initialize if we don't have existing specs for these variants
+    if (variants.length > 0 && sizeSpecs.length !== variants.length) {
+      initializeSizeSpecs();
+    }
+  }, [variants.length, productId]); // Only re-run when variants count or productId changes
 
   // Initialize for general product (no variants)
   useEffect(() => {
     const initializeGeneralProduct = async () => {
-      if (variants.length === 0) {
+      if (variants.length === 0 && productId) {
+        console.log('Initializing general product size specs');
+        
         // Fetch size sets for general product (no variant_id)
         const { data: sizeSets } = await import('@/integrations/supabase/client').then(module => 
           module.supabase.from('product_size_sets')
@@ -138,6 +152,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
             .is('variant_id', null)
             .order('set_index')
         );
+
+        console.log('Fetched size sets for general product:', sizeSets);
 
         // Group by dimensions
         const widthValues: string[] = [];
@@ -159,24 +175,32 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         const maxLen = Math.max(widthValues.length, lengthValues.length, depthValues.length, heightValues.length, weightValues.length, 1);
         const pad = (arr: string[]) => (arr.length >= maxLen ? arr : [...arr, ...Array(maxLen - arr.length).fill('')]);
 
-        setSizeSpecs([
-          {
-            variantId: '', // empty string denotes general product
-            width: pad(widthValues),
-            length: pad(lengthValues),
-            depth: pad(depthValues),
-            height: pad(heightValues),
-            weight: pad(weightValues),
-          },
-        ]);
+        const generalSpec = {
+          variantId: '', // empty string denotes general product
+          width: pad(widthValues),
+          length: pad(lengthValues),
+          depth: pad(depthValues),
+          height: pad(heightValues),
+          weight: pad(weightValues),
+        };
+
+        console.log('Setting general product spec:', generalSpec);
+        setSizeSpecs([generalSpec]);
       }
     };
 
-    initializeGeneralProduct();
-  }, [variants, productId]);
+    // Only initialize if no variants and no existing specs
+    if (variants.length === 0 && sizeSpecs.length === 0) {
+      initializeGeneralProduct();
+    }
+  }, [variants.length, productId]); // Only re-run when variants count or productId changes
 
   const handleSpecChange = (variantId: string, dimension: 'width' | 'length' | 'depth' | 'height' | 'weight', index: number, value: string) => {
+    console.log(`handleSpecChange called: variantId=${variantId}, dimension=${dimension}, index=${index}, value="${value}"`);
+    
     setSizeSpecs(prev => {
+      console.log('Current sizeSpecs before update:', prev);
+      
       const updated = prev.map(spec => {
         if (spec.variantId !== variantId) return spec;
         const current = [...(spec[dimension] as string[])];
@@ -185,11 +209,15 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           current.push(...Array(toAdd).fill(''));
         }
         current[index] = value;
-        return { 
+        const updatedSpec = { 
           ...spec, 
           [dimension]: current
         };
+        console.log(`Updated spec for variant ${variantId}:`, updatedSpec);
+        return updatedSpec;
       });
+      
+      console.log('Updated sizeSpecs:', updated);
       return updated;
     });
   };
