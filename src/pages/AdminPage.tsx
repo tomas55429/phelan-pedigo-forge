@@ -940,8 +940,90 @@ const AdminPage = () => {
     }
   };
 
-  const handleDimensionsChange = (dimensions: any[]) => {
+  // Load dimension configuration for a product
+  const loadProductDimensionConfig = async (productId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', `product_dimensions_${productId}`)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is okay
+        throw error;
+      }
+
+      if (data?.setting_value) {
+        console.log(`Loading dimension config for product ${productId}:`, data.setting_value);
+        // Type cast the JSON value to our expected format
+        const dimensions = data.setting_value as { key: string; label: string; enabled: boolean; visible: boolean; }[];
+        setProductDimensions(dimensions);
+      } else {
+        // Reset to default dimensions if no config found
+        console.log(`No dimension config found for product ${productId}, using defaults`);
+        setProductDimensions([
+          { key: 'width', label: 'Width', enabled: true, visible: true },
+          { key: 'length', label: 'Length', enabled: true, visible: true },
+          { key: 'depth', label: 'Depth', enabled: true, visible: true },
+          { key: 'height', label: 'Height', enabled: true, visible: true },
+          { key: 'weight', label: 'Weight', enabled: true, visible: true }
+        ]);
+      }
+    } catch (error: any) {
+      console.error('Failed to load dimension config:', error);
+      toast({
+        title: "Warning",
+        description: "Failed to load dimension configuration, using defaults",
+        variant: "destructive"
+      });
+      // Use defaults on error
+      setProductDimensions([
+        { key: 'width', label: 'Width', enabled: true, visible: true },
+        { key: 'length', label: 'Length', enabled: true, visible: true },
+        { key: 'depth', label: 'Depth', enabled: true, visible: true },
+        { key: 'height', label: 'Height', enabled: true, visible: true },
+        { key: 'weight', label: 'Weight', enabled: true, visible: true }
+      ]);
+    }
+  };
+
+  // Save dimension configuration for a product
+  const saveProductDimensionConfig = async (productId: string, dimensions: any[]) => {
+    try {
+      console.log(`Saving dimension config for product ${productId}:`, dimensions);
+      
+      const { error } = await supabase
+        .from('admin_settings')
+        .upsert({
+          setting_key: `product_dimensions_${productId}`,
+          setting_value: dimensions
+        });
+
+      if (error) throw error;
+
+      console.log('Dimension configuration saved successfully');
+      toast({
+        title: "Success",
+        description: "Dimension configuration saved successfully"
+      });
+    } catch (error: any) {
+      console.error('Failed to save dimension config:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save dimension configuration",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDimensionsChange = async (dimensions: any[]) => {
+    console.log('handleDimensionsChange called with:', dimensions);
     setProductDimensions(dimensions);
+    
+    // Save to database if we have a selected product
+    if (selectedProduct) {
+      await saveProductDimensionConfig(selectedProduct.id, dimensions);
+    }
   };
 
   const handleAddFeature = async (isOptional: boolean = false) => {
@@ -1697,9 +1779,12 @@ const AdminPage = () => {
                 <div className="mb-6">
                   <h3 className="text-lg font-medium mb-4">Select a Product</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {products.map(product => <Card key={product.id} className={`cursor-pointer border-2 transition-all hover:border-primary/50 ${selectedProduct?.id === product.id ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={() => {
+                    {products.map(product => <Card key={product.id} className={`cursor-pointer border-2 transition-all hover:border-primary/50 ${selectedProduct?.id === product.id ? 'border-primary bg-primary/5' : 'border-border'}`} onClick={async () => {
                     setSelectedProduct(product);
-                    fetchProductDetails(product.id);
+                    await Promise.all([
+                      fetchProductDetails(product.id),
+                      loadProductDimensionConfig(product.id)
+                    ]);
                   }}>
                         <CardContent className="p-4">
                           <div className="flex items-center space-x-3">
