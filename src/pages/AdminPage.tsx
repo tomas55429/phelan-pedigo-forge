@@ -17,7 +17,6 @@ import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { ProductVariantsTableNew } from '@/components/ProductVariantsTableNew';
 import { SizeSetInput } from '@/components/SizeSetInput';
-import { SizeSpecificationInput } from '@/components/SizeSpecificationInput';
 interface Category {
   id: string;
   name: string;
@@ -1962,16 +1961,6 @@ const AdminPage = () => {
                     }}
                   />
 
-                  {/* Size Specification Input with Dimension Configuration */}
-                  <SizeSpecificationInput
-                    productId={selectedProduct.id}
-                    variants={variants}
-                    onSpecificationsChange={handleSizeSetsChange}
-                    existingSpecifications={[]}
-                    customDimensions={productDimensions}
-                    onDimensionsChange={handleDimensionsChange}
-                    onSpecificationDelete={handleSpecificationDelete}
-                  />
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Features */}
