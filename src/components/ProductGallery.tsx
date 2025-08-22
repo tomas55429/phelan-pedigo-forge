@@ -371,6 +371,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : []),
       ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
     ];
+    
+    const isCustomProduct = product.id.toString().startsWith('custom-') || 
+                           (additionalImages && additionalImages.length > 0);
 
     console.log('ProductCard images for', product.name, ':', {
       productImageUrl: product.image_url,
@@ -425,10 +428,25 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               <FileText className="h-12 w-12 text-muted-foreground" />
             </div>
           )}
-          {product.featured && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-              <Star className="h-3 w-3 mr-1" />
-              Featured
-            </Badge>}
+          {/* Badges */}
+          <div className="absolute top-2 right-2 flex flex-col gap-2">
+            {product.featured && (
+              <Badge className="bg-primary text-primary-foreground">
+                <Star className="h-3 w-3 mr-1" />
+                Featured
+              </Badge>
+            )}
+            {isCustomProduct && (
+              <Badge variant="secondary" className="bg-orange-500 text-white">
+                Custom Solution
+              </Badge>
+            )}
+            {allImages.length > 1 && (
+              <Badge variant="outline" className="bg-background/90 backdrop-blur-sm">
+                {allImages.length} Images
+              </Badge>
+            )}
+          </div>
         </div>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start">
@@ -529,8 +547,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           <div className="flex space-x-2 mt-4">
             <Button size="sm" className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" onClick={() => setSelectedProduct(productWithDetails)}>
               <Eye className="h-4 w-4 mr-1" />
-              <span className="hidden sm:inline">View Details</span>
-              <span className="sm:hidden">View</span>
+              <span className="hidden sm:inline">
+                {allImages.length > 1 ? `View ${allImages.length} Images` : 'View Details'}
+              </span>
+              <span className="sm:hidden">
+                {allImages.length > 1 ? `${allImages.length} Images` : 'View'}
+              </span>
             </Button>
             <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)} className="px-2 sm:px-3">
               <FileText className="h-4 w-4" />
@@ -557,6 +579,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : []),
       ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
     ];
+    
+    const isCustomProduct = product.id.toString().startsWith('custom-') || 
+                           (additionalImages && additionalImages.length > 0);
 
     return <Card className="professional-hover bg-card shadow-card">
         <CardContent className="p-6">
