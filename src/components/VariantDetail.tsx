@@ -16,7 +16,7 @@ interface ProductFeature {
   id: string;
   feature: string;
   is_optional?: boolean;
-  variant_id: string; // Now required since all features must belong to variants
+  variant_id?: string; // Optional - features can belong to products or specific variants
   image_url?: string;
 }
 interface ProductSpecification {
@@ -57,7 +57,10 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
     const cleanName = name.split('-')[0].trim();
     return cleanName;
   };
+  // Get features for this variant and product-level features
   const variantFeatures = features.filter(f => f.variant_id === variant.id);
+  const productFeatures = features.filter(f => !f.variant_id);
+  const allFeatures = [...productFeatures, ...variantFeatures];
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
   const sizeSpecs = specifications.filter(spec => (spec.variant_id === variant.id || spec.variant_id === null) && (spec.specification_key.toLowerCase().includes('size') || spec.specification_key.toLowerCase().includes('dimension') || spec.specification_key.toLowerCase().includes('length') || spec.specification_key.toLowerCase().includes('lenght') ||
   // Handle misspelling
@@ -85,19 +88,44 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                 </p>}
             </div>
             
-            {/* Variant Features */}
+            {/* Features */}
             <div>
-              <h2 className="text-xl font-semibold mb-4">Variant Features</h2>
+              <h2 className="text-xl font-semibold mb-4">Features</h2>
               
-              {variantFeatures.length > 0 ? <ul className="space-y-2">
-                  {variantFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
-                      <span className="text-lg leading-none mt-1">-</span>
-                      <span>{feature.feature}</span>
-                      {feature.is_optional && <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>}
-                    </li>)}
-                </ul> : <ul className="space-y-2 text-muted-foreground">
-                  
-                </ul>}
+              {productFeatures.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-lg font-medium mb-3">Product Features</h3>
+                  <p className="text-sm text-muted-foreground mb-3">Applies to all variants</p>
+                  <ul className="space-y-2">
+                    {productFeatures.map(feature => (
+                      <li key={feature.id} className="flex items-start space-x-2">
+                        <span className="text-lg leading-none mt-1">-</span>
+                        <span className="font-medium">{feature.feature}</span>
+                        {feature.is_optional && <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {variantFeatures.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-medium mb-3">Variant-Specific Features</h3>
+                  <ul className="space-y-2">
+                    {variantFeatures.map(feature => (
+                      <li key={feature.id} className="flex items-start space-x-2">
+                        <span className="text-lg leading-none mt-1">-</span>
+                        <span>{feature.feature}</span>
+                        {feature.is_optional && <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {allFeatures.length === 0 && (
+                <p className="text-muted-foreground">No features available for this variant.</p>
+              )}
             </div>
             
             {/* Size Chart */}
