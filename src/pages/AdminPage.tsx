@@ -992,14 +992,42 @@ const AdminPage = () => {
     try {
       console.log(`Saving dimension config for product ${productId}:`, dimensions);
       
-      const { error } = await supabase
+      const settingKey = `product_dimensions_${productId}`;
+      
+      // First try to update existing record
+      const { data: existingData, error: selectError } = await supabase
         .from('admin_settings')
-        .upsert({
-          setting_key: `product_dimensions_${productId}`,
-          setting_value: dimensions
-        });
+        .select('id')
+        .eq('setting_key', settingKey)
+        .single();
 
-      if (error) throw error;
+      if (selectError && selectError.code !== 'PGRST116') {
+        // Error other than "not found"
+        throw selectError;
+      }
+
+      if (existingData) {
+        // Update existing record
+        const { error: updateError } = await supabase
+          .from('admin_settings')
+          .update({
+            setting_value: dimensions,
+            updated_at: new Date().toISOString()
+          })
+          .eq('setting_key', settingKey);
+          
+        if (updateError) throw updateError;
+      } else {
+        // Insert new record
+        const { error: insertError } = await supabase
+          .from('admin_settings')
+          .insert({
+            setting_key: settingKey,
+            setting_value: dimensions
+          });
+          
+        if (insertError) throw insertError;
+      }
 
       console.log('Dimension configuration saved successfully');
       toast({
