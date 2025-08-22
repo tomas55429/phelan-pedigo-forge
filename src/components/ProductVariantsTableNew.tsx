@@ -130,17 +130,59 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   specifications,
   isAdmin = false,
   onSpecificationOrderChange,
-  dimensionConfig = [
+  dimensionConfig
+}) => {
+  const { isAdmin: userIsAdmin } = useAuth();
+  const effectiveIsAdmin = isAdmin || userIsAdmin;
+  const [sizeSets, setSizeSets] = useState<SizeSet[]>([]);
+  const [loadedDimensionConfig, setLoadedDimensionConfig] = useState<{
+    key: string;
+    label: string;
+    enabled: boolean;
+    visible: boolean;
+  }[]>(dimensionConfig || [
     { key: 'width', label: 'Width', enabled: true, visible: true },
     { key: 'length', label: 'Length', enabled: true, visible: true },
     { key: 'depth', label: 'Depth', enabled: true, visible: true },
     { key: 'height', label: 'Height', enabled: true, visible: true },
     { key: 'weight', label: 'Weight', enabled: true, visible: true }
-  ]
-}) => {
-  const { isAdmin: userIsAdmin } = useAuth();
-  const effectiveIsAdmin = isAdmin || userIsAdmin;
-  const [sizeSets, setSizeSets] = useState<SizeSet[]>([]);
+  ]);
+
+  // Load dimension configuration from database if not provided as prop
+  useEffect(() => {
+    if (!dimensionConfig) {
+      loadDimensionConfig();
+    } else {
+      setLoadedDimensionConfig(dimensionConfig);
+    }
+  }, [dimensionConfig, productId]);
+
+  const loadDimensionConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', `product_dimensions_${productId}`)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error loading dimension config:', error);
+        return;
+      }
+
+      if (data?.setting_value) {
+        const dimensions = data.setting_value as {
+          key: string;
+          label: string;
+          enabled: boolean;
+          visible: boolean;
+        }[];
+        setLoadedDimensionConfig(dimensions);
+      }
+    } catch (error) {
+      console.error('Failed to load dimension configuration:', error);
+    }
+  };
 
   // Fetch size sets
   useEffect(() => {
@@ -339,7 +381,7 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                     {/* Dynamic Size Set Rows based on visibility configuration */}
                     {sizeSets.length > 0 && (
                       <>
-                        {dimensionConfig
+                        {loadedDimensionConfig
                           .filter(dim => dim.visible && dim.enabled)
                           .map(dimension => (
                             <TableRow key={dimension.key}>
