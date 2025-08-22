@@ -4,7 +4,7 @@ import { Tables } from '@/integrations/supabase/types';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Phone, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Loader2, Phone, X, ZoomIn, ZoomOut, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type CustomProduct = Tables<'custom_products'>;
@@ -18,6 +18,7 @@ interface CustomProductWithImages {
 const CustomSolutionsPage = () => {
   const [customProducts, setCustomProducts] = useState<CustomProductWithImages[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [enlargedImageDescription, setEnlargedImageDescription] = useState<string | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
@@ -199,69 +200,113 @@ const CustomSolutionsPage = () => {
             </div>
           ) : (
             <>
-              {/* Photo Gallery */}
-              <div className="space-y-12">
-                {customProducts.map(({ customProduct, additionalImages }) => (
-                  <Card key={customProduct.id} className="professional-hover bg-card shadow-card overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="grid md:grid-cols-2 gap-6 mb-6">
-                        {/* Main Image */}
-                        {customProduct.main_image_url && (
-                          <div className="relative">
-                            <img
-                              src={customProduct.main_image_url}
-                              alt={customProduct.name}
-                              className="w-full h-80 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => {
-                                setEnlargedImage(customProduct.main_image_url!);
-                                setEnlargedImageDescription(null);
-                              }}
-                            />
+              {/* Product List */}
+              <div className="space-y-4">
+                {customProducts.map(({ customProduct, additionalImages }) => {
+                  const isExpanded = expandedProductId === customProduct.id;
+                  
+                  return (
+                    <Card key={customProduct.id} className="bg-card shadow-card overflow-hidden">
+                      <CardContent className="p-0">
+                        {/* List Item Header */}
+                        <div 
+                          className="p-6 cursor-pointer hover:bg-muted/50 transition-colors flex items-center justify-between"
+                          onClick={() => setExpandedProductId(isExpanded ? null : customProduct.id)}
+                        >
+                          <div className="flex items-center space-x-4">
+                            {/* Thumbnail */}
+                            {customProduct.main_image_url && (
+                              <img
+                                src={customProduct.main_image_url}
+                                alt={customProduct.name}
+                                className="w-16 h-16 object-cover rounded-lg"
+                              />
+                            )}
+                            
+                            {/* Product Info */}
+                            <div>
+                              <h3 className="text-xl font-semibold text-foreground">
+                                {customProduct.name}
+                              </h3>
+                              {customProduct.description && (
+                                <p className="text-muted-foreground text-sm mt-1 line-clamp-2">
+                                  {customProduct.description}
+                                </p>
+                              )}
+                            </div>
                           </div>
-                        )}
-                        
-                        {/* Product Info */}
-                        <div>
-                          <h3 className="text-2xl font-semibold text-foreground mb-4">
-                            {customProduct.name}
-                          </h3>
-                          {customProduct.description && (
-                            <p className="text-muted-foreground text-lg leading-relaxed">
-                              {customProduct.description}
-                            </p>
+                          
+                          {/* Expand/Collapse Icon */}
+                          {isExpanded ? (
+                            <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="h-5 w-5 text-muted-foreground" />
                           )}
                         </div>
-                      </div>
 
-                      {/* Additional Images */}
-                      {additionalImages.length > 0 && (
-                        <div>
-                          <h4 className="text-lg font-medium text-foreground mb-4">Additional Views</h4>
-                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                            {additionalImages.map((image, index) => (
-                              <div key={image.id} className="relative group">
-                                <img
-                                  src={image.image_url}
-                                  alt={image.description || `Additional view ${index + 1}`}
-                                  className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                  onClick={() => {
-                                    setEnlargedImage(image.image_url);
-                                    setEnlargedImageDescription(image.description || null);
-                                  }}
-                                />
-                                {image.description && (
-                                  <div className="absolute bottom-1 left-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs truncate">
-                                    {image.description}
+                        {/* Expanded Detail View */}
+                        {isExpanded && (
+                          <div className="p-6 pt-0 border-t border-border/50">
+                            {/* Product Description */}
+                            {customProduct.description && (
+                              <div className="mb-6">
+                                <p className="text-muted-foreground text-lg leading-relaxed">
+                                  {customProduct.description}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* All Images Grid */}
+                            <div>
+                              <h4 className="text-lg font-medium text-foreground mb-4">
+                                Product Images ({1 + additionalImages.length} total)
+                              </h4>
+                              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                {/* Main Image */}
+                                {customProduct.main_image_url && (
+                                  <div className="relative group">
+                                    <img
+                                      src={customProduct.main_image_url}
+                                      alt={customProduct.name}
+                                      className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                      onClick={() => {
+                                        setEnlargedImage(customProduct.main_image_url!);
+                                        setEnlargedImageDescription(null);
+                                      }}
+                                    />
+                                    <div className="absolute top-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-medium">
+                                      Main
+                                    </div>
                                   </div>
                                 )}
+
+                                {/* Additional Images */}
+                                {additionalImages.map((image, index) => (
+                                  <div key={image.id} className="relative group">
+                                    <img
+                                      src={image.image_url}
+                                      alt={image.description || `Additional view ${index + 1}`}
+                                      className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                      onClick={() => {
+                                        setEnlargedImage(image.image_url);
+                                        setEnlargedImageDescription(image.description || null);
+                                      }}
+                                    />
+                                    {image.description && (
+                                      <div className="absolute bottom-1 left-1 right-1 bg-black/70 text-white px-2 py-1 rounded text-xs truncate">
+                                        {image.description}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
 
               {/* Call to Action */}
