@@ -13,7 +13,9 @@ import VariantDetail from './VariantDetail';
 import Product3DViewer from './Product3DViewer';
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
-type ProductFeature = Tables<'product_features'> & { image_url?: string };
+type ProductFeature = Tables<'product_features'> & {
+  image_url?: string;
+};
 type ProductSpecification = Tables<'product_specifications'>;
 type Category = Tables<'categories'>;
 interface ProductWithDetails {
@@ -22,7 +24,12 @@ interface ProductWithDetails {
   variants: ProductVariant[];
   features: ProductFeature[];
   specifications: ProductSpecification[];
-  additionalImages?: { id: string; image_url: string; description?: string; sort_order?: number; }[];
+  additionalImages?: {
+    id: string;
+    image_url: string;
+    description?: string;
+    sort_order?: number;
+  }[];
 }
 interface ProductGalleryProps {
   selectedCategoryId?: string | null;
@@ -59,12 +66,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   // Helper function to format variant name - only removes trailing product codes after hyphens
   const formatVariantName = (variant: ProductVariant) => {
     const name = variant.variant_name || '';
-    
+
     // If name starts with hyphen, return the full name
     if (name.startsWith('-')) {
       return name;
     }
-    
+
     // Otherwise, remove hyphen and everything after it (product codes)
     const cleanName = name.split('-')[0].trim();
     return cleanName;
@@ -88,17 +95,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         setLoading(true);
 
         // Fetch all data in parallel including custom products
-        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes, customProductImagesRes, sizeSetsRes] = await Promise.all([
-          supabase.from('products').select('*').order('name'), 
-          supabase.from('categories').select('*').order('name'), 
-          supabase.from('product_variants').select('*'), 
-          supabase.from('product_features').select('*'), 
-          supabase.from('product_specifications').select('*'),
-          supabase.from('product_categories').select('*'),
-          supabase.from('custom_products').select('*').order('name'),
-          supabase.from('custom_product_images').select('*').order('sort_order'),
-          supabase.from('product_size_sets').select('*').order('set_index')
-        ]);
+        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes, customProductImagesRes, sizeSetsRes] = await Promise.all([supabase.from('products').select('*').order('name'), supabase.from('categories').select('*').order('name'), supabase.from('product_variants').select('*'), supabase.from('product_features').select('*'), supabase.from('product_specifications').select('*'), supabase.from('product_categories').select('*'), supabase.from('custom_products').select('*').order('name'), supabase.from('custom_product_images').select('*').order('sort_order'), supabase.from('product_size_sets').select('*').order('set_index')]);
         if (productsRes.error) throw productsRes.error;
         if (categoriesRes.error) throw categoriesRes.error;
         if (variantsRes.error) throw variantsRes.error;
@@ -108,7 +105,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         if (customProductsRes.error) throw customProductsRes.error;
         if (customProductImagesRes.error) throw customProductImagesRes.error;
         if (sizeSetsRes.error) throw sizeSetsRes.error;
-
         const products = productsRes.data || [];
         const categoriesData = categoriesRes.data || [];
         const variants = variantsRes.data || [];
@@ -118,7 +114,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         const customProducts = customProductsRes.data || [];
         const customProductImages = customProductImagesRes.data || [];
         const sizeSets = sizeSetsRes.data || [];
-
         console.log('ProductGallery: Fetched data:', {
           products: products.length,
           customProducts: customProducts.length,
@@ -128,7 +123,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
         // Find or create "Custom" category
         let customCategory = categoriesData.find(cat => cat.name === 'Custom');
-        
+
         // Convert custom products to regular products format and add to products array
         const customProductsAsProducts = customProducts.map(customProduct => ({
           id: `custom-${customProduct.id}`,
@@ -142,12 +137,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           special_notes: null,
           model_3d_url: null
         }));
-        
         console.log('🚀 BEFORE MERGE - Custom products:', customProducts.length);
         console.log('🚀 BEFORE MERGE - Regular products:', products.length);
         console.log('🚀 BEFORE MERGE - Custom product images:', customProductImages.length);
         console.log('🚀 CUSTOM PRODUCT IMAGES DATA:', customProductImages);
-
         const allProducts = [...products, ...customProductsAsProducts];
         console.log('🚀 AFTER MERGE - All products:', allProducts.length);
         console.log('🚀 AFTER MERGE - Products with custom- prefix:', allProducts.filter(p => p.id.toString().startsWith('custom-')).length);
@@ -156,56 +149,43 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
         const productsWithDetailsData: ProductWithDetails[] = allProducts.map(product => {
           // Determine if this is a custom product and extract the custom product ID
           const isPrefixedCustom = product.id.toString().startsWith('custom-');
-          const customProductIdFromPrefix = isPrefixedCustom
-            ? product.id.toString().replace('custom-', '')
-            : null;
-          const customProductIdFromDescription = product.description
-            ? (product.description.match(/\[Custom Product ID:\s*([^\]]+)\]/i)?.[1] || null)
-            : null;
+          const customProductIdFromPrefix = isPrefixedCustom ? product.id.toString().replace('custom-', '') : null;
+          const customProductIdFromDescription = product.description ? product.description.match(/\[Custom Product ID:\s*([^\]]+)\]/i)?.[1] || null : null;
           const customProductId = customProductIdFromPrefix || customProductIdFromDescription;
 
           // Collect additional images if this is (or references) a custom product
           let additionalImages: any[] = [];
-          
           if (customProductId) {
             // Try matching by custom product ID first
-            additionalImages = customProductImages
-              .filter(img => String(img.custom_product_id).trim() === String(customProductId).trim())
-              .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-              .map(img => ({
+            additionalImages = customProductImages.filter(img => String(img.custom_product_id).trim() === String(customProductId).trim()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(img => ({
+              id: img.id,
+              image_url: img.image_url,
+              description: img.description || 'Additional Image',
+              sort_order: img.sort_order
+            }));
+          }
+
+          // Fallback: Try matching by product name if no images found and this looks like a custom product
+          if (additionalImages.length === 0 && (isPrefixedCustom || product.name.toLowerCase().includes('custom'))) {
+            const matchingCustomProduct = customProducts.find(cp => cp.name.toLowerCase().replace(/[^a-z0-9]/g, '') === product.name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+            if (matchingCustomProduct) {
+              additionalImages = customProductImages.filter(img => String(img.custom_product_id).trim() === String(matchingCustomProduct.id).trim()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(img => ({
                 id: img.id,
                 image_url: img.image_url,
                 description: img.description || 'Additional Image',
-                sort_order: img.sort_order,
+                sort_order: img.sort_order
               }));
-          }
-          
-          // Fallback: Try matching by product name if no images found and this looks like a custom product
-          if (additionalImages.length === 0 && (isPrefixedCustom || product.name.toLowerCase().includes('custom'))) {
-            const matchingCustomProduct = customProducts.find(cp => 
-              cp.name.toLowerCase().replace(/[^a-z0-9]/g, '') === 
-              product.name.toLowerCase().replace(/[^a-z0-9]/g, '')
-            );
-            
-            if (matchingCustomProduct) {
-              additionalImages = customProductImages
-                .filter(img => String(img.custom_product_id).trim() === String(matchingCustomProduct.id).trim())
-                .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-                .map(img => ({
-                  id: img.id,
-                  image_url: img.image_url,
-                  description: img.description || 'Additional Image',
-                  sort_order: img.sort_order,
-                }));
             }
           }
 
           // Build all images list (main + additional)
-          const allImageData = [
-            { url: product.image_url || '', description: 'Main Image' },
-            ...additionalImages.map(img => ({ url: img.image_url, description: img.description || 'Additional Image' })),
-          ].filter(img => img.url);
-
+          const allImageData = [{
+            url: product.image_url || '',
+            description: 'Main Image'
+          }, ...additionalImages.map(img => ({
+            url: img.image_url,
+            description: img.description || 'Additional Image'
+          }))].filter(img => img.url);
           if (isPrefixedCustom || customProductIdFromDescription) {
             // Ensure custom category for custom items
             const customCategoryArray = customCategory ? [customCategory] : [];
@@ -217,25 +197,23 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               specifications: [],
               additionalImages,
               allImages: allImageData.length,
-              allImagesData: allImageData,
+              allImagesData: allImageData
             };
           }
 
           // Regular products - but still check for custom images
-          const productCategoryIds = productCategories
-            .filter(pc => pc.product_id === product.id)
-            .map(pc => pc.category_id);
+          const productCategoryIds = productCategories.filter(pc => pc.product_id === product.id).map(pc => pc.category_id);
           const productCategoriesData = categoriesData.filter(cat => productCategoryIds.includes(cat.id));
-
           return {
             product,
             categories: productCategoriesData,
             variants: variants.filter(variant => variant.product_id === product.id),
             features: features.filter(feature => feature.product_id === product.id),
             specifications: specifications.filter(spec => spec.product_id === product.id),
-            additionalImages, // Use the processed additional images instead of empty array
+            additionalImages,
+            // Use the processed additional images instead of empty array
             allImages: allImageData.length,
-            allImagesData: allImageData,
+            allImagesData: allImageData
           };
         });
         setProductsWithDetails(productsWithDetailsData);
@@ -359,51 +337,29 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       features,
       additionalImages
     } = productWithDetails;
-    
-    const allImages = [
-      ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : []),
-      ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-    ];
-    
-    const isCustomProduct = product.id.toString().startsWith('custom-') || 
-                           (additionalImages && additionalImages.length > 0);
-
-    
-    const displayDescription = (product.description || '')
-      .replace(/\[Custom Product ID:\s*([^\]]+)\]/gi, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-
+    const allImages = [...(product.image_url ? [{
+      url: product.image_url,
+      description: 'Main Image'
+    }] : []), ...(additionalImages || []).map(img => ({
+      url: img.image_url,
+      description: img.description || 'Additional Image'
+    }))];
+    const isCustomProduct = product.id.toString().startsWith('custom-') || additionalImages && additionalImages.length > 0;
+    const displayDescription = (product.description || '').replace(/\[Custom Product ID:\s*([^\]]+)\]/gi, '').replace(/\s{2,}/g, ' ').trim();
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
-          {allImages[0] ? (
-            <img 
-              src={allImages[0].url} 
-              alt={product.name} 
-              className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-              loading="lazy" 
-              decoding="async"
-              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              onClick={() => setEnlargedImage(allImages[0].url)}
-            />
-          ) : (
-            <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
+          {allImages[0] ? <img src={allImages[0].url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover cursor-pointer hover:opacity-90 transition-opacity" loading="lazy" decoding="async" sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" onClick={() => setEnlargedImage(allImages[0].url)} /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
-            </div>
-          )}
+            </div>}
           {/* Badges */}
           <div className="absolute top-2 right-2 flex flex-col gap-2">
-            {product.featured && (
-              <Badge className="bg-primary text-primary-foreground">
+            {product.featured && <Badge className="bg-primary text-primary-foreground">
                 <Star className="h-3 w-3 mr-1" />
                 Featured
-              </Badge>
-            )}
-            {isCustomProduct && (
-              <Badge variant="secondary" className="bg-orange-500 text-white">
+              </Badge>}
+            {isCustomProduct && <Badge variant="secondary" className="bg-orange-500 text-white">
                 Custom Solution
-              </Badge>
-            )}
+              </Badge>}
           </div>
         </div>
         <CardHeader className="pb-3">
@@ -452,43 +408,26 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     
                      {/* Accessories Section */}
                      {(() => {
-                       const allAccessories = features.filter(feature => feature.is_optional);
-                       const deduplicatedAccessories = allAccessories.reduce((acc, accessory) => {
-                         if (!acc.some(a => a.feature === accessory.feature)) {
-                           acc.push(accessory);
-                         }
-                         return acc;
-                       }, [] as typeof allAccessories);
-                       
-                       return deduplicatedAccessories.length > 0 && (
-                         <div>
+                  const allAccessories = features.filter(feature => feature.is_optional);
+                  const deduplicatedAccessories = allAccessories.reduce((acc, accessory) => {
+                    if (!acc.some(a => a.feature === accessory.feature)) {
+                      acc.push(accessory);
+                    }
+                    return acc;
+                  }, [] as typeof allAccessories);
+                  return deduplicatedAccessories.length > 0 && <div>
                            <h5 className="text-sm font-semibold mb-2">Available Accessories:</h5>
                            <div className="space-y-2">
-                             {deduplicatedAccessories.slice(0, 3).map(accessory => (
-                               <div key={accessory.id} className="flex items-center space-x-2">
-                                   {accessory.image_url && (
-                                     <img 
-                                       src={accessory.image_url} 
-                                       alt={accessory.feature}
-                                       className="w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
-                                       loading="lazy"
-                                       decoding="async"
-                                       sizes="48px"
-                                       onClick={() => setEnlargedImage(accessory.image_url)}
-                                     />
-                                   )}
+                             {deduplicatedAccessories.slice(0, 3).map(accessory => <div key={accessory.id} className="flex items-center space-x-2">
+                                   {accessory.image_url && <img src={accessory.image_url} alt={accessory.feature} className="w-12 h-12 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity" loading="lazy" decoding="async" sizes="48px" onClick={() => setEnlargedImage(accessory.image_url)} />}
                                  <span className="text-xs text-muted-foreground">{accessory.feature}</span>
-                               </div>
-                             ))}
-                             {deduplicatedAccessories.length > 3 && (
-                               <p className="text-xs text-muted-foreground">
+                               </div>)}
+                             {deduplicatedAccessories.length > 3 && <p className="text-xs text-muted-foreground">
                                  +{deduplicatedAccessories.length - 3} more accessories
-                               </p>
-                             )}
+                               </p>}
                            </div>
-                         </div>
-                       );
-                     })()}
+                         </div>;
+                })()}
                      
                      {/* Special Notes */}
                      {product.special_notes && <div className="p-3 bg-warning/10 border border-warning/20 rounded-md">
@@ -532,56 +471,28 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       features,
       additionalImages
     } = productWithDetails;
-    
-    const allImages = [
-      ...(product.image_url ? [{ url: product.image_url, description: 'Main Image' }] : []),
-      ...(additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-    ];
-    
-    const isCustomProduct = product.id.toString().startsWith('custom-') || 
-                           (additionalImages && additionalImages.length > 0);
-
+    const allImages = [...(product.image_url ? [{
+      url: product.image_url,
+      description: 'Main Image'
+    }] : []), ...(additionalImages || []).map(img => ({
+      url: img.image_url,
+      description: img.description || 'Additional Image'
+    }))];
+    const isCustomProduct = product.id.toString().startsWith('custom-') || additionalImages && additionalImages.length > 0;
     return <Card className="professional-hover bg-card shadow-card">
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
             <div className="relative">
-              {allImages.length > 0 ? (
-                allImages.length === 1 ? (
-                  <img 
-                    src={allImages[0].url} 
-                    alt={product.name} 
-                    className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity" 
-                    loading="lazy" 
-                    decoding="async" 
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    onClick={() => setEnlargedImage(allImages[0].url)}
-                  />
-                ) : (
-                  <div className="grid grid-cols-2 gap-1 rounded overflow-hidden">
-                    {allImages.slice(0, 4).map((image, index) => (
-                      <div key={index} className="relative">
-                        <img 
-                          src={image.url} 
-                          alt={`${product.name} - ${image.description}`}
-                          className="w-full h-20 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                          loading="lazy" 
-                          decoding="async"
-                          onClick={() => setEnlargedImage(image.url)}
-                        />
-                        {index === 3 && allImages.length > 4 && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              {allImages.length > 0 ? allImages.length === 1 ? <img src={allImages[0].url} alt={product.name} className="w-full h-40 sm:h-36 md:h-40 lg:h-44 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 25vw" onClick={() => setEnlargedImage(allImages[0].url)} /> : <div className="grid grid-cols-2 gap-1 rounded overflow-hidden">
+                    {allImages.slice(0, 4).map((image, index) => <div key={index} className="relative">
+                        <img src={image.url} alt={`${product.name} - ${image.description}`} className="w-full h-20 object-cover cursor-pointer hover:opacity-90 transition-opacity" loading="lazy" decoding="async" onClick={() => setEnlargedImage(image.url)} />
+                        {index === 3 && allImages.length > 4 && <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                             <span className="text-white text-xs font-semibold">+{allImages.length - 4}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )
-              ) : (
-                <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
+                          </div>}
+                      </div>)}
+                  </div> : <div className="w-full h-40 sm:h-36 md:h-40 lg:h-44 bg-muted flex items-center justify-center rounded">
                   <FileText className="h-8 w-8 text-muted-foreground" />
-                </div>
-              )}
+                </div>}
               {product.featured && <Badge className="absolute top-1 right-1 bg-primary text-primary-foreground">
                   <Star className="h-3 w-3 mr-1" />
                   Featured
@@ -665,21 +576,21 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   </h2>
                   <div className="space-y-4">
                     {(() => {
-                      const allImages = [
-                        ...(selectedProduct.product.image_url ? [{ url: selectedProduct.product.image_url, description: 'Main Image' }] : []),
-                        ...(selectedProduct.additionalImages || []).map(img => ({ url: img.image_url, description: img.description || 'Additional Image' }))
-                      ];
-
-                      console.log('Detail view images for', selectedProduct.product.name, ':', {
-                        productImageUrl: selectedProduct.product.image_url,
-                        additionalImages: selectedProduct.additionalImages,
-                        allImages: allImages.length,
-                        allImagesData: allImages
-                      });
-
-                      if (allImages.length === 0) {
-                        return (
-                          <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
+                    const allImages = [...(selectedProduct.product.image_url ? [{
+                      url: selectedProduct.product.image_url,
+                      description: 'Main Image'
+                    }] : []), ...(selectedProduct.additionalImages || []).map(img => ({
+                      url: img.image_url,
+                      description: img.description || 'Additional Image'
+                    }))];
+                    console.log('Detail view images for', selectedProduct.product.name, ':', {
+                      productImageUrl: selectedProduct.product.image_url,
+                      additionalImages: selectedProduct.additionalImages,
+                      allImages: allImages.length,
+                      allImagesData: allImages
+                    });
+                    if (allImages.length === 0) {
+                      return <div className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[400px] flex items-center justify-center">
                             <div className="text-center text-muted-foreground">
                               <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />
                               <p>No image available</p>
@@ -687,47 +598,28 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                                 {selectedProduct.variants.length > 0 ? `${formatVariantName(selectedProduct.variants[0])} will be considered the default, so display its image here` : 'Please add a product image'}
                               </p>
                             </div>
-                          </div>
-                        );
-                      }
-
-                      return allImages.map((image, index) => (
-                        <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
+                          </div>;
+                    }
+                    return allImages.map((image, index) => <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
                           <div className="relative group w-full">
-                            <img 
-                              src={image.url} 
-                              alt={`${selectedProduct.product.name} - ${image.description}`}
-                              className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
-                              onClick={() => setEnlargedImage(image.url)} 
-                              loading="lazy" 
-                              decoding="async" 
-                              sizes="(max-width: 768px) 100vw, 50vw" 
-                            />
+                            <img src={image.url} alt={`${selectedProduct.product.name} - ${image.description}`} className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" onClick={() => setEnlargedImage(image.url)} loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" />
                             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="bg-background/90 backdrop-blur-sm pointer-events-auto"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEnlargedImage(image.url);
-                                }}
-                              >
+                              <Button variant="outline" size="sm" className="bg-background/90 backdrop-blur-sm pointer-events-auto" onClick={e => {
+                            e.stopPropagation();
+                            setEnlargedImage(image.url);
+                          }}>
                                 <ZoomIn className="h-4 w-4 mr-2" />
                                 Enlarge
                               </Button>
                             </div>
-                            {image.description && image.description !== 'Main Image' && (
-                              <div className="mt-2 text-center">
+                            {image.description && image.description !== 'Main Image' && <div className="mt-2 text-center">
                                 <p className="text-sm text-muted-foreground bg-background/80 rounded px-2 py-1">
                                   {image.description}
                                 </p>
-                              </div>
-                            )}
+                              </div>}
                           </div>
-                        </div>
-                      ));
-                    })()}
+                        </div>);
+                  })()}
                   </div>
                 </div>
                 
@@ -735,125 +627,88 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 <div className="space-y-8">
                   {/* Description - Only show if description exists */}
                   {(() => {
-                    const description = selectedProduct.product.description || '';
-                    // Remove custom product ID from description if present
-                    const cleanDescription = description.replace(/\n\n\[Custom Product ID: [^\]]+\]/g, '').trim();
-                    
-                    return cleanDescription && (
-                      <div>
+                  const description = selectedProduct.product.description || '';
+                  // Remove custom product ID from description if present
+                  const cleanDescription = description.replace(/\n\n\[Custom Product ID: [^\]]+\]/g, '').trim();
+                  return cleanDescription && <div>
                         <h2 className="text-xl font-semibold mb-4">Product Description</h2>
                         <p className="text-muted-foreground leading-relaxed">
                           {cleanDescription}
                         </p>
-                      </div>
-                    );
-                  })()}
+                      </div>;
+                })()}
                    
                     {/* Product and Variant Features - deduplicated */}
                     {(() => {
-                      // Get product-level features (no variant_id) and variant-specific features
-                      const productFeatures = selectedProduct.features.filter(feature => !feature.is_optional && !feature.variant_id);
-                      const variantFeatures = selectedProduct.features.filter(feature => !feature.is_optional && feature.variant_id);
-                      
-                      // Deduplicate variant features by feature text
-                      const deduplicatedVariantFeatures = variantFeatures.reduce((acc, feature) => {
-                        if (!acc.some(f => f.feature === feature.feature)) {
-                          acc.push(feature);
-                        }
-                        return acc;
-                      }, [] as typeof variantFeatures);
-                      
-                      const hasFeatures = productFeatures.length > 0 || deduplicatedVariantFeatures.length > 0;
-                      
-                      return hasFeatures && (
-                        <div>
+                  // Get product-level features (no variant_id) and variant-specific features
+                  const productFeatures = selectedProduct.features.filter(feature => !feature.is_optional && !feature.variant_id);
+                  const variantFeatures = selectedProduct.features.filter(feature => !feature.is_optional && feature.variant_id);
+
+                  // Deduplicate variant features by feature text
+                  const deduplicatedVariantFeatures = variantFeatures.reduce((acc, feature) => {
+                    if (!acc.some(f => f.feature === feature.feature)) {
+                      acc.push(feature);
+                    }
+                    return acc;
+                  }, [] as typeof variantFeatures);
+                  const hasFeatures = productFeatures.length > 0 || deduplicatedVariantFeatures.length > 0;
+                  return hasFeatures && <div>
                           <h2 className="text-xl font-semibold mb-4">Features</h2>
                           
-                          {productFeatures.length > 0 && (
-                            <div className="mb-4">
-                              <p className="text-sm text-muted-foreground mb-3">Product Features (applies to all variants)</p>
+                          {productFeatures.length > 0 && <div className="mb-4">
+                              
                               <ul className="space-y-2">
-                                {productFeatures.map(feature => (
-                                  <li key={feature.id} className="flex items-start space-x-2">
+                                {productFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
                                     <span className="text-lg leading-none mt-1">-</span>
                                     <span className="font-medium">{feature.feature}</span>
-                                  </li>
-                                ))}
+                                  </li>)}
                               </ul>
-                            </div>
-                          )}
+                            </div>}
                           
-                          {deduplicatedVariantFeatures.length > 0 && (
-                            <div>
-                              <p className="text-sm text-muted-foreground mb-3">Variant-Specific Features</p>
+                          {deduplicatedVariantFeatures.length > 0 && <div>
+                              
                               <ul className="space-y-2">
-                                {deduplicatedVariantFeatures.map(feature => (
-                                  <li key={feature.id} className="flex items-start space-x-2">
+                                {deduplicatedVariantFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
                                     <span className="text-lg leading-none mt-1">-</span>
                                     <span>{feature.feature}</span>
-                                  </li>
-                                ))}
+                                  </li>)}
                               </ul>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
+                            </div>}
+                        </div>;
+                })()}
                     
                     {/* Available Accessories - deduplicated across variants */}
                     {(() => {
-                      const accessories = selectedProduct.features.filter(f => f.is_optional);
-                      const deduped = accessories.reduce((acc, item) => {
-                        if (!acc.some(a => a.feature === item.feature)) acc.push(item);
-                        return acc;
-                      }, [] as typeof accessories);
-                      return deduped.length > 0 && (
-                        <div>
+                  const accessories = selectedProduct.features.filter(f => f.is_optional);
+                  const deduped = accessories.reduce((acc, item) => {
+                    if (!acc.some(a => a.feature === item.feature)) acc.push(item);
+                    return acc;
+                  }, [] as typeof accessories);
+                  return deduped.length > 0 && <div>
                           <h2 className="text-xl font-semibold mb-4">Available Accessories</h2>
                           <ul className="space-y-3">
-                            {deduped.map(acc => (
-                              <li key={acc.id} className="flex items-center gap-3">
-                                 {acc.image_url && (
-                                   <img
-                                     src={acc.image_url}
-                                     alt={acc.feature}
-                                     className="w-16 h-16 rounded border object-cover cursor-pointer hover:opacity-80 transition-opacity"
-                                     loading="lazy"
-                                     decoding="async"
-                                     sizes="64px"
-                                     onClick={() => setEnlargedImage(acc.image_url)}
-                                   />
-                                 )}
+                            {deduped.map(acc => <li key={acc.id} className="flex items-center gap-3">
+                                 {acc.image_url && <img src={acc.image_url} alt={acc.feature} className="w-16 h-16 rounded border object-cover cursor-pointer hover:opacity-80 transition-opacity" loading="lazy" decoding="async" sizes="64px" onClick={() => setEnlargedImage(acc.image_url)} />}
                                 <span className="text-sm text-muted-foreground">{acc.feature}</span>
-                              </li>
-                            ))}
+                              </li>)}
                           </ul>
-                        </div>
-                      );
-                    })()}
+                        </div>;
+                })()}
                    
                     {/* Variants - Only show if there are variants */}
-                   {selectedProduct.variants.length > 0 && (
-                     <div>
+                   {selectedProduct.variants.length > 0 && <div>
                        <h2 className="text-xl font-semibold mb-4">Variants</h2>
                        <div className="space-y-3">
-                         {selectedProduct.variants.map(variant => (
-                           <button 
-                             key={variant.id} 
-                             className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all" 
-                             onClick={() => {
-                               setSelectedVariant(variant);
-                               setSelectedVariantProduct(selectedProduct);
-                             }}
-                           >
+                         {selectedProduct.variants.map(variant => <button key={variant.id} className="w-full p-4 text-left border-2 border-muted rounded-lg hover:border-primary/50 hover:bg-muted/30 transition-all" onClick={() => {
+                      setSelectedVariant(variant);
+                      setSelectedVariantProduct(selectedProduct);
+                    }}>
                              <div className="font-medium text-lg">
                                {formatVariantName(variant)}
                              </div>
-                           </button>
-                         ))}
+                           </button>)}
                        </div>
-                     </div>
-                   )}
+                     </div>}
                   
                   
                   {/* Special Notes */}
@@ -870,30 +725,22 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                </div>
                 
                 {/* 3D Model Section - Only show if model exists */}
-                {selectedProduct.product.model_3d_url && (
-                  <div className="mt-12">
+                {selectedProduct.product.model_3d_url && <div className="mt-12">
                     <h2 className="text-xl font-semibold mb-4">3D Model</h2>
                     <div className="border-2 border-muted rounded-lg overflow-hidden">
-                      <Product3DViewer 
-                        modelUrl={selectedProduct.product.model_3d_url}
-                        productName={selectedProduct.product.name}
-                        className="w-full h-[600px]"
-                      />
+                      <Product3DViewer modelUrl={selectedProduct.product.model_3d_url} productName={selectedProduct.product.name} className="w-full h-[600px]" />
                     </div>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Specifications Section - Only show if there are specifications */}
-                {selectedProduct.specifications.length > 0 && (
-                  <div className="mt-12">
+                {selectedProduct.specifications.length > 0 && <div className="mt-12">
                     <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
                     <div className="w-full">
                       <div className="w-full">
                         <ProductVariantsTableNew productId={selectedProduct.product.id} variants={selectedProduct.variants} specifications={selectedProduct.specifications} />
                       </div>
                     </div>
-                  </div>
-                )}
+                  </div>}
                  </div>
              </div>
            </div>}
