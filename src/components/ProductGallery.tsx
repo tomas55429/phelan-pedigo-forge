@@ -168,18 +168,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           let additionalImages: any[] = [];
           
           if (customProductId) {
-            console.log('🔍 Looking for custom product images for ID:', customProductId);
             // Try matching by custom product ID first
             additionalImages = customProductImages
-              .filter(img => {
-                const matches = String(img.custom_product_id).trim() === String(customProductId).trim();
-                console.log('🔍 Image match check:', { 
-                  imageCustomProductId: img.custom_product_id, 
-                  lookingForId: customProductId, 
-                  matches 
-                });
-                return matches;
-              })
+              .filter(img => String(img.custom_product_id).trim() === String(customProductId).trim())
               .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
               .map(img => ({
                 id: img.id,
@@ -187,36 +178,18 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 description: img.description || 'Additional Image',
                 sort_order: img.sort_order,
               }));
-            
-            console.log('🔍 Found additional images for custom product:', additionalImages.length);
           }
           
           // Fallback: Try matching by product name if no images found and this looks like a custom product
           if (additionalImages.length === 0 && (isPrefixedCustom || product.name.toLowerCase().includes('custom'))) {
-            console.log('🔍 Fallback: Looking for custom product by name match for:', product.name);
-            const matchingCustomProduct = customProducts.find(cp => {
-              const match = cp.name.toLowerCase().replace(/[^a-z0-9]/g, '') === 
-                           product.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-              console.log('🔍 Name match check:', { 
-                customProductName: cp.name, 
-                lookingForName: product.name, 
-                match 
-              });
-              return match;
-            });
+            const matchingCustomProduct = customProducts.find(cp => 
+              cp.name.toLowerCase().replace(/[^a-z0-9]/g, '') === 
+              product.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+            );
             
             if (matchingCustomProduct) {
-              console.log('🔍 Found matching custom product by name:', matchingCustomProduct.name, 'ID:', matchingCustomProduct.id);
               additionalImages = customProductImages
-                .filter(img => {
-                  const matches = String(img.custom_product_id).trim() === String(matchingCustomProduct.id).trim();
-                  console.log('🔍 Fallback image match check:', { 
-                    imageCustomProductId: img.custom_product_id, 
-                    matchingCustomProductId: matchingCustomProduct.id, 
-                    matches 
-                  });
-                  return matches;
-                })
+                .filter(img => String(img.custom_product_id).trim() === String(matchingCustomProduct.id).trim())
                 .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
                 .map(img => ({
                   id: img.id,
@@ -224,8 +197,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   description: img.description || 'Additional Image',
                   sort_order: img.sort_order,
                 }));
-              
-              console.log('🔍 Fallback found additional images:', additionalImages.length);
             }
           }
 
@@ -234,15 +205,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             { url: product.image_url || '', description: 'Main Image' },
             ...additionalImages.map(img => ({ url: img.image_url, description: img.description || 'Additional Image' })),
           ].filter(img => img.url);
-
-          // Debug logging for custom products only
-          if (isPrefixedCustom || customProductIdFromDescription || additionalImages.length > 0) {
-            console.log('Custom product images loaded:', {
-              productName: product.name,
-              additionalImagesCount: additionalImages.length,
-              totalImages: allImageData.length
-            });
-          }
 
           if (isPrefixedCustom || customProductIdFromDescription) {
             // Ensure custom category for custom items
@@ -259,7 +221,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             };
           }
 
-          // Regular products (no custom images)
+          // Regular products - but still check for custom images
           const productCategoryIds = productCategories
             .filter(pc => pc.product_id === product.id)
             .map(pc => pc.category_id);
@@ -271,7 +233,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             variants: variants.filter(variant => variant.product_id === product.id),
             features: features.filter(feature => feature.product_id === product.id),
             specifications: specifications.filter(spec => spec.product_id === product.id),
-            additionalImages: [],
+            additionalImages, // Use the processed additional images instead of empty array
+            allImages: allImageData.length,
+            allImagesData: allImageData,
           };
         });
         setProductsWithDetails(productsWithDetailsData);
