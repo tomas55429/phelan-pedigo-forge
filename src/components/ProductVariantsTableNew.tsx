@@ -381,7 +381,7 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                     {/* Dynamic Size Set Rows based on visibility configuration */}
                     {sizeSets.length > 0 && (
                       <>
-                        {loadedDimensionConfig
+                        {(loadedDimensionConfig || [])
                           .filter(dim => dim.visible && dim.enabled)
                           .map(dimension => (
                             <TableRow key={dimension.key}>
