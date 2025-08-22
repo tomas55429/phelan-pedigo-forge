@@ -344,7 +344,7 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
                           .map(dimension => (
                             <TableRow key={dimension.key}>
                               <TableCell className="border font-medium bg-muted/30 sticky left-0 bg-muted/90 z-10 sm:static sm:bg-muted/30 min-w-[120px] text-xs sm:text-sm">
-                                {dimension.label} {dimension.key !== 'weight' ? '(inside dimensions)' : ''}
+                                {dimension.label}
                               </TableCell>
                               {variants.length > 0 ? (
                                 variants.flatMap((variant) => {
