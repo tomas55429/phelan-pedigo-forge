@@ -368,12 +368,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     const isCustomProduct = product.id.toString().startsWith('custom-') || 
                            (additionalImages && additionalImages.length > 0);
 
-    console.log('ProductCard images for', product.name, ':', {
-      productImageUrl: product.image_url,
-      additionalImages: additionalImages,
-      allImages: allImages.length,
-      allImagesData: allImages
-    });
     
     const displayDescription = (product.description || '')
       .replace(/\[Custom Product ID:\s*([^\]]+)\]/gi, '')
@@ -383,7 +377,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
           {allImages.length > 0 ? (
-            allImages.length === 1 ? (
               <img 
                 src={allImages[0].url} 
                 alt={product.name} 
@@ -393,29 +386,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                 sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                 onClick={() => setEnlargedImage(allImages[0].url)}
               />
-            ) : (
-              <div className="relative">
-                <div className="grid grid-cols-2 gap-1">
-                  {allImages.slice(0, 4).map((image, index) => (
-                    <div key={index} className={`relative ${index === 0 ? 'col-span-2' : ''}`}>
-                       <img 
-                         src={image.url} 
-                         alt={`${product.name} - ${image.description}`}
-                         className={`w-full object-cover cursor-pointer hover:opacity-90 transition-opacity ${index === 0 ? 'h-40 sm:h-36 md:h-40' : 'h-20 sm:h-18 md:h-20'}`}
-                         loading="lazy" 
-                         decoding="async"
-                         onClick={() => setEnlargedImage(image.url)}
-                       />
-                      {index === 3 && allImages.length > 4 && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white font-semibold">+{allImages.length - 4}</span>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
           ) : (
             <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
@@ -432,11 +402,6 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             {isCustomProduct && (
               <Badge variant="secondary" className="bg-orange-500 text-white">
                 Custom Solution
-              </Badge>
-            )}
-            {allImages.length > 1 && (
-              <Badge variant="outline" className="bg-background/90 backdrop-blur-sm">
-                {allImages.length} Images
               </Badge>
             )}
           </div>
@@ -541,10 +506,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             <Button size="sm" className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" onClick={() => setSelectedProduct(productWithDetails)}>
               <Eye className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">
-                {allImages.length > 1 ? `View ${allImages.length} Images` : 'View Details'}
+                View Details
               </span>
               <span className="sm:hidden">
-                {allImages.length > 1 ? `${allImages.length} Images` : 'View'}
+                View
               </span>
             </Button>
             <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)} className="px-2 sm:px-3">
