@@ -173,7 +173,11 @@ const Contact = () => {
                   Call us toll-free and speak directly to an equipment specialist at our plant. 
                   Our team is ready to discuss your specific needs and provide expert guidance.
                 </p>
-                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark w-full sm:w-auto">
+                <Button 
+                  size="lg" 
+                  className="bg-primary text-primary-foreground hover:bg-primary-dark w-full sm:w-auto"
+                  onClick={() => window.open('tel:+18003282358', '_self')}
+                >
                   <Phone className="mr-2 h-4 w-4 md:h-5 md:w-5" />
                   Call 1-800-328-2358
                 </Button>
