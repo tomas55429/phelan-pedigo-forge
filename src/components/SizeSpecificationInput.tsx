@@ -63,6 +63,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       { key: 'weight', label: 'Weight', enabled: true, visible: true }
     ]
   );
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
   // Update dimensions when customDimensions prop changes
@@ -400,8 +402,21 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
   };
 
   const saveChanges = async () => {
+    if (!productId) {
+      toast({
+        title: "Error",
+        description: "Product ID is required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSaving(true);
     try {
       const { supabase } = await import('@/integrations/supabase/client');
+      
+      console.log('Starting to save size specifications for product:', productId);
+      console.log('Current sizeSpecs:', sizeSpecs);
       
       // Delete existing size sets for this product
       const deleteQuery = supabase
@@ -410,12 +425,19 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         .eq('product_id', productId);
       
       const { error: deleteError } = await deleteQuery;
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Error deleting existing size sets:', deleteError);
+        throw deleteError;
+      }
+
+      console.log('Successfully deleted existing size sets');
 
       // Prepare new size sets from current state
       const newSizeSets: any[] = [];
       
-      sizeSpecs.forEach((spec) => {
+      sizeSpecs.forEach((spec, specIndex) => {
+        console.log(`Processing spec ${specIndex} for variant ${spec.variantId}:`, spec);
+        
         // Get the maximum length across all dimensions for this spec
         const maxLen = Math.max(
           spec.width?.length || 0,
@@ -426,25 +448,34 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
           1
         );
 
+        console.log(`Max length for spec ${specIndex}:`, maxLen);
+
         for (let i = 0; i < maxLen; i++) {
           const sizeSetRecord: any = {
             product_id: productId,
             set_index: i,
-            width: spec.width?.[i] || null,
-            length: spec.length?.[i] || null,
-            depth: spec.depth?.[i] || null,
-            height: spec.height?.[i] || null,
-            weight: spec.weight?.[i] || null,
+            width: (spec.width?.[i] && spec.width[i].trim()) || null,
+            length: (spec.length?.[i] && spec.length[i].trim()) || null,
+            depth: (spec.depth?.[i] && spec.depth[i].trim()) || null,
+            height: (spec.height?.[i] && spec.height[i].trim()) || null,
+            weight: (spec.weight?.[i] && spec.weight[i].trim()) || null,
           };
 
-          if (spec.variantId) {
+          // Add variant_id if this is for a specific variant
+          if (spec.variantId && spec.variantId.trim()) {
             sizeSetRecord.variant_id = spec.variantId;
           }
 
-          // Only add if at least one dimension has a value
-          const hasValue = Object.values(sizeSetRecord).some(
-            val => val && typeof val === 'string' && val.trim().length > 0
-          );
+          // Check if at least one dimension has a non-empty value
+          const hasValue = [
+            sizeSetRecord.width,
+            sizeSetRecord.length,
+            sizeSetRecord.depth,
+            sizeSetRecord.height,
+            sizeSetRecord.weight
+          ].some(val => val && val.trim().length > 0);
+          
+          console.log(`Size set ${i} for spec ${specIndex}:`, sizeSetRecord, 'hasValue:', hasValue);
           
           if (hasValue) {
             newSizeSets.push(sizeSetRecord);
@@ -452,19 +483,38 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         }
       });
 
-      // Insert new size sets
+      console.log('Prepared new size sets:', newSizeSets);
+
+      // Insert new size sets if any
       if (newSizeSets.length > 0) {
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from('product_size_sets')
-          .insert(newSizeSets);
+          .insert(newSizeSets)
+          .select();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error inserting new size sets:', error);
+          throw error;
+        }
+        
+        console.log('Successfully inserted size sets:', data);
+        
+        toast({
+          title: "Success",
+          description: `${newSizeSets.length} size specifications saved successfully`
+        });
+      } else {
+        console.log('No size sets to save');
+        toast({
+          title: "Info",
+          description: "No size specifications to save"
+        });
       }
 
-      toast({
-        title: "Success",
-        description: `Size specifications saved successfully`
-      });
+      // Call onSpecificationsChange to update parent component
+      if (onSpecificationsChange) {
+        onSpecificationsChange(newSizeSets);
+      }
 
     } catch (error: any) {
       console.error('Error saving size specifications:', error);
@@ -473,6 +523,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         description: error.message || 'Failed to save size specifications',
         variant: "destructive"
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -493,8 +545,8 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
                 onCheckedChange={setIsVertical}
               />
             </div>
-            <Button onClick={saveChanges} variant="default" size="sm">
-              Save Changes
+            <Button onClick={saveChanges} variant="default" size="sm" disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save Changes"}
             </Button>
             <Button onClick={clearAll} variant="outline" size="sm">
               <RotateCcw className="h-4 w-4 mr-2" />
