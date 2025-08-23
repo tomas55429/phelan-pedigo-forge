@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Phone, ArrowRight } from 'lucide-react';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import heroImage from '@/assets/operating-room-new.jpg';
 
 const Hero = () => {
@@ -7,13 +8,14 @@ const Hero = () => {
     <section className="relative bg-gradient-hero min-h-[90vh] flex items-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
+        <OptimizedImage
           src={heroImage}
           alt="Phelan Manufacturing facility"
           className="w-full h-full object-cover opacity-40"
+          priority={true}
           loading="eager"
           decoding="async"
-          fetchPriority="high"
+          sizes="100vw"
         />
         <div className="absolute inset-0 bg-gradient-hero opacity-50"></div>
       </div>
@@ -23,13 +25,14 @@ const Hero = () => {
         <div className="max-w-3xl text-center mx-auto text-white">
           <div className="animate-fade-in">
             <div className="flex justify-center mb-6">
-              <img 
+              <OptimizedImage 
                 src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" 
                 alt="Phelan Manufacturing Corporation Logo"
                 className="h-30 md:h-36 lg:h-42 w-auto"
+                priority={true}
                 loading="eager"
                 decoding="async"
-                fetchPriority="high"
+                sizes="(max-width: 768px) 120px, (max-width: 1024px) 144px, 168px"
               />
             </div>
             <div className="text-2xl md:text-3xl font-bold mb-8 text-white drop-shadow-lg">
