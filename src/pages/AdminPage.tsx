@@ -436,11 +436,22 @@ const AdminPage = () => {
   };
   const uploadCategoryImage = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      // Import image optimization utility
+      const { compressImage, getOptimalFormat } = await import('@/utils/imageOptimization');
+      
+      // Compress the image before upload
+      const optimizedFormat = getOptimalFormat(file.name.split('.').pop());
+      const compressedBlob = await compressImage(file, {
+        maxWidth: 800,
+        maxHeight: 600,
+        quality: 0.85,
+        format: optimizedFormat
+      });
+      
+      const fileName = `category-${Date.now()}.${optimizedFormat}`;
       const {
         error: uploadError
-      } = await supabase.storage.from('product-images').upload(fileName, file);
+      } = await supabase.storage.from('product-images').upload(fileName, compressedBlob);
       if (uploadError) throw uploadError;
       const {
         data
@@ -457,11 +468,22 @@ const AdminPage = () => {
   };
   const uploadProductImage = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      // Import image optimization utility
+      const { compressImage, getOptimalFormat } = await import('@/utils/imageOptimization');
+      
+      // Compress the image before upload
+      const optimizedFormat = getOptimalFormat(file.name.split('.').pop());
+      const compressedBlob = await compressImage(file, {
+        maxWidth: 1200,
+        maxHeight: 1200,
+        quality: 0.85,
+        format: optimizedFormat
+      });
+      
+      const fileName = `product-${Date.now()}.${optimizedFormat}`;
       const {
         error: uploadError
-      } = await supabase.storage.from('product-images').upload(fileName, file);
+      } = await supabase.storage.from('product-images').upload(fileName, compressedBlob);
       if (uploadError) throw uploadError;
       const {
         data
@@ -537,13 +559,24 @@ const AdminPage = () => {
         for (let index = 0; index < customProductAdditionalImages.length; index++) {
           const item = customProductAdditionalImages[index];
           try {
+            // Import image optimization utility
+            const { compressImage, getOptimalFormat } = await import('@/utils/imageOptimization');
+            
+            // Compress the image before upload
+            const optimizedFormat = getOptimalFormat(item.file.name.split('.').pop());
+            const compressedBlob = await compressImage(item.file, {
+              maxWidth: 1200,
+              maxHeight: 1200,
+              quality: 0.85,
+              format: optimizedFormat
+            });
+            
             // Create unique filename with index to prevent conflicts
-            const fileExt = item.file.name.split('.').pop();
             const uniqueTimestamp = Date.now() + index; // Add index to ensure uniqueness
-            const fileName = `custom-${uniqueTimestamp}.${fileExt}`;
+            const fileName = `custom-${uniqueTimestamp}.${optimizedFormat}`;
             const {
               error: uploadError
-            } = await supabase.storage.from('product-images').upload(fileName, item.file);
+            } = await supabase.storage.from('product-images').upload(fileName, compressedBlob);
             if (uploadError) {
               console.error(`Upload error for image ${index}:`, uploadError);
               continue; // Skip this image and continue with others
@@ -1079,12 +1112,23 @@ const AdminPage = () => {
 
       // Upload image for accessories (optional features) if provided
       if (isOptional && accessoryImage) {
-        const fileExt = accessoryImage.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
+        // Import image optimization utility
+        const { compressImage, getOptimalFormat } = await import('@/utils/imageOptimization');
+        
+        // Compress the image before upload
+        const optimizedFormat = getOptimalFormat(accessoryImage.name.split('.').pop());
+        const compressedBlob = await compressImage(accessoryImage, {
+          maxWidth: 800,
+          maxHeight: 800,
+          quality: 0.85,
+          format: optimizedFormat
+        });
+        
+        const fileName = `accessory-${Date.now()}.${optimizedFormat}`;
         const filePath = `${fileName}`;
         const {
           error: uploadError
-        } = await supabase.storage.from('product-images').upload(filePath, accessoryImage);
+        } = await supabase.storage.from('product-images').upload(filePath, compressedBlob);
         if (uploadError) throw uploadError;
         const {
           data: {
@@ -1129,11 +1173,22 @@ const AdminPage = () => {
 
       // Upload image for accessories if provided
       if (accessoryImage) {
-        const fileExt = accessoryImage.name.split('.').pop();
-        const filePath = `accessory-${Date.now()}.${fileExt}`;
+        // Import image optimization utility
+        const { compressImage, getOptimalFormat } = await import('@/utils/imageOptimization');
+        
+        // Compress the image before upload
+        const optimizedFormat = getOptimalFormat(accessoryImage.name.split('.').pop());
+        const compressedBlob = await compressImage(accessoryImage, {
+          maxWidth: 800,
+          maxHeight: 800,
+          quality: 0.85,
+          format: optimizedFormat
+        });
+        
+        const filePath = `accessory-${Date.now()}.${optimizedFormat}`;
         const {
           error: uploadError
-        } = await supabase.storage.from('product-images').upload(filePath, accessoryImage);
+        } = await supabase.storage.from('product-images').upload(filePath, compressedBlob);
         if (uploadError) throw uploadError;
         const {
           data

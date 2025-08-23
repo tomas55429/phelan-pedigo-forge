@@ -348,7 +348,19 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     const displayDescription = (product.description || '').replace(/\[Custom Product ID:\s*([^\]]+)\]/gi, '').replace(/\s{2,}/g, ' ').trim();
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
-          {allImages[0] ? <img src={allImages[0].url} alt={product.name} className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover cursor-pointer hover:opacity-90 transition-opacity" loading="lazy" decoding="async" sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw" onClick={() => setEnlargedImage(allImages[0].url)} /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
+          {allImages[0] ? <img 
+            src={allImages[0].url} 
+            alt={product.name} 
+            className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover cursor-pointer hover:opacity-90 transition-opacity" 
+            loading="lazy" 
+            decoding="async" 
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            srcSet={allImages[0].url.includes('supabase') ? 
+              `${allImages[0].url}?width=400&quality=80 400w, ${allImages[0].url}?width=800&quality=80 800w` : 
+              undefined
+            }
+            onClick={() => setEnlargedImage(allImages[0].url)} 
+          /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />
             </div>}
           {/* Badges */}
