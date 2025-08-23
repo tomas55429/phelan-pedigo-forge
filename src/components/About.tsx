@@ -3,61 +3,45 @@ import { Button } from '@/components/ui/button';
 import { Award, Users, Globe, Wrench } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import operatingRoomImage from '@/assets/operating-room.jpg';
-
 const About = () => {
   const navigate = useNavigate();
-  const stats = [
-    {
-      icon: <Award className="h-8 w-8" />,
-      number: "75+",
-      label: "Years in Business",
-      description: "Since 1948"
-    },
-    {
-      icon: <Users className="h-8 w-8" />,
-      number: "3rd",
-      label: "Generation",
-      description: "Family Legacy"
-    },
-    {
-      icon: <Globe className="h-8 w-8" />,
-      number: "100%",
-      label: (
-        <span>
-          Made in <span className="text-red-500">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
-        </span>
-      ),
-      description: "American Quality"
-    },
-    {
-      icon: <Wrench className="h-8 w-8" />,
-      number: "1000+",
-      label: "Custom Solutions",
-      description: "Delivered Worldwide"
-    }
-  ];
-
-  const values = [
-    {
-      title: "Honesty",
-      description: "Be transparent with our clients and employees"
-    },
-    {
-      title: "Passion",
-      description: "For our work and our interactions with others"
-    },
-    {
-      title: "Dedication",
-      description: "To the history of the company and execution at the highest levels"
-    },
-    {
-      title: "Empathy",
-      description: "Thinking and adapting our work seeking customer satisfaction as our own with attention to detail and asking the question why"
-    }
-  ];
-
-  return (
-    <section id="about" className="py-20 bg-background">
+  const stats = [{
+    icon: <Award className="h-8 w-8" />,
+    number: "75+",
+    label: "Years in Business",
+    description: "Since 1948"
+  }, {
+    icon: <Users className="h-8 w-8" />,
+    number: "3rd",
+    label: "Generation",
+    description: "Family Legacy"
+  }, {
+    icon: <Globe className="h-8 w-8" />,
+    number: "100%",
+    label: <span>
+          Made in <span className="text-blue-500">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
+        </span>,
+    description: "American Quality"
+  }, {
+    icon: <Wrench className="h-8 w-8" />,
+    number: "1000+",
+    label: "Custom Solutions",
+    description: "Delivered Worldwide"
+  }];
+  const values = [{
+    title: "Honesty",
+    description: "Be transparent with our clients and employees"
+  }, {
+    title: "Passion",
+    description: "For our work and our interactions with others"
+  }, {
+    title: "Dedication",
+    description: "To the history of the company and execution at the highest levels"
+  }, {
+    title: "Empathy",
+    description: "Thinking and adapting our work seeking customer satisfaction as our own with attention to detail and asking the question why"
+  }];
+  return <section id="about" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
@@ -78,22 +62,14 @@ const About = () => {
             </Button>
           </div>
           <div className="relative">
-            <img
-              src={operatingRoomImage}
-              alt="Medical professionals using Phelan equipment"
-              className="rounded-lg shadow-elevated w-full h-[400px] object-cover"
-              loading="lazy"
-              decoding="async"
-              sizes="(max-width: 768px) 100vw, 50vw"
-            />
+            <img src={operatingRoomImage} alt="Medical professionals using Phelan equipment" className="rounded-lg shadow-elevated w-full h-[400px] object-cover" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" />
             <div className="absolute inset-0 bg-gradient-primary opacity-10 rounded-lg"></div>
           </div>
         </div>
 
         {/* Stats Section */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-20">
-          {stats.map((stat, index) => (
-            <Card key={index} className="text-center professional-hover bg-card shadow-card">
+          {stats.map((stat, index) => <Card key={index} className="text-center professional-hover bg-card shadow-card">
               <CardContent className="p-6">
                 <div className="flex justify-center mb-4">
                   <div className="p-3 bg-primary/10 rounded-full text-primary">
@@ -104,8 +80,7 @@ const About = () => {
                 <div className="font-semibold text-foreground mb-1">{stat.label}</div>
                 <div className="text-sm text-muted-foreground">{stat.description}</div>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
 
         {/* Values Section */}
@@ -121,14 +96,12 @@ const About = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {values.map((value, index) => (
-              <Card key={index} className="professional-hover bg-card shadow-card">
+            {values.map((value, index) => <Card key={index} className="professional-hover bg-card shadow-card">
                 <CardContent className="p-8">
                   <h4 className="text-xl font-bold text-foreground mb-4">{value.title}</h4>
                   <p className="text-muted-foreground leading-relaxed">{value.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
 
@@ -150,8 +123,6 @@ const About = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default About;
