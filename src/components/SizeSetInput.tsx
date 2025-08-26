@@ -240,8 +240,72 @@ export const SizeSetInput: React.FC<SizeSetInputProps> = ({
       });
     }
   };
-  return <Card>
-      
-      
-    </Card>;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Size Specifications</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Add size specifications for this product. Use fractions like ½, ¼, ¾, ⅛, ⅜, ⅝, ⅞ for precise measurements.
+        </p>
+        
+        {/* Variant Selection */}
+        {variants && variants.length > 0 && (
+          <div className="flex items-center gap-4">
+            <Label>Size specifications for:</Label>
+            <select
+              value={selectedVariantId || ''}
+              onChange={(e) => setSelectedVariantId(e.target.value || null)}
+              className="flex h-10 w-auto rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="">Product (General)</option>
+              {variants.map((variant) => (
+                <option key={variant.id} value={variant.id}>
+                  {variant.variant_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={sizeSets.map((_, index) => `size-set-${index}`)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {sizeSets.map((sizeSet, index) => (
+                <SortableSizeSet
+                  key={`size-set-${index}`}
+                  sizeSet={sizeSet}
+                  index={index}
+                  onUpdate={updateSizeSet}
+                  onRemove={removeSizeSet}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+
+        <div className="flex gap-2">
+          <Button type="button" onClick={addSizeSet} variant="outline" size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Size Set
+          </Button>
+          
+          <Button type="button" onClick={saveSizeSets} size="sm">
+            Save Size Sets
+          </Button>
+        </div>
+
+        {sizeSets.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No size sets added yet. Click "Add Size Set" to get started.
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
 };
