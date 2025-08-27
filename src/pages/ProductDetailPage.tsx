@@ -29,8 +29,12 @@ const ProductDetailPage = () => {
         return;
       }
 
+      console.log('🔍 ProductDetailPage: productSlug =', productSlug);
       const productId = parseProductSlug(productSlug);
+      console.log('🔍 ProductDetailPage: parsed productId =', productId);
+      
       if (!productId) {
+        console.log('🚨 ProductDetailPage: Could not parse productId from slug');
         toast({
           title: "Product not found",
           description: "The product you're looking for could not be found.",
@@ -44,10 +48,14 @@ const ProductDetailPage = () => {
         let productData;
         let isCustomProduct = false;
         
+        console.log('🔍 ProductDetailPage: productId =', productId);
+        console.log('🔍 ProductDetailPage: productId.startsWith("custom-") =', productId.startsWith('custom-'));
+        
         // Check if this is a custom product
         if (productId.startsWith('custom-')) {
           isCustomProduct = true;
           const customProductId = productId.replace('custom-', '');
+          console.log('🔍 ProductDetailPage: customProductId =', customProductId);
           
           // Fetch from custom_products table
           const { data: customData, error: customError } = await supabase
@@ -55,6 +63,9 @@ const ProductDetailPage = () => {
             .select('*')
             .eq('id', customProductId)
             .single();
+            
+          console.log('🔍 ProductDetailPage: customData =', customData);
+          console.log('🔍 ProductDetailPage: customError =', customError);
             
           if (customData && !customError) {
             // Convert custom product to regular product format
@@ -72,6 +83,7 @@ const ProductDetailPage = () => {
             };
           }
         } else {
+          console.log('🔍 ProductDetailPage: Fetching regular product with ID =', productId);
           // Fetch from regular products table
           const { data: regularData, error: regularError } = await supabase
             .from('products')
@@ -79,12 +91,18 @@ const ProductDetailPage = () => {
             .eq('id', productId)
             .single();
             
+          console.log('🔍 ProductDetailPage: regularData =', regularData);
+          console.log('🔍 ProductDetailPage: regularError =', regularError);
+            
           if (!regularError && regularData) {
             productData = regularData;
           }
         }
 
+        console.log('🔍 ProductDetailPage: Final productData =', productData);
+
         if (!productData) {
+          console.log('🚨 ProductDetailPage: No productData found');
           toast({
             title: "Product not found",
             description: "The product you're looking for could not be found.",
