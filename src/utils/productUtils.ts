@@ -14,10 +14,21 @@ export function generateProductSlug(productName: string, productId: string): str
 }
 
 export function parseProductSlug(slug: string): string | null {
-  // Extract product ID from slug (last 8 characters after final hyphen)
+  // Extract product ID from slug (last part after final hyphen)
   const parts = slug.split('-');
   const lastPart = parts[parts.length - 1];
   
+  // Check if this is a custom product slug (contains "custom-")
+  if (slug.includes('custom-')) {
+    // For custom products, reconstruct the full custom ID
+    const customIndex = slug.indexOf('custom-');
+    if (customIndex !== -1) {
+      const customPart = slug.substring(customIndex);
+      return customPart; // Return "custom-abc12345"
+    }
+  }
+  
+  // For regular products, return the last 8-character part
   if (lastPart && lastPart.length === 8) {
     return lastPart;
   }

@@ -41,14 +41,50 @@ const ProductDetailPage = () => {
       }
 
       try {
-        // Fetch product data
-        const { data: productData, error: productError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('id', productId)
-          .single();
+        let productData;
+        let isCustomProduct = false;
+        
+        // Check if this is a custom product
+        if (productId.startsWith('custom-')) {
+          isCustomProduct = true;
+          const customProductId = productId.replace('custom-', '');
+          
+          // Fetch from custom_products table
+          const { data: customData, error: customError } = await supabase
+            .from('custom_products')
+            .select('*')
+            .eq('id', customProductId)
+            .single();
+            
+          if (customData && !customError) {
+            // Convert custom product to regular product format
+            productData = {
+              id: productId, // Keep the "custom-" prefix
+              name: customData.name,
+              description: customData.description,
+              image_url: customData.main_image_url,
+              category_id: null,
+              featured: false,
+              created_at: customData.created_at,
+              updated_at: customData.updated_at,
+              special_notes: null,
+              model_3d_url: null
+            };
+          }
+        } else {
+          // Fetch from regular products table
+          const { data: regularData, error: regularError } = await supabase
+            .from('products')
+            .select('*')
+            .eq('id', productId)
+            .single();
+            
+          if (!regularError && regularData) {
+            productData = regularData;
+          }
+        }
 
-        if (productError || !productData) {
+        if (!productData) {
           toast({
             title: "Product not found",
             description: "The product you're looking for could not be found.",
@@ -60,43 +96,70 @@ const ProductDetailPage = () => {
 
         // Fetch related data in parallel
         const [categoriesResult, variantsResult, featuresResult, specificationsResult, customImagesResult] = await Promise.all([
-          supabase
-            .from('product_categories')
-            .select(`
-              categories (
-                id,
-                name
-              )
-            `)
-            .eq('product_id', productId),
+          // For custom products, get custom category; for regular products, get from product_categories
+          isCustomProduct ? 
+            supabase.from('categories').select('*').eq('name', 'Custom') :
+            supabase
+              .from('product_categories')
+              .select(`
+                categories (
+                  id,
+                  name
+                )
+              `)
+              .eq('product_id', productId.replace('custom-', '')),
           
-          supabase
-            .from('product_variants')
-            .select('*')
-            .eq('product_id', productId),
+          // Only fetch variants for regular products
+          isCustomProduct ? 
+            Promise.resolve({ data: [] }) :
+            supabase
+              .from('product_variants')
+              .select('*')
+              .eq('product_id', productId),
           
-          supabase
-            .from('product_features')
-            .select('*')
-            .eq('product_id', productId),
+          // Only fetch features for regular products  
+          isCustomProduct ?
+            Promise.resolve({ data: [] }) :
+            supabase
+              .from('product_features')
+              .select('*')
+              .eq('product_id', productId),
           
-          supabase
-            .from('product_specifications')
-            .select('*')
-            .eq('product_id', productId),
+          // Only fetch specifications for regular products
+          isCustomProduct ?
+            Promise.resolve({ data: [] }) :
+            supabase
+              .from('product_specifications')
+              .select('*')
+              .eq('product_id', productId),
           
-          // For now skip custom_products until we can fix the column name issue
-          Promise.resolve({ data: [] })
+          // Fetch custom product images if it's a custom product
+          isCustomProduct ?
+            supabase
+              .from('custom_product_images')
+              .select('*')
+              .eq('custom_product_id', productId.replace('custom-', ''))
+              .order('sort_order') :
+            Promise.resolve({ data: [] })
         ]);
 
         // Process categories
-        const categories = categoriesResult.data?.map(pc => pc.categories).filter(Boolean) || [];
+        let categories = [];
+        if (isCustomProduct) {
+          categories = categoriesResult.data || [];
+        } else {
+          categories = categoriesResult.data?.map(pc => pc.categories).filter(Boolean) || [];
+        }
 
-        // Process custom images
-        const additionalImages = customImagesResult.data?.map((cp: any) => ({
-          image_url: cp.main_image_url,
-          description: cp.description
-        })).filter((img: any) => img.image_url) || [];
+        // Process custom images for custom products
+        let additionalImages = [];
+        if (isCustomProduct && customImagesResult.data) {
+          additionalImages = customImagesResult.data.map((img: any) => ({
+            image_url: img.image_url,
+            description: img.description || 'Additional Image',
+            sort_order: img.sort_order
+          }));
+        }
 
         const productWithDetails: ProductWithDetails = {
           product: productData,
