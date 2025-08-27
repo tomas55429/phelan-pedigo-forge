@@ -2,28 +2,20 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 const ServicesPage = () => {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header with Logo */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center">
-            <img 
-              src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" 
-              alt="Phelan Manufacturing Corporation" 
-              className="h-16 w-auto mr-4"
-            />
-            <div>
-              <h1 className="text-4xl font-bold text-primary">Our Services</h1>
-              <p className="text-xl text-muted-foreground mt-2">66 Years of Quality Manufacturing Excellence</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <Header />
+      
       <div className="container mx-auto px-4 py-12 space-y-12">
+        {/* Page Title */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-primary mb-4">Our Services</h1>
+          <p className="text-xl text-muted-foreground">66 Years of Quality Manufacturing Excellence</p>
+        </div>
         {/* Who We Are Section */}
         <Card className="shadow-lg">
           <CardHeader>
@@ -227,6 +219,8 @@ const ServicesPage = () => {
           </CardContent>
         </Card>
       </div>
+      
+      <Footer />
     </div>
   );
 };
