@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2, RotateCcw, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProductVariant {
   id: string;
@@ -81,12 +82,11 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         console.log('Initializing size specs for variants:', variants.map(v => v.id));
         
         // Fetch size sets for each variant
-        const { data: sizeSets } = await import('@/integrations/supabase/client').then(module => 
-          module.supabase.from('product_size_sets')
-            .select('*')
-            .eq('product_id', productId)
-            .order('set_index')
-        );
+        const { data: sizeSets } = await supabase
+          .from('product_size_sets')
+          .select('*')
+          .eq('product_id', productId)
+          .order('set_index');
 
         console.log('Fetched size sets from database:', sizeSets);
 
@@ -145,13 +145,12 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         console.log('Initializing general product size specs');
         
         // Fetch size sets for general product (no variant_id)
-        const { data: sizeSets } = await import('@/integrations/supabase/client').then(module => 
-          module.supabase.from('product_size_sets')
-            .select('*')
-            .eq('product_id', productId)
-            .is('variant_id', null)
-            .order('set_index')
-        );
+        const { data: sizeSets } = await supabase
+          .from('product_size_sets')
+          .select('*')
+          .eq('product_id', productId)
+          .is('variant_id', null)
+          .order('set_index');
 
         console.log('Fetched size sets for general product:', sizeSets);
 
@@ -474,8 +473,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
 
     setIsSaving(true);
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
       console.log('Starting to save size specifications for product:', productId);
       console.log('Current sizeSpecs:', sizeSpecs);
       
@@ -611,8 +608,6 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     if (!productId) return;
 
     try {
-      const { supabase } = await import('@/integrations/supabase/client');
-      
       // Fetch fresh size sets from database
       const { data: sizeSets } = await supabase
         .from('product_size_sets')
