@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FileText, ZoomIn, ZoomOut, RotateCcw, X, Share, ExternalLink } from 'lucide-react';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import Product3DViewer from './Product3DViewer';
 import VariantDetail from './VariantDetail';
 import { ProductVariantsTableNew } from './ProductVariantsTableNew';
@@ -133,14 +134,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               return allImages.map((image, index) => (
                 <div key={index} className="border-2 border-muted rounded-lg p-8 bg-muted/20 min-h-[300px] flex items-center justify-center">
                   <div className="relative group w-full">
-                    <img 
+                    <OptimizedImage 
                       src={image.url} 
                       alt={`${productWithDetails.product.name} - ${image.description}`} 
-                      className="w-full h-auto object-contain max-h-96 rounded cursor-pointer hover:opacity-90 transition-opacity" 
+                      className="w-full h-auto object-contain max-h-96 rounded"
+                      priority={index === 0}
+                      quality={85}
                       onClick={() => onImageEnlarge?.(image.url)} 
-                      loading="lazy" 
-                      decoding="async" 
-                      sizes="(max-width: 768px) 100vw, 50vw" 
                     />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
                       <Button 

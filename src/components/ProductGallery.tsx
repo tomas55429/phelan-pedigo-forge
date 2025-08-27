@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw, ExternalLink } from 'lucide-react';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ProductVariantsTableNew } from './ProductVariantsTableNew';
 import VariantDetail from './VariantDetail';
@@ -343,17 +344,11 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     const displayDescription = (product.description || '').replace(/\[Custom Product ID:\s*([^\]]+)\]/gi, '').replace(/\s{2,}/g, ' ').trim();
     return <Card className="professional-hover bg-card shadow-card overflow-hidden">
         <div className="relative">
-          {allImages[0] ? <img 
+          {allImages[0] ? <OptimizedImage 
             src={allImages[0].url} 
             alt={product.name} 
-            className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover cursor-pointer hover:opacity-90 transition-opacity" 
-            loading="lazy" 
-            decoding="async" 
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            srcSet={allImages[0].url.includes('supabase') ? 
-              `${allImages[0].url}?width=400&quality=80 400w, ${allImages[0].url}?width=800&quality=80 800w` : 
-              undefined
-            }
+            className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" 
+            quality={70}
             onClick={() => setEnlargedImage(allImages[0].url)} 
           /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />

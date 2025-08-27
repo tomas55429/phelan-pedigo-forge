@@ -183,6 +183,15 @@ All colors MUST be HSL.
     }
   }
 
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
   /* Professional hover effects */
   .professional-hover {
     @apply transition-all duration-300 ease-in-out;
