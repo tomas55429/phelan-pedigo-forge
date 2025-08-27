@@ -61,8 +61,8 @@ const ProductDetailPage = () => {
           const { data: customData, error: customError } = await supabase
             .from('custom_products')
             .select('*')
-            .eq('id', customProductId)
-            .single();
+            .like('id', `${customProductId}%`)
+            .maybeSingle();
             
           console.log('🔍 ProductDetailPage: customData =', customData);
           console.log('🔍 ProductDetailPage: customError =', customError);
@@ -88,8 +88,8 @@ const ProductDetailPage = () => {
           const { data: regularData, error: regularError } = await supabase
             .from('products')
             .select('*')
-            .eq('id', productId)
-            .single();
+            .like('id', `${productId}%`)
+            .maybeSingle();
             
           console.log('🔍 ProductDetailPage: regularData =', regularData);
           console.log('🔍 ProductDetailPage: regularError =', regularError);
@@ -125,7 +125,7 @@ const ProductDetailPage = () => {
                   name
                 )
               `)
-              .eq('product_id', productId.replace('custom-', '')),
+              .like('product_id', `${productId.replace('custom-', '')}%`),
           
           // Only fetch variants for regular products
           isCustomProduct ? 
@@ -133,7 +133,7 @@ const ProductDetailPage = () => {
             supabase
               .from('product_variants')
               .select('*')
-              .eq('product_id', productId),
+              .like('product_id', `${productId}%`),
           
           // Only fetch features for regular products  
           isCustomProduct ?
@@ -141,7 +141,7 @@ const ProductDetailPage = () => {
             supabase
               .from('product_features')
               .select('*')
-              .eq('product_id', productId),
+              .like('product_id', `${productId}%`),
           
           // Only fetch specifications for regular products
           isCustomProduct ?
@@ -149,14 +149,14 @@ const ProductDetailPage = () => {
             supabase
               .from('product_specifications')
               .select('*')
-              .eq('product_id', productId),
+              .like('product_id', `${productId}%`),
           
           // Fetch custom product images if it's a custom product
           isCustomProduct ?
             supabase
               .from('custom_product_images')
               .select('*')
-              .eq('custom_product_id', productId.replace('custom-', ''))
+              .like('custom_product_id', `${productId.replace('custom-', '')}%`)
               .order('sort_order') :
             Promise.resolve({ data: [] })
         ]);
