@@ -479,19 +479,33 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       console.log('Starting to save size specifications for product:', productId);
       console.log('Current sizeSpecs:', sizeSpecs);
       
-      // Delete existing size sets for this product
-      const deleteQuery = supabase
-        .from('product_size_sets')
-        .delete()
-        .eq('product_id', productId);
+      // Only delete size sets for the variants we're currently editing
+      const variantIds = sizeSpecs.map(spec => spec.variantId).filter(id => id !== '');
+      const hasGeneralProduct = sizeSpecs.some(spec => spec.variantId === '');
       
-      const { error: deleteError } = await deleteQuery;
-      if (deleteError) {
-        console.error('Error deleting existing size sets:', deleteError);
-        throw deleteError;
+      // Delete existing size sets for the current variants only
+      for (const spec of sizeSpecs) {
+        let deleteQuery = supabase
+          .from('product_size_sets')
+          .delete()
+          .eq('product_id', productId);
+          
+        if (spec.variantId === '') {
+          // For general product (no variant)
+          deleteQuery = deleteQuery.is('variant_id', null);
+        } else {
+          // For specific variant
+          deleteQuery = deleteQuery.eq('variant_id', spec.variantId);
+        }
+        
+        const { error: deleteError } = await deleteQuery;
+        if (deleteError) {
+          console.error(`Error deleting existing size sets for variant ${spec.variantId}:`, deleteError);
+          throw deleteError;
+        }
       }
 
-      console.log('Successfully deleted existing size sets');
+      console.log('Successfully deleted existing size sets for current variants');
 
       // Prepare new size sets from current state
       const newSizeSets: any[] = [];
@@ -572,6 +586,9 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         });
       }
 
+      // Refresh the data to show newly saved specifications immediately
+      await refreshSizeSpecs();
+
       // Call onSpecificationsChange to update parent component
       if (onSpecificationsChange) {
         onSpecificationsChange(newSizeSets);
@@ -586,6 +603,94 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  // Helper function to refresh size specs from database
+  const refreshSizeSpecs = async () => {
+    if (!productId) return;
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Fetch fresh size sets from database
+      const { data: sizeSets } = await supabase
+        .from('product_size_sets')
+        .select('*')
+        .eq('product_id', productId)
+        .order('set_index');
+
+      console.log('Refreshed size sets from database:', sizeSets);
+
+      if (variants.length > 0) {
+        // For products with variants
+        const refreshedSpecs = variants.map(variant => {
+          const variantSizeSets = sizeSets?.filter(set => set.variant_id === variant.id) || [];
+          
+          const widthValues: string[] = [];
+          const lengthValues: string[] = [];
+          const depthValues: string[] = [];
+          const heightValues: string[] = [];
+          const weightValues: string[] = [];
+          
+          variantSizeSets.forEach(set => {
+            const sizeSet = set as any;
+            widthValues.push(sizeSet.width || '');
+            lengthValues.push(sizeSet.length || '');
+            depthValues.push(sizeSet.depth || '');
+            heightValues.push(sizeSet.height || '');
+            weightValues.push(sizeSet.weight || '');
+          });
+
+          const maxLen = Math.max(widthValues.length, lengthValues.length, depthValues.length, heightValues.length, weightValues.length, 1);
+          const pad = (arr: string[]) => arr.length >= maxLen ? arr : [...arr, ...Array(maxLen - arr.length).fill('')];
+
+          return {
+            variantId: variant.id,
+            width: pad(widthValues),
+            length: pad(lengthValues),
+            depth: pad(depthValues),
+            height: pad(heightValues),
+            weight: pad(weightValues)
+          };
+        });
+        
+        setSizeSpecs(refreshedSpecs);
+      } else {
+        // For general product (no variants)
+        const generalSizeSets = sizeSets?.filter(set => set.variant_id === null) || [];
+        
+        const widthValues: string[] = [];
+        const lengthValues: string[] = [];
+        const depthValues: string[] = [];
+        const heightValues: string[] = [];
+        const weightValues: string[] = [];
+        
+        generalSizeSets.forEach(set => {
+          const sizeSet = set as any;
+          widthValues.push(sizeSet.width || '');
+          lengthValues.push(sizeSet.length || '');
+          depthValues.push(sizeSet.depth || '');
+          heightValues.push(sizeSet.height || '');
+          weightValues.push(sizeSet.weight || '');
+        });
+
+        const maxLen = Math.max(widthValues.length, lengthValues.length, depthValues.length, heightValues.length, weightValues.length, 1);
+        const pad = (arr: string[]) => (arr.length >= maxLen ? arr : [...arr, ...Array(maxLen - arr.length).fill('')]);
+
+        const generalSpec = {
+          variantId: '',
+          width: pad(widthValues),
+          length: pad(lengthValues),
+          depth: pad(depthValues),
+          height: pad(heightValues),
+          weight: pad(weightValues),
+        };
+
+        setSizeSpecs([generalSpec]);
+      }
+    } catch (error) {
+      console.error('Error refreshing size specs:', error);
     }
   };
 
