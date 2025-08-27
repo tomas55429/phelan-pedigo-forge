@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Tables } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
@@ -6,11 +7,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw, ExternalLink } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ProductVariantsTableNew } from './ProductVariantsTableNew';
 import VariantDetail from './VariantDetail';
 import Product3DViewer from './Product3DViewer';
+import { generateProductUrl } from '@/utils/productUtils';
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
 type ProductFeature = Tables<'product_features'> & {
@@ -39,6 +41,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   selectedCategoryId,
   initialSearchTerm
 }) => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -446,14 +449,27 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             </Accordion>}
           
           <div className="flex space-x-2 mt-4">
-            <Button size="sm" className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" onClick={() => setSelectedProduct(productWithDetails)}>
-              <Eye className="h-4 w-4 mr-1" />
+            <Button 
+              size="sm" 
+              className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" 
+              onClick={() => navigate(generateProductUrl(product.name, product.id))}
+            >
+              <ExternalLink className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">
                 View Details
               </span>
               <span className="sm:hidden">
                 View
               </span>
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={() => setSelectedProduct(productWithDetails)}
+              className="px-2 sm:px-3"
+            >
+              <Eye className="h-4 w-4" />
+              <span className="sr-only">Quick View</span>
             </Button>
             <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)} className="px-2 sm:px-3">
               <FileText className="h-4 w-4" />
@@ -530,9 +546,20 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             </div>
             
             <div className="flex flex-col space-y-2">
-              <Button size="sm" onClick={() => setSelectedProduct(productWithDetails)}>
-                <Eye className="h-4 w-4 mr-1" />
+              <Button 
+                size="sm" 
+                onClick={() => navigate(generateProductUrl(product.name, product.id))}
+              >
+                <ExternalLink className="h-4 w-4 mr-1" />
                 View Details
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => setSelectedProduct(productWithDetails)}
+              >
+                <Eye className="h-4 w-4 mr-1" />
+                Quick View
               </Button>
               <Button size="sm" variant="outline" onClick={() => setSpecsProduct(productWithDetails)}>
                 <FileText className="h-4 w-4 mr-1" />
