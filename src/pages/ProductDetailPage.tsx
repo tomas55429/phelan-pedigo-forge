@@ -59,9 +59,7 @@ const ProductDetailPage = () => {
           
           // Fetch from custom_products table
           const { data: customData, error: customError } = await supabase
-            .from('custom_products')
-            .select('*')
-            .filter('id', 'like', `${customProductId}%`)
+            .rpc('find_custom_product_by_prefix', { prefix_text: customProductId })
             .maybeSingle();
             
           console.log('🔍 ProductDetailPage: customData =', customData);
@@ -86,9 +84,7 @@ const ProductDetailPage = () => {
           console.log('🔍 ProductDetailPage: Fetching regular product with ID =', productId);
           // Fetch from regular products table
           const { data: regularData, error: regularError } = await supabase
-            .from('products')
-            .select('*')
-            .filter('id', 'like', `${productId}%`)
+            .rpc('find_product_by_prefix', { prefix_text: productId })
             .maybeSingle();
             
           console.log('🔍 ProductDetailPage: regularData =', regularData);
@@ -117,47 +113,28 @@ const ProductDetailPage = () => {
           // For custom products, get custom category; for regular products, get from product_categories
           isCustomProduct ? 
             supabase.from('categories').select('*').eq('name', 'Custom') :
-            supabase
-              .from('product_categories')
-              .select(`
-                categories (
-                  id,
-                  name
-                )
-              `)
-              .filter('product_id', 'like', `${productId.replace('custom-', '')}%`),
+            supabase.rpc('find_product_categories_by_prefix', { prefix_text: productId.replace('custom-', '') }),
           
           // Only fetch variants for regular products
           isCustomProduct ? 
-            Promise.resolve({ data: [] }) :
-            supabase
-              .from('product_variants')
-              .select('*')
-              .filter('product_id', 'like', `${productId}%`),
+            Promise.resolve({ data: [] }) : 
+            supabase.rpc('find_product_variants_by_prefix', { prefix_text: productId }),
           
           // Only fetch features for regular products  
           isCustomProduct ?
-            Promise.resolve({ data: [] }) :
-            supabase
-              .from('product_features')
-              .select('*')
-              .filter('product_id', 'like', `${productId}%`),
+            Promise.resolve({ data: [] }) : 
+            supabase.rpc('find_product_features_by_prefix', { prefix_text: productId }),
           
           // Only fetch specifications for regular products
           isCustomProduct ?
-            Promise.resolve({ data: [] }) :
-            supabase
-              .from('product_specifications')
-              .select('*')
-              .filter('product_id', 'like', `${productId}%`),
+            Promise.resolve({ data: [] }) : 
+            supabase.rpc('find_product_specifications_by_prefix', { prefix_text: productId }),
           
           // Fetch custom product images if it's a custom product
           isCustomProduct ?
             supabase
-              .from('custom_product_images')
-              .select('*')
-              .filter('custom_product_id', 'like', `${productId.replace('custom-', '')}%`)
-              .order('sort_order') :
+              .rpc('find_custom_product_images_by_prefix', { prefix_text: productId.replace('custom-', '') })
+              .then(result => ({ ...result, data: result.data || [] })) :
             Promise.resolve({ data: [] })
         ]);
 
@@ -166,7 +143,11 @@ const ProductDetailPage = () => {
         if (isCustomProduct) {
           categories = categoriesResult.data || [];
         } else {
-          categories = categoriesResult.data?.map(pc => pc.categories).filter(Boolean) || [];
+          // RPC function returns objects with category_name directly
+          categories = categoriesResult.data?.map(pc => ({
+            id: pc.category_id,
+            name: pc.category_name
+          })).filter(Boolean) || [];
         }
 
         // Process custom images for custom products
