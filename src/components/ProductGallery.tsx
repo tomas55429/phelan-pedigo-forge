@@ -642,42 +642,23 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                       </div>;
                 })()}
                    
-                    {/* Product and Variant Features - deduplicated */}
-                    {(() => {
-                  // Get product-level features (no variant_id) and variant-specific features
-                  const productFeatures = selectedProduct.features.filter(feature => !feature.is_optional && !feature.variant_id);
-                  const variantFeatures = selectedProduct.features.filter(feature => !feature.is_optional && feature.variant_id);
-
-                  // Deduplicate variant features by feature text
-                  const deduplicatedVariantFeatures = variantFeatures.reduce((acc, feature) => {
-                    if (!acc.some(f => f.feature === feature.feature)) {
-                      acc.push(feature);
-                    }
-                    return acc;
-                  }, [] as typeof variantFeatures);
-                  const hasFeatures = productFeatures.length > 0 || deduplicatedVariantFeatures.length > 0;
-                  return hasFeatures && <div>
-                          <h2 className="text-xl font-semibold mb-4">Features</h2>
-                          
-                          {productFeatures.length > 0 && <div className="mb-4">
-                              
-                              <ul className="space-y-2">
-                                {productFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
-                                    <span className="text-lg leading-none mt-1">-</span>
-                                    <span className="font-medium">{feature.feature}</span>
-                                  </li>)}
-                              </ul>
-                            </div>}
-                          
-                          {deduplicatedVariantFeatures.length > 0 && <div>
-                              
-                              <ul className="space-y-2">
-                                {deduplicatedVariantFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
-                                    <span className="text-lg leading-none mt-1">-</span>
-                                    <span>{feature.feature}</span>
-                                  </li>)}
-                              </ul>
-                            </div>}
+                     {/* Product Features Only - variant-specific features appear only on variant pages */}
+                     {(() => {
+                   // Only show product-level features (no variant_id) on the general product page
+                   const productFeatures = selectedProduct.features.filter(feature => !feature.is_optional && !feature.variant_id);
+                   
+                   const hasFeatures = productFeatures.length > 0;
+                   return hasFeatures && <div>
+                           <h2 className="text-xl font-semibold mb-4">Features</h2>
+                           
+                           <div className="mb-4">
+                               <ul className="space-y-2">
+                                 {productFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
+                                     <span className="text-lg leading-none mt-1">-</span>
+                                     <span className="font-medium">{feature.feature}</span>
+                                   </li>)}
+                               </ul>
+                             </div>
                         </div>;
                 })()}
                     
