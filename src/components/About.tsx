@@ -63,7 +63,7 @@ const About = () => {
           </div>
           <div className="relative">
             <img src={operatingRoomImage} alt="Medical professionals using Phelan equipment" className="rounded-lg shadow-elevated w-full h-[400px] object-cover" loading="lazy" decoding="async" sizes="(max-width: 768px) 100vw, 50vw" />
-            <div className="absolute inset-0 bg-gradient-primary opacity-10 rounded-lg"></div>
+            
           </div>
         </div>
 
