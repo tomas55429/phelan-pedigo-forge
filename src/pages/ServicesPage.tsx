@@ -4,10 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
 const ServicesPage = () => {
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <Header />
       
       <div className="container mx-auto px-4 py-12 space-y-12">
@@ -62,9 +60,7 @@ const ServicesPage = () => {
                   3-D Modeling
                 </Badge>
               </div>
-              <div className="flex items-center justify-center">
-                <div className="text-6xl">🖥️</div>
-              </div>
+              
             </div>
           </CardContent>
         </Card>
@@ -202,16 +198,10 @@ const ServicesPage = () => {
               Contact us today to discuss your manufacturing needs and discover how our 66 years of experience can help your business.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a 
-                href="/contact" 
-                className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-8 py-3 text-lg font-medium hover:bg-primary/90 transition-colors"
-              >
+              <a href="/contact" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-8 py-3 text-lg font-medium hover:bg-primary/90 transition-colors">
                 Get In Touch
               </a>
-              <a 
-                href="/products" 
-                className="inline-flex items-center justify-center rounded-md border border-primary text-primary px-8 py-3 text-lg font-medium hover:bg-primary/10 transition-colors"
-              >
+              <a href="/products" className="inline-flex items-center justify-center rounded-md border border-primary text-primary px-8 py-3 text-lg font-medium hover:bg-primary/10 transition-colors">
                 View Our Products
               </a>
             </div>
@@ -220,8 +210,6 @@ const ServicesPage = () => {
       </div>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default ServicesPage;
