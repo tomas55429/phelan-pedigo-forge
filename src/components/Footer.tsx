@@ -57,6 +57,7 @@ const Footer = () => {
             <nav className="flex flex-col space-y-2">
               <button onClick={() => navigate('/')} className="text-background/80 hover:text-primary-light transition-colors text-left">Home</button>
               <button onClick={() => navigate('/products')} className="text-background/80 hover:text-primary-light transition-colors text-left">Products</button>
+              <button onClick={() => navigate('/services')} className="text-background/80 hover:text-primary-light transition-colors text-left">Services</button>
               <button onClick={() => navigate('/about')} className="text-background/80 hover:text-primary-light transition-colors text-left">About</button>
               <button onClick={() => navigate('/history')} className="text-background/80 hover:text-primary-light transition-colors text-left">History</button>
               <button onClick={() => navigate('/contact')} className="text-background/80 hover:text-primary-light transition-colors text-left">Contact</button>
