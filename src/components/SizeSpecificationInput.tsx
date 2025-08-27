@@ -201,6 +201,39 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
     setSizeSpecs(prev => {
       console.log('Current sizeSpecs before update:', prev);
       
+      // Check if the variant exists in current specs
+      const existingSpec = prev.find(spec => spec.variantId === variantId);
+      if (!existingSpec) {
+        console.warn(`Variant ${variantId} not found in current specs. Available variants:`, prev.map(s => s.variantId));
+        
+        // Auto-create missing variant spec if it's a valid variant
+        const isValidVariant = variants.some(v => v.id === variantId) || variantId === '';
+        if (isValidVariant) {
+          console.log(`Creating new spec for missing variant: ${variantId}`);
+          const newSpec = {
+            variantId,
+            width: [''],
+            length: [''],
+            depth: [''],
+            height: [''],
+            weight: ['']
+          };
+          // Set the value in the new spec
+          const current = [...(newSpec[dimension] as string[])];
+          if (index >= current.length) {
+            const toAdd = index - current.length + 1;
+            current.push(...Array(toAdd).fill(''));
+          }
+          current[index] = value;
+          newSpec[dimension] = current;
+          
+          return [...prev, newSpec];
+        } else {
+          console.error(`Invalid variant ID: ${variantId}`);
+          return prev;
+        }
+      }
+      
       const updated = prev.map(spec => {
         if (spec.variantId !== variantId) return spec;
         const current = [...(spec[dimension] as string[])];
