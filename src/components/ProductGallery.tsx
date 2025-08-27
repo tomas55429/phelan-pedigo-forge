@@ -452,7 +452,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             <Button 
               size="sm" 
               className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" 
-              onClick={() => navigate(generateProductUrl(product.name, product.id))}
+              onClick={() => {
+                const url = generateProductUrl(product.name, product.id);
+                console.log('🔍 ProductGallery: Generated URL =', url);
+                console.log('🔍 ProductGallery: Product =', { name: product.name, id: product.id });
+                navigate(url);
+              }}
             >
               <ExternalLink className="h-4 w-4 mr-1" />
               <span className="hidden sm:inline">
@@ -548,7 +553,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             <div className="flex flex-col space-y-2">
               <Button 
                 size="sm" 
-                onClick={() => navigate(generateProductUrl(product.name, product.id))}
+                onClick={() => {
+                  const url = generateProductUrl(product.name, product.id);
+                  console.log('🔍 ProductGallery List: Generated URL =', url);
+                  console.log('🔍 ProductGallery List: Product =', { name: product.name, id: product.id });
+                  navigate(url);
+                }}
               >
                 <ExternalLink className="h-4 w-4 mr-1" />
                 View Details
