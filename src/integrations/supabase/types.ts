@@ -258,6 +258,7 @@ export type Database = {
           set_index: number
           updated_at: string
           variant_id: string | null
+          weight: string | null
           width: string | null
         }
         Insert: {
@@ -270,6 +271,7 @@ export type Database = {
           set_index?: number
           updated_at?: string
           variant_id?: string | null
+          weight?: string | null
           width?: string | null
         }
         Update: {
@@ -282,6 +284,7 @@ export type Database = {
           set_index?: number
           updated_at?: string
           variant_id?: string | null
+          weight?: string | null
           width?: string | null
         }
         Relationships: []
@@ -451,6 +454,90 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_custom_product_by_prefix: {
+        Args: { prefix_text: string }
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          main_image_url: string
+          name: string
+          updated_at: string
+        }[]
+      }
+      find_custom_product_images_by_prefix: {
+        Args: { prefix_text: string }
+        Returns: {
+          created_at: string
+          custom_product_id: string
+          description: string
+          id: string
+          image_url: string
+          sort_order: number
+        }[]
+      }
+      find_product_by_prefix: {
+        Args: { prefix_text: string }
+        Returns: {
+          category_id: string
+          created_at: string
+          description: string
+          featured: boolean
+          id: string
+          image_url: string
+          model_3d_url: string
+          name: string
+          special_notes: string
+          updated_at: string
+        }[]
+      }
+      find_product_categories_by_prefix: {
+        Args: { prefix_text: string }
+        Returns: {
+          category_id: string
+          category_name: string
+          created_at: string
+          id: string
+          product_id: string
+        }[]
+      }
+      find_product_features_by_prefix: {
+        Args: { prefix_text: string }
+        Returns: {
+          created_at: string
+          feature: string
+          id: string
+          image_url: string
+          is_optional: boolean
+          product_id: string
+          variant_id: string
+        }[]
+      }
+      find_product_specifications_by_prefix: {
+        Args: { prefix_text: string }
+        Returns: {
+          created_at: string
+          id: string
+          product_id: string
+          sort_order: number
+          specification_key: string
+          specification_value: string
+          variant_id: string
+        }[]
+      }
+      find_product_variants_by_prefix: {
+        Args: { prefix_text: string }
+        Returns: {
+          created_at: string
+          id: string
+          image_url: string
+          model_3d_url: string
+          product_id: string
+          updated_at: string
+          variant_description: string
+          variant_name: string
+        }[]
+      }
       is_admin: {
         Args: Record<PropertyKey, never>
         Returns: boolean
