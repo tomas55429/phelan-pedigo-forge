@@ -46,16 +46,8 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
 }) => {
   // Helper function to format variant name - only removes trailing product codes after hyphens
   const formatVariantName = (variantName: string) => {
-    const name = variantName || '';
-
-    // If name starts with hyphen, return the full name
-    if (name.startsWith('-')) {
-      return name;
-    }
-
-    // Otherwise, remove hyphen and everything after it (product codes)
-    const cleanName = name.split('-')[0].trim();
-    return cleanName;
+    // Return the full variant name including hyphen and everything after it
+    return variantName || '';
   };
   // Get features for this variant and product-level features
   const variantFeatures = features.filter(f => f.variant_id === variant.id);

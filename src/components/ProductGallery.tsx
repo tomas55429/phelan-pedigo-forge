@@ -65,16 +65,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
   // Helper function to format variant name - only removes trailing product codes after hyphens
   const formatVariantName = (variant: ProductVariant) => {
-    const name = variant.variant_name || '';
-
-    // If name starts with hyphen, return the full name
-    if (name.startsWith('-')) {
-      return name;
-    }
-
-    // Otherwise, remove hyphen and everything after it (product codes)
-    const cleanName = name.split('-')[0].trim();
-    return cleanName;
+    // Return the full variant name including hyphen and everything after it
+    return variant.variant_name || '';
   };
 
   // TEST: Direct debugging - check if custom product images are being fetched
