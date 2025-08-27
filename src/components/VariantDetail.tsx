@@ -49,10 +49,8 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
     // Return the full variant name including hyphen and everything after it
     return variantName || '';
   };
-  // Get features for this variant and product-level features
+  // Get features for this variant only
   const variantFeatures = features.filter(f => f.variant_id === variant.id);
-  const productFeatures = features.filter(f => !f.variant_id);
-  const allFeatures = [...productFeatures, ...variantFeatures];
   const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
   const sizeSpecs = specifications.filter(spec => (spec.variant_id === variant.id || spec.variant_id === null) && (spec.specification_key.toLowerCase().includes('size') || spec.specification_key.toLowerCase().includes('dimension') || spec.specification_key.toLowerCase().includes('length') || spec.specification_key.toLowerCase().includes('lenght') ||
   // Handle misspelling
@@ -84,18 +82,6 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
             <div>
               <h2 className="text-xl font-semibold mb-4">Features</h2>
               
-              {productFeatures.length > 0 && <div className="mb-6">
-                  <h3 className="text-lg font-medium mb-3">Product Features</h3>
-                  
-                  <ul className="space-y-2">
-                    {productFeatures.map(feature => <li key={feature.id} className="flex items-start space-x-2">
-                        <span className="text-lg leading-none mt-1">-</span>
-                        <span className="font-medium">{feature.feature}</span>
-                        {feature.is_optional && <Badge variant="secondary" className="text-xs ml-2">Optional</Badge>}
-                      </li>)}
-                  </ul>
-                </div>}
-              
               {variantFeatures.length > 0 && <div>
                   
                   <ul className="space-y-2">
@@ -107,7 +93,7 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
                   </ul>
                 </div>}
               
-              {allFeatures.length === 0 && <p className="text-muted-foreground">No features available for this variant.</p>}
+              {variantFeatures.length === 0 && <p className="text-muted-foreground">No features available for this variant.</p>}
             </div>
             
             {/* Size Chart */}
