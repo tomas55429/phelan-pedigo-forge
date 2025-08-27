@@ -469,33 +469,13 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
       console.log('Starting to save size specifications for product:', productId);
       console.log('Current sizeSpecs:', sizeSpecs);
       
-      // Only delete size sets for the variants we're currently editing
-      const variantIds = sizeSpecs.map(spec => spec.variantId).filter(id => id !== '');
-      const hasGeneralProduct = sizeSpecs.some(spec => spec.variantId === '');
-      
-      // Delete existing size sets for the current variants only
-      for (const spec of sizeSpecs) {
-        let deleteQuery = supabase
-          .from('product_size_sets')
-          .delete()
-          .eq('product_id', productId);
-          
-        if (spec.variantId === '') {
-          // For general product (no variant)
-          deleteQuery = deleteQuery.is('variant_id', null);
-        } else {
-          // For specific variant
-          deleteQuery = deleteQuery.eq('variant_id', spec.variantId);
-        }
-        
-        const { error: deleteError } = await deleteQuery;
-        if (deleteError) {
-          console.error(`Error deleting existing size sets for variant ${spec.variantId}:`, deleteError);
-          throw deleteError;
-        }
-      }
+      // First, get existing size sets from database to compare
+      const { data: existingSizeSets } = await supabase
+        .from('product_size_sets')
+        .select('*')
+        .eq('product_id', productId);
 
-      console.log('Successfully deleted existing size sets for current variants');
+      console.log('Existing size sets:', existingSizeSets);
 
       // Prepare new size sets from current state
       const newSizeSets: any[] = [];
@@ -550,6 +530,32 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
 
       console.log('Prepared new size sets:', newSizeSets);
 
+      // Only delete size sets for the specific variants being updated, not all
+      const variantIdsBeingUpdated = sizeSpecs.map(spec => spec.variantId);
+      console.log('Variants being updated:', variantIdsBeingUpdated);
+
+      // Delete only the size sets for variants we're currently editing
+      for (const variantId of variantIdsBeingUpdated) {
+        let deleteQuery = supabase
+          .from('product_size_sets')
+          .delete()
+          .eq('product_id', productId);
+          
+        if (variantId === '') {
+          deleteQuery = deleteQuery.is('variant_id', null);
+        } else {
+          deleteQuery = deleteQuery.eq('variant_id', variantId);
+        }
+        
+        const { error: deleteError } = await deleteQuery;
+        if (deleteError) {
+          console.error(`Error deleting existing size sets for variant ${variantId}:`, deleteError);
+          throw deleteError;
+        }
+      }
+
+      console.log('Successfully deleted size sets for updated variants only');
+
       // Insert new size sets if any
       if (newSizeSets.length > 0) {
         const { error, data } = await supabase
@@ -576,7 +582,10 @@ export const SizeSpecificationInput: React.FC<SizeSpecificationInputProps> = ({
         });
       }
 
-      // Refresh the data to show newly saved specifications immediately
+      // Small delay to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Refresh the local state with the saved data
       await refreshSizeSpecs();
 
       // Call onSpecificationsChange to update parent component
