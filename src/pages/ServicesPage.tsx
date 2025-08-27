@@ -11,8 +11,8 @@ const ServicesPage = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center">
             <img 
-              src="/lovable-uploads/phelan-manufacturing-logo.png" 
-              alt="Phelan Manufacturing Logo" 
+              src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" 
+              alt="Phelan Manufacturing Corporation" 
               className="h-16 w-auto mr-4"
             />
             <div>
