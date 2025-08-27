@@ -19,8 +19,7 @@ const ServicesPage = () => {
         {/* Who We Are Section */}
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-primary flex items-center">
-              <span className="mr-3">🏭</span>
+            <CardTitle className="text-3xl font-bold text-primary">
               Who We Are
             </CardTitle>
           </CardHeader>
