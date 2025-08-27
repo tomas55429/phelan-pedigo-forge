@@ -62,8 +62,12 @@ const About = () => {
             </Button>
           </div>
           <div className="relative">
-            
-            
+            <img 
+              src={operatingRoomImage} 
+              alt="Modern operating room with medical equipment" 
+              className="w-full h-96 object-cover rounded-lg shadow-lg"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent rounded-lg"></div>
           </div>
         </div>
 
