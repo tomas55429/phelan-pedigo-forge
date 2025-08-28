@@ -62,6 +62,35 @@ const ServicesPage = () => {
           </CardContent>
         </Card>
 
+        {/* Welding and Fabrication Section */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="text-3xl font-bold text-primary flex items-center">
+              <span className="mr-3">🔥</span>
+              Welding and Fabrication
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-semibold text-lg mb-2">Miller Synchro Wave Welder</h4>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-semibold text-lg mb-2">Gas Tungsten Arc Welding/TIG Welding</h4>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-semibold text-lg mb-2">Materials: Stainless Steel, Aluminum, Mild Steel from 26ga. Up</h4>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-semibold text-lg mb-2">Food Grade Welding and Polishing</h4>
+              </div>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <h4 className="font-semibold text-lg mb-2">Bead Blasting – Bad Boy XLD Bead Blaster</h4>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Equipment Section */}
         <div className="space-y-8">
           <h2 className="text-3xl font-bold text-primary text-center">Our Equipment</h2>
