@@ -13,6 +13,7 @@ const Hero = () => {
           alt="Phelan Manufacturing facility"
           className="w-full h-full object-cover opacity-40"
           priority={true}
+          highQuality={true}
           loading="eager"
           decoding="async"
           sizes="100vw"
@@ -30,6 +31,7 @@ const Hero = () => {
                 alt="Phelan Manufacturing Corporation Logo"
                 className="h-30 md:h-36 lg:h-42 w-auto"
                 priority={true}
+                highQuality={true}
                 loading="eager"
                 decoding="async"
                 sizes="(max-width: 768px) 120px, (max-width: 1024px) 144px, 168px"

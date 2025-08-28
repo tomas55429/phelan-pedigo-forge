@@ -139,8 +139,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       alt={`${productWithDetails.product.name} - ${image.description}`} 
                       className="w-full h-auto object-contain max-h-96 rounded"
                       priority={index === 0}
-                      quality={85}
-                      onClick={() => onImageEnlarge?.(image.url)} 
+                      quality={90}
+                      onClick={() => onImageEnlarge?.(image.url)}
                     />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/10 rounded pointer-events-none">
                       <Button 

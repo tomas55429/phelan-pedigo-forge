@@ -348,7 +348,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
             src={allImages[0].url} 
             alt={product.name} 
             className="w-full h-64 sm:h-56 md:h-64 lg:h-72 object-cover" 
-            quality={70}
+            quality={80}
             onClick={() => setEnlargedImage(allImages[0].url)} 
           /> : <div className="w-full h-64 sm:h-56 md:h-64 lg:h-72 bg-muted flex items-center justify-center">
               <FileText className="h-12 w-12 text-muted-foreground" />

@@ -13,6 +13,7 @@ interface OptimizedImageProps {
   decoding?: 'auto' | 'async' | 'sync';
   placeholder?: string;
   quality?: number;
+  highQuality?: boolean;
   onClick?: () => void;
   useIntersectionObserver?: boolean;
 }
@@ -28,7 +29,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   loading = 'lazy',
   decoding = 'async',
   placeholder,
-  quality = 80,
+  quality = 85,
+  highQuality = false,
   onClick,
   useIntersectionObserver = true
 }) => {
@@ -81,14 +83,15 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Generate responsive image URLs with optimization
   const generateSrcSet = (baseSrc: string) => {
     if (baseSrc.includes('supabase')) {
-      const baseQuality = priority ? Math.min(quality + 10, 90) : quality;
+      const baseQuality = highQuality ? Math.min(quality + 10, 95) : (priority ? Math.min(quality + 5, 95) : quality);
       const format = supportsWebP() ? 'webp' : 'jpeg';
+      const webpBonus = format === 'webp' ? 5 : 0;
       
       return [
-        `${baseSrc}?width=400&quality=${Math.max(baseQuality - 20, 60)}&format=${format} 400w`,
-        `${baseSrc}?width=800&quality=${baseQuality}&format=${format} 800w`,
-        `${baseSrc}?width=1200&quality=${baseQuality}&format=${format} 1200w`,
-        `${baseSrc}?width=1600&quality=${baseQuality}&format=${format} 1600w`
+        `${baseSrc}?width=400&quality=${Math.min(baseQuality + webpBonus, 95)}&format=${format} 400w`,
+        `${baseSrc}?width=800&quality=${Math.min(baseQuality + webpBonus, 95)}&format=${format} 800w`,
+        `${baseSrc}?width=1200&quality=${Math.min(baseQuality + 5 + webpBonus, 95)}&format=${format} 1200w`,
+        `${baseSrc}?width=1600&quality=${Math.min(baseQuality + 5 + webpBonus, 95)}&format=${format} 1600w`
       ].join(', ');
     }
     
@@ -98,9 +101,10 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Generate optimized src URL
   const getOptimizedSrc = (baseSrc: string) => {
     if (baseSrc.includes('supabase')) {
-      const baseQuality = priority ? Math.min(quality + 10, 90) : quality;
+      const baseQuality = highQuality ? Math.min(quality + 10, 95) : (priority ? Math.min(quality + 5, 95) : quality);
       const format = supportsWebP() ? 'webp' : 'jpeg';
-      return `${baseSrc}?width=800&quality=${baseQuality}&format=${format}`;
+      const webpBonus = format === 'webp' ? 5 : 0;
+      return `${baseSrc}?width=800&quality=${Math.min(baseQuality + webpBonus, 95)}&format=${format}`;
     }
     return baseSrc;
   };
