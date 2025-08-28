@@ -561,6 +561,19 @@ export type Database = {
           variant_id: string
         }[]
       }
+      find_product_variants_by_name_slug: {
+        Args: { slug_text: string }
+        Returns: {
+          created_at: string
+          id: string
+          image_url: string
+          model_3d_url: string
+          product_id: string
+          updated_at: string
+          variant_description: string
+          variant_name: string
+        }[]
+      }
       find_product_variants_by_prefix: {
         Args: { prefix_text: string }
         Returns: {
