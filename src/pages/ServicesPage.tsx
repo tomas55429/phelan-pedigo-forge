@@ -142,10 +142,6 @@ const ServicesPage = () => {
                   </div>
                 </div>
                 <div className="bg-muted/50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-lg">Bridgeport J-Head Mill</h4>
-                  <Badge variant="outline" className="mt-2">w/ Digital Read Out</Badge>
-                </div>
-                <div className="bg-muted/50 p-4 rounded-lg">
                   <h4 className="font-semibold text-lg mb-2">Haas HKM-1 Knee Mill</h4>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">9"x49" Table Travel</Badge>
