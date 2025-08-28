@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { X, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import Product3DViewer from './Product3DViewer';
 import { ProductVariantsTableNew } from './ProductVariantsTableNew';
+import { supabase } from '@/integrations/supabase/client';
+import { generateProductUrl } from '@/utils/productUtils';
 interface ProductVariant {
   id: string;
   variant_name: string;
@@ -44,17 +46,56 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
   onClose,
   onImageEnlarge
 }) => {
+  const [freshSpecs, setFreshSpecs] = useState<ProductSpecification[]>([]);
+  const [isLoadingSpecs, setIsLoadingSpecs] = useState(true);
+
+  // Fetch fresh specifications when component opens
+  useEffect(() => {
+    const fetchFreshSpecs = async () => {
+      setIsLoadingSpecs(true);
+      try {
+        // Generate product slug from product name
+        const productSlug = generateProductUrl(productName, productId).split('/').pop() || '';
+        
+        const { data, error } = await supabase.rpc('find_product_specifications_by_name_slug', { 
+          slug_text: productSlug 
+        });
+        
+        if (error) {
+          console.error('Error fetching fresh specifications:', error);
+          setFreshSpecs(specifications); // Fallback to passed specs
+        } else {
+          setFreshSpecs(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching fresh specifications:', error);
+        setFreshSpecs(specifications); // Fallback to passed specs
+      } finally {
+        setIsLoadingSpecs(false);
+      }
+    };
+
+    fetchFreshSpecs();
+  }, [variant.id, productName, productId, specifications]);
+
   // Helper function to format variant name - only removes trailing product codes after hyphens
   const formatVariantName = (variantName: string) => {
     // Return the full variant name including hyphen and everything after it
     return variantName || '';
   };
+  
   // Get features for this variant only
   const variantFeatures = features.filter(f => f.variant_id === variant.id);
-  const variantSpecs = specifications.filter(s => s.variant_id === variant.id);
-  const sizeSpecs = specifications.filter(spec => (spec.variant_id === variant.id || spec.variant_id === null) && (spec.specification_key.toLowerCase().includes('size') || spec.specification_key.toLowerCase().includes('dimension') || spec.specification_key.toLowerCase().includes('length') || spec.specification_key.toLowerCase().includes('lenght') ||
-  // Handle misspelling
-  spec.specification_key.toLowerCase().includes('width') || spec.specification_key.toLowerCase().includes('height')));
+  const variantSpecs = freshSpecs.filter(s => s.variant_id === variant.id);
+  const sizeSpecs = freshSpecs.filter(spec => 
+    (spec.variant_id === variant.id || spec.variant_id === null) && 
+    (spec.specification_key.toLowerCase().includes('size') || 
+     spec.specification_key.toLowerCase().includes('dimension') || 
+     spec.specification_key.toLowerCase().includes('length') || 
+     spec.specification_key.toLowerCase().includes('lenght') || // Handle misspelling
+     spec.specification_key.toLowerCase().includes('width') || 
+     spec.specification_key.toLowerCase().includes('height'))
+  );
   return <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-background rounded-lg p-8 max-w-7xl w-full max-h-[90vh] overflow-y-auto relative">
         {/* Floating Close Button */}
@@ -100,12 +141,22 @@ export const VariantDetail: React.FC<VariantDetailProps> = ({
             <div>
               <h2 className="text-xl font-semibold mb-4">Size Chart</h2>
               <div className="border-2 border-muted rounded-lg overflow-hidden">
-                {specifications.length > 0 ? <ProductVariantsTableNew productId={productId} variants={[variant]} specifications={specifications} /> : <div className="p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                {isLoadingSpecs ? (
+                  <div className="p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
+                    <div className="text-center text-muted-foreground">
+                      <div className="text-lg mb-2">Loading specifications...</div>
+                    </div>
+                  </div>
+                ) : freshSpecs.length > 0 ? (
+                  <ProductVariantsTableNew productId={productId} variants={[variant]} specifications={freshSpecs} />
+                ) : (
+                  <div className="p-6 bg-muted/10 min-h-[200px] flex items-center justify-center">
                     <div className="text-center text-muted-foreground">
                       <div className="text-lg mb-2">Size Chart for {formatVariantName(variant.variant_name)}</div>
                       <p className="text-sm">No specifications available</p>
                     </div>
-                  </div>}
+                  </div>
+                )}
               </div>
               <div className="mt-4 text-sm text-muted-foreground text-center">
                 Custom sizes available
