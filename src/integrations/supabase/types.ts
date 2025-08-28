@@ -454,6 +454,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_custom_product_by_name_slug: {
+        Args: { slug_text: string }
+        Returns: {
+          created_at: string
+          description: string
+          id: string
+          main_image_url: string
+          name: string
+          updated_at: string
+        }[]
+      }
       find_custom_product_by_prefix: {
         Args: { prefix_text: string }
         Returns: {

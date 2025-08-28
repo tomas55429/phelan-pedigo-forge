@@ -30,36 +30,19 @@ const ProductDetailPage = () => {
       }
 
       console.log('🔍 ProductDetailPage: productSlug =', productSlug);
-      const productId = parseProductSlug(productSlug);
-      console.log('🔍 ProductDetailPage: parsed productId =', productId);
       
-      if (!productId) {
-        console.log('🚨 ProductDetailPage: Could not parse productId from slug');
-        toast({
-          title: "Product not found",
-          description: "The product you're looking for could not be found.",
-          variant: "destructive"
-        });
-        navigate('/products');
-        return;
-      }
-
       try {
         let productData;
         let isCustomProduct = false;
         
-        console.log('🔍 ProductDetailPage: productId =', productId);
-        console.log('🔍 ProductDetailPage: productId.startsWith("custom-") =', productId.startsWith('custom-'));
-        
-        // Check if this is a custom product
-        if (productId.startsWith('custom-')) {
+        // Check if this is a custom product by checking the slug pattern
+        if (productSlug.startsWith('custom-')) {
           isCustomProduct = true;
-          const customProductId = productId.replace('custom-', '');
-          console.log('🔍 ProductDetailPage: customProductId =', customProductId);
+          console.log('🔍 ProductDetailPage: Detected custom product slug');
           
-          // Fetch from custom_products table
+          // Fetch from custom_products table using name slug
           const { data: customData, error: customError } = await supabase
-            .rpc('find_custom_product_by_prefix', { prefix_text: customProductId })
+            .rpc('find_custom_product_by_name_slug', { slug_text: productSlug })
             .maybeSingle();
             
           console.log('🔍 ProductDetailPage: customData =', customData);
@@ -68,7 +51,7 @@ const ProductDetailPage = () => {
           if (customData && !customError) {
             // Convert custom product to regular product format
             productData = {
-              id: productId, // Keep the "custom-" prefix
+              id: customData.id,
               name: customData.name,
               description: customData.description,
               image_url: customData.main_image_url,
@@ -81,10 +64,10 @@ const ProductDetailPage = () => {
             };
           }
         } else {
-          console.log('🔍 ProductDetailPage: Fetching regular product with ID =', productId);
-          // Fetch from regular products table
+          console.log('🔍 ProductDetailPage: Fetching regular product with slug =', productSlug);
+          // Fetch from regular products table using name slug
           const { data: regularData, error: regularError } = await supabase
-            .rpc('find_product_by_prefix', { prefix_text: productId })
+            .rpc('find_product_by_name_slug', { slug_text: productSlug })
             .maybeSingle();
             
           console.log('🔍 ProductDetailPage: regularData =', regularData);
@@ -108,32 +91,32 @@ const ProductDetailPage = () => {
           return;
         }
 
-        // Fetch related data in parallel
+        // Fetch related data in parallel using name-based lookups
         const [categoriesResult, variantsResult, featuresResult, specificationsResult, customImagesResult] = await Promise.all([
           // For custom products, get custom category; for regular products, get from product_categories
           isCustomProduct ? 
             supabase.from('categories').select('*').eq('name', 'Custom') :
-            supabase.rpc('find_product_categories_by_prefix', { prefix_text: productId.replace('custom-', '') }),
+            supabase.rpc('find_product_categories_by_name_slug', { slug_text: productSlug }),
           
           // Only fetch variants for regular products
           isCustomProduct ? 
             Promise.resolve({ data: [] }) : 
-            supabase.rpc('find_product_variants_by_prefix', { prefix_text: productId }),
+            supabase.rpc('find_product_variants_by_name_slug', { slug_text: productSlug }),
           
           // Only fetch features for regular products  
           isCustomProduct ?
             Promise.resolve({ data: [] }) : 
-            supabase.rpc('find_product_features_by_prefix', { prefix_text: productId }),
+            supabase.rpc('find_product_features_by_name_slug', { slug_text: productSlug }),
           
           // Only fetch specifications for regular products
           isCustomProduct ?
             Promise.resolve({ data: [] }) : 
-            supabase.rpc('find_product_specifications_by_prefix', { prefix_text: productId }),
+            supabase.rpc('find_product_specifications_by_name_slug', { slug_text: productSlug }),
           
           // Fetch custom product images if it's a custom product
           isCustomProduct ?
             supabase
-              .rpc('find_custom_product_images_by_prefix', { prefix_text: productId.replace('custom-', '') })
+              .rpc('find_custom_product_images_by_name_slug', { slug_text: productSlug })
               .then(result => ({ ...result, data: result.data || [] })) :
             Promise.resolve({ data: [] })
         ]);
