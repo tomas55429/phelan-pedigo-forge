@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Phone, ArrowRight } from 'lucide-react';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import heroImage from '@/assets/operating-room-new.jpg';
+const heroImage = '/lovable-uploads/a632184a-6300-4625-8183-4c94d0678ede.png';
 
 const Hero = () => {
   return (
