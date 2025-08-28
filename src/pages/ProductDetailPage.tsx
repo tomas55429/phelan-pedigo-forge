@@ -35,34 +35,32 @@ const ProductDetailPage = () => {
         let productData;
         let isCustomProduct = false;
         
-        // Check if this is a custom product by checking the slug pattern
-        if (productSlug.startsWith('custom-')) {
-          isCustomProduct = true;
-          console.log('🔍 ProductDetailPage: Detected custom product slug');
+        // Check if this is a custom product by checking the slug pattern or trying custom products first
+        console.log('🔍 ProductDetailPage: Attempting to fetch as custom product first');
+        
+        // Try fetching from custom_products table using name slug
+        const { data: customData, error: customError } = await supabase
+          .rpc('find_custom_product_by_name_slug', { slug_text: productSlug })
+          .maybeSingle();
           
-          // Fetch from custom_products table using name slug
-          const { data: customData, error: customError } = await supabase
-            .rpc('find_custom_product_by_name_slug', { slug_text: productSlug })
-            .maybeSingle();
-            
-          console.log('🔍 ProductDetailPage: customData =', customData);
-          console.log('🔍 ProductDetailPage: customError =', customError);
-            
-          if (customData && !customError) {
-            // Convert custom product to regular product format
-            productData = {
-              id: customData.id,
-              name: customData.name,
-              description: customData.description,
-              image_url: customData.main_image_url,
-              category_id: null,
-              featured: false,
-              created_at: customData.created_at,
-              updated_at: customData.updated_at,
-              special_notes: null,
-              model_3d_url: null
-            };
-          }
+        console.log('🔍 ProductDetailPage: customData =', customData);
+        console.log('🔍 ProductDetailPage: customError =', customError);
+          
+        if (customData && !customError) {
+          isCustomProduct = true;
+          // Convert custom product to regular product format
+          productData = {
+            id: customData.id,
+            name: customData.name,
+            description: customData.description,
+            image_url: customData.main_image_url,
+            category_id: null,
+            featured: false,
+            created_at: customData.created_at,
+            updated_at: customData.updated_at,
+            special_notes: null,
+            model_3d_url: null
+          };
         } else {
           console.log('🔍 ProductDetailPage: Fetching regular product with slug =', productSlug);
           // Fetch from regular products table using name slug
@@ -95,7 +93,7 @@ const ProductDetailPage = () => {
         const [categoriesResult, variantsResult, featuresResult, specificationsResult, customImagesResult] = await Promise.all([
           // For custom products, get custom category; for regular products, get from product_categories
           isCustomProduct ? 
-            supabase.from('categories').select('*').eq('name', 'Custom') :
+            supabase.from('categories').select('*').eq('name', 'Custom Products') :
             supabase.rpc('find_product_categories_by_name_slug', { slug_text: productSlug }),
           
           // Only fetch variants for regular products
