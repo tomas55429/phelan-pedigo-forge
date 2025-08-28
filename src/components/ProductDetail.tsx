@@ -37,7 +37,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}${generateProductUrl(productWithDetails.product.name, productWithDetails.product.id)}`;
+    const url = `${window.location.origin}${generateProductUrl(productWithDetails.product.name)}`;
     
     if (navigator.share) {
       try {
@@ -65,7 +65,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   };
 
   const openInNewPage = () => {
-    const url = generateProductUrl(productWithDetails.product.name, productWithDetails.product.id);
+    const url = generateProductUrl(productWithDetails.product.name);
     window.open(url, '_blank');
   };
 

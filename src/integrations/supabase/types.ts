@@ -476,6 +476,17 @@ export type Database = {
           updated_at: string
         }[]
       }
+      find_custom_product_images_by_name_slug: {
+        Args: { slug_text: string }
+        Returns: {
+          created_at: string
+          custom_product_id: string
+          description: string
+          id: string
+          image_url: string
+          sort_order: number
+        }[]
+      }
       find_custom_product_images_by_prefix: {
         Args: { prefix_text: string }
         Returns: {
@@ -537,6 +548,18 @@ export type Database = {
           product_id: string
         }[]
       }
+      find_product_features_by_name_slug: {
+        Args: { slug_text: string }
+        Returns: {
+          created_at: string
+          feature: string
+          id: string
+          image_url: string
+          is_optional: boolean
+          product_id: string
+          variant_id: string
+        }[]
+      }
       find_product_features_by_prefix: {
         Args: { prefix_text: string }
         Returns: {
@@ -546,6 +569,18 @@ export type Database = {
           image_url: string
           is_optional: boolean
           product_id: string
+          variant_id: string
+        }[]
+      }
+      find_product_specifications_by_name_slug: {
+        Args: { slug_text: string }
+        Returns: {
+          created_at: string
+          id: string
+          product_id: string
+          sort_order: number
+          specification_key: string
+          specification_value: string
           variant_id: string
         }[]
       }

@@ -448,9 +448,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               size="sm" 
               className="flex-1 text-xs sm:text-sm py-2 sm:py-1.5" 
               onClick={() => {
-                const url = generateProductUrl(product.name, product.id);
+                const url = generateProductUrl(product.name);
                 console.log('🔍 ProductGallery: Generated URL =', url);
-                console.log('🔍 ProductGallery: Product =', { name: product.name, id: product.id });
+                console.log('🔍 ProductGallery: Product =', { name: product.name });
                 navigate(url);
               }}
             >
@@ -549,9 +549,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
               <Button 
                 size="sm" 
                 onClick={() => {
-                  const url = generateProductUrl(product.name, product.id);
+                  const url = generateProductUrl(product.name);
                   console.log('🔍 ProductGallery List: Generated URL =', url);
-                  console.log('🔍 ProductGallery List: Product =', { name: product.name, id: product.id });
+                  console.log('🔍 ProductGallery List: Product =', { name: product.name });
                   navigate(url);
                 }}
               >
