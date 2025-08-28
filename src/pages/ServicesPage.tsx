@@ -23,10 +23,7 @@ const ServicesPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-lg leading-relaxed">
-              Phelan Manufacturing has helped businesses and manufacturers in the Seward area and greater Minneapolis 
-              repair and build custom parts for their machines for the past <strong>66 years</strong>. We have engineering 
-              and design services as well as repair that can help your business continue same day production and build 
-              for the future.
+              Phelan Manufacturing has helped businesses and manufacturers in greater Minneapolis and the US engineer and build custom parts and equipment for their machines for the past <strong>66 years</strong>. We have engineering and design services including full-service welding, machining and repair that can help your business continue same day production and build for the future.
             </p>
             <p className="text-lg leading-relaxed">
               Our business was founded to manufacture hospital related items– primarily medical mechanical hardware. 
