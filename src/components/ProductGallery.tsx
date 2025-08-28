@@ -117,8 +117,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           customProductImagesData: customProductImages
         });
 
-        // Find or create "Custom" category
-        let customCategory = categoriesData.find(cat => cat.name === 'Custom');
+        // Find "Custom Products" category
+        let customCategory = categoriesData.find(cat => cat.name === 'Custom Products');
 
         // Convert custom products to regular products format and add to products array
         const customProductsAsProducts = customProducts.map(customProduct => ({

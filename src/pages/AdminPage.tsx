@@ -526,13 +526,31 @@ const AdminPage = () => {
         description: customProductDescription || null,
         main_image_url: mainImageUrl
       };
+
+      // Also create a corresponding entry in the products table for display in ProductsPage
+      const customProductsCategory = categories.find(cat => cat.name === 'Custom Products');
+      const regularProductData = {
+        name: customProductName,
+        description: customProductDescription || null,
+        image_url: mainImageUrl,
+        category_id: customProductsCategory?.id || null,
+        featured: false
+      };
       let customProductId: string;
+      let regularProductId: string;
       if (editingCustomProduct) {
         const {
           error
         } = await supabase.from('custom_products').update(productData).eq('id', editingCustomProduct.id);
         if (error) throw error;
         customProductId = editingCustomProduct.id;
+
+        // Also update the corresponding regular product
+        const { error: regularUpdateError } = await supabase
+          .from('products')
+          .update(regularProductData)
+          .eq('name', customProductName);
+        if (regularUpdateError) console.warn('Could not update regular product:', regularUpdateError);
       } else {
         const {
           data,
@@ -540,6 +558,18 @@ const AdminPage = () => {
         } = await supabase.from('custom_products').insert([productData]).select().single();
         if (error) throw error;
         customProductId = data.id;
+
+        // Also create a corresponding regular product for display in ProductsPage
+        const { data: regularProductResult, error: regularProductError } = await supabase
+          .from('products')
+          .insert([regularProductData])
+          .select()
+          .single();
+        if (regularProductError) {
+          console.warn('Could not create regular product:', regularProductError);
+        } else {
+          regularProductId = regularProductResult.id;
+        }
       }
 
       // Upload and insert additional images with proper error handling
