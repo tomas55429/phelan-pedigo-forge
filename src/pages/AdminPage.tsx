@@ -533,9 +533,6 @@ const AdminPage = () => {
         } = await supabase.from('custom_products').update(productData).eq('id', editingCustomProduct.id);
         if (error) throw error;
         customProductId = editingCustomProduct.id;
-
-        // Delete existing additional images
-        await supabase.from('custom_product_images').delete().eq('custom_product_id', customProductId);
       } else {
         const {
           data,
@@ -547,6 +544,18 @@ const AdminPage = () => {
 
       // Upload and insert additional images with proper error handling
       if (customProductAdditionalImages.length > 0) {
+        // Get the current max sort_order for existing images
+        const { data: existingImages } = await supabase
+          .from('custom_product_images')
+          .select('sort_order')
+          .eq('custom_product_id', customProductId)
+          .order('sort_order', { ascending: false })
+          .limit(1);
+        
+        const startingSortOrder = existingImages && existingImages.length > 0 
+          ? (existingImages[0].sort_order || 0) + 1 
+          : 0;
+
         const imageData = [];
         for (let index = 0; index < customProductAdditionalImages.length; index++) {
           const item = customProductAdditionalImages[index];
@@ -580,7 +589,7 @@ const AdminPage = () => {
               custom_product_id: customProductId,
               image_url: urlData.publicUrl,
               description: item.description || null,
-              sort_order: index
+              sort_order: startingSortOrder + index
             });
           } catch (error) {
             console.error(`Error processing image ${index}:`, error);
