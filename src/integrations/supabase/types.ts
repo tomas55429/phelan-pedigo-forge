@@ -517,6 +517,16 @@ export type Database = {
           updated_at: string
         }[]
       }
+      find_product_categories_by_name_slug: {
+        Args: { slug_text: string }
+        Returns: {
+          category_id: string
+          category_name: string
+          created_at: string
+          id: string
+          product_id: string
+        }[]
+      }
       find_product_categories_by_prefix: {
         Args: { prefix_text: string }
         Returns: {
