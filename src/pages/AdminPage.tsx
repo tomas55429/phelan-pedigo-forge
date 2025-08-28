@@ -704,87 +704,6 @@ const AdminPage = () => {
       });
     }
   };
-  const syncCustomProductsToProducts = async () => {
-    try {
-      setLoading(true);
-
-      // Find the Custom Category
-      const {
-        data: customCategory,
-        error: categoryError
-      } = await supabase.from('categories').select('*').ilike('name', '%custom%').single();
-      if (categoryError || !customCategory) {
-        toast({
-          title: "Error",
-          description: "Custom Category not found. Please create a category with 'Custom' in the name first.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Get all custom products
-      const {
-        data: customProducts,
-        error: customProductsError
-      } = await supabase.from('custom_products').select('*');
-      if (customProductsError) throw customProductsError;
-
-      // Get existing regular products that are linked to custom products
-      const {
-        data: existingProducts,
-        error: existingError
-      } = await supabase.from('products').select('*').like('description', '%[Custom Product%');
-      if (existingError) throw existingError;
-      let syncedCount = 0;
-      for (const customProduct of customProducts || []) {
-        // Check if this custom product already has a corresponding regular product
-        const existingProduct = existingProducts?.find(p => p.description?.includes(`[Custom Product ID: ${customProduct.id}]`));
-        if (!existingProduct) {
-          // Create a new regular product for this custom product
-          const productData = {
-            name: customProduct.name,
-            description: `${customProduct.description || ''}\n\n[Custom Product ID: ${customProduct.id}]`,
-            image_url: customProduct.main_image_url,
-            category_id: customCategory.id,
-            featured: false
-          };
-          const {
-            data: newProduct,
-            error: productError
-          } = await supabase.from('products').insert([productData]).select().single();
-          if (productError) {
-            console.error('Error creating product for custom product:', customProduct.id, productError);
-            continue;
-          }
-
-          // Link to custom category
-          const {
-            error: linkError
-          } = await supabase.from('product_categories').insert([{
-            product_id: newProduct.id,
-            category_id: customCategory.id
-          }]);
-          if (linkError) {
-            console.error('Error linking product to category:', linkError);
-          }
-          syncedCount++;
-        }
-      }
-      toast({
-        title: "Success",
-        description: `Synced ${syncedCount} custom products to the products page.`
-      });
-      fetchProducts();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!productName.trim()) return;
@@ -2221,17 +2140,13 @@ const AdminPage = () => {
             <TabsContent value="custom-products" className="space-y-6">
               <div className="flex justify-between items-center">
                 <h2 className="text-xl font-semibold">Manage Custom Products</h2>
-                <div className="flex space-x-2">
-                  <Button variant="outline" onClick={syncCustomProductsToProducts} disabled={loading}>
-                    {loading ? "Syncing..." : "Sync to Products Page"}
-                  </Button>
-                  <Dialog open={customProductDialogOpen} onOpenChange={setCustomProductDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Custom Product
-                      </Button>
-                    </DialogTrigger>
+                <Dialog open={customProductDialogOpen} onOpenChange={setCustomProductDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Custom Product
+                    </Button>
+                  </DialogTrigger>
                     <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>
@@ -2361,7 +2276,6 @@ const AdminPage = () => {
                     </form>
                   </DialogContent>
                 </Dialog>
-                </div>
               </div>
 
               <div className="grid gap-4">
