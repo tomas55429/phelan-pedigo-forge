@@ -476,6 +476,21 @@ export type Database = {
           sort_order: number
         }[]
       }
+      find_product_by_name_slug: {
+        Args: { slug_text: string }
+        Returns: {
+          category_id: string
+          created_at: string
+          description: string
+          featured: boolean
+          id: string
+          image_url: string
+          model_3d_url: string
+          name: string
+          special_notes: string
+          updated_at: string
+        }[]
+      }
       find_product_by_prefix: {
         Args: { prefix_text: string }
         Returns: {
