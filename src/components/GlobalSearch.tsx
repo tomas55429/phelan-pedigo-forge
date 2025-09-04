@@ -153,7 +153,7 @@ const GlobalSearch = () => {
             results.push({
               id: `product-${product.id}`,
               title: product.name || 'Unnamed Product',
-              description: product.description || 'No description available',
+              description: product.description || '',
               type: 'product',
               url: `/products?search=${encodeURIComponent(product.name || '')}`,
               relevance,

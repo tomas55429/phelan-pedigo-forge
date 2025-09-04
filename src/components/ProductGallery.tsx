@@ -374,9 +374,11 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
           <p className="text-sm text-muted-foreground">{categories.length > 0 ? categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-            {displayDescription || 'No description available'}
-          </p>
+          {displayDescription && (
+            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+              {displayDescription}
+            </p>
+          )}
           
           {/* Product Details Accordion */}
           {(features.length > 0 || variants.length > 0 || product.special_notes) && <Accordion type="single" collapsible className="mb-4">
@@ -527,7 +529,9 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                   </Badge>}
               </div>
               <p className="text-sm text-muted-foreground mb-2">{categories.length > 0 ? categories.map(cat => cat.name).join(', ') : 'Uncategorized'}</p>
-              <p className="text-sm text-muted-foreground mb-3">{product.description || 'No description available'}</p>
+              {product.description && (
+                <p className="text-sm text-muted-foreground mb-3">{product.description}</p>
+              )}
               
               <div className="grid grid-cols-2 gap-4 text-xs">
                 {features.length > 0 && <div>
