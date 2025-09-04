@@ -18,7 +18,7 @@ const Hero = () => {
           decoding="async"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-hero opacity-50"></div>
+        <div className="absolute inset-0 bg-gradient-hero opacity-25"></div>
       </div>
 
       {/* Content */}
