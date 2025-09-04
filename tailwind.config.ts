@@ -19,8 +19,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
-				aptos: ['Aptos', 'Segoe UI', 'system-ui', 'sans-serif'],
+				sans: ['Aptos', 'Segoe UI', 'system-ui', 'sans-serif'],
+				inter: ['Inter', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
