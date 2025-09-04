@@ -18,7 +18,7 @@ const Hero = () => {
               <OptimizedImage src="/lovable-uploads/57d70b9a-de38-4715-90d7-de1bb54d9d1c.png" alt="Phelan Manufacturing Corporation Logo" className="h-30 md:h-36 lg:h-42 w-auto" priority={true} highQuality={true} loading="eager" decoding="async" sizes="(max-width: 768px) 120px, (max-width: 1024px) 144px, 168px" />
             </div>
             <div className="text-2xl md:text-3xl font-bold mb-8 text-white drop-shadow-lg">
-              Made in the <span className="text-white">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
+              Made in the <span className="text-white">U</span><span className="text-white">S</span><span className="text-white">A</span>
             </div>
             <p className="text-xl md:text-2xl mb-12 text-gray-100 leading-relaxed">
               Medical equipment and hospital hardware manufacturer since 1948. 
