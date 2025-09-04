@@ -11,7 +11,7 @@ const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 relative z-10 opacity-25">
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl text-center mx-auto text-white">
           <div className="animate-fade-in">
             <div className="flex justify-center mb-6">
