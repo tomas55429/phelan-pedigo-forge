@@ -6,7 +6,7 @@ const Hero = () => {
   return <section className="relative bg-gradient-hero min-h-[90vh] flex items-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <OptimizedImage src={heroImage} alt="Phelan Manufacturing facility" className="w-full h-full object-cover opacity-40" priority={true} highQuality={true} loading="eager" decoding="async" sizes="100vw" />
+        <OptimizedImage src={heroImage} alt="Phelan Manufacturing facility" className="w-full h-full object-cover opacity-20" priority={true} highQuality={true} loading="eager" decoding="async" sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-hero opacity-1"></div>
       </div>
 
