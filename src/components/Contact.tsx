@@ -80,7 +80,7 @@ const Contact = () => {
     {
       icon: <Phone className="h-6 w-6" />,
       title: "Phone",
-      details: "1-800-328-2358",
+      details: "1-800-328-2358 | (612) 724-3677",
       description: "Speak directly to an equipment specialist"
     },
     {
@@ -179,7 +179,7 @@ const Contact = () => {
                   onClick={() => window.open('tel:+18003282358', '_self')}
                 >
                   <Phone className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-                  Call 1-800-328-2358
+                  Call 1-800-328-2358 | (612) 724-3677
                 </Button>
               </CardContent>
             </Card>

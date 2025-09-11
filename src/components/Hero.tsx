@@ -31,7 +31,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button size="lg" className="bg-white text-primary hover:bg-gray-100 shadow-elevated font-semibold px-8 py-4 text-lg" onClick={() => window.location.href = 'tel:18003282358'}>
                 <Phone className="mr-2 h-5 w-5" />
-                Call 1-800-328-2358
+                Call 1-800-328-2358 | (612) 724-3677
               </Button>
               <Button variant="outline" size="lg" className="border-white bg-white/10 text-white hover:bg-white hover:text-primary shadow-medical font-semibold px-8 py-4 text-lg backdrop-blur-sm" onClick={() => window.location.href = '/products'}>
                 View Products

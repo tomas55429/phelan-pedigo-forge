@@ -71,7 +71,7 @@ const Header = () => {
             {/* Phone Number */}
             <div className="flex items-center space-x-2 text-primary">
               <Phone className="h-4 w-4" />
-              <span className="font-semibold text-sm">1-800-328-2358</span>
+              <span className="font-semibold text-sm">1-800-328-2358 | (612) 724-3677</span>
             </div>
             
             {user ? <div className="flex items-center space-x-2">
@@ -136,7 +136,7 @@ const Header = () => {
               
               <div className="flex items-center space-x-2 px-3 py-2 text-primary border-t border-border">
                 <Phone className="h-4 w-4" />
-                <span className="font-semibold">1-800-328-2358</span>
+                <span className="font-semibold">1-800-328-2358 | (612) 724-3677</span>
               </div>
             </div>
           </div>}

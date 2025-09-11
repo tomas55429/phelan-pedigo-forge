@@ -193,7 +193,7 @@ const CustomSolutionsPage = () => {
                   </p>
                   <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary-dark">
                     <Phone className="mr-2 h-5 w-5" />
-                    Call 1-800-328-2358
+                    Call 1-800-328-2358 | (612) 724-3677
                   </Button>
                 </CardContent>
               </Card>

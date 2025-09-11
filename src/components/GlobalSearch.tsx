@@ -52,7 +52,7 @@ const staticContent: StaticContent[] = [
   },
   {
     title: "Contact Information",
-    description: "Get in touch with our specialists. Phone: 1-800-328-2358, Email: Richard@PhelanMfgCorp.com. We accept Purchase Orders (P.O.).",
+    description: "Get in touch with our specialists. Phone: 1-800-328-2358 | (612) 724-3677, Email: Richard@PhelanMfgCorp.com. We accept Purchase Orders (P.O.).",
     type: "contact",
     url: "/contact",
     keywords: ["contact", "phone", "email", "specialists", "support", "purchase orders", "P.O.", "Richard"]
