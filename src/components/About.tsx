@@ -19,7 +19,7 @@ const About = () => {
     icon: <Globe className="h-8 w-8" />,
     number: "100%",
     label: <span>
-          Made in <span className="text-blue-500">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
+          Made in <span className="text-blue-600">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
         </span>,
     description: "American Quality"
   }, {
@@ -62,11 +62,7 @@ const About = () => {
             </Button>
           </div>
           <div className="relative">
-            <img 
-              src={operatingRoomImage} 
-              alt="Modern operating room with medical equipment" 
-              className="w-full h-96 object-cover rounded-lg shadow-lg"
-            />
+            <img src={operatingRoomImage} alt="Modern operating room with medical equipment" className="w-full h-96 object-cover rounded-lg shadow-lg" />
             <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent rounded-lg"></div>
           </div>
         </div>
