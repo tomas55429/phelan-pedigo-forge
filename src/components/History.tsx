@@ -65,7 +65,7 @@ const History = () => {
                     </p>
                     <p className="text-lg leading-relaxed">
                       After Jack died, Loraine continued in the business until she was 100 years old. 
-                      She was the <strong className="text-foreground">oldest living alumnus of the University of Minnesota</strong> 
+                      She was the <strong className="text-foreground">oldest living alumnus of the University of Minnesota</strong>{" "}
                       until her death at the remarkable age of 106 years.
                     </p>
                     <p className="text-lg leading-relaxed">
