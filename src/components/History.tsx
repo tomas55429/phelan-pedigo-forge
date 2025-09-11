@@ -69,7 +69,7 @@ const History = () => {
                       until her death at the remarkable age of 106 years.
                     </p>
                     <p className="text-lg leading-relaxed">
-                      Today, we are proud to be in our <strong className="text-foreground">3rd generation of employees</strong> 
+                      Today, we are proud to be in our <strong className="text-foreground">3rd generation of employees</strong>{" "}
                       who are carrying forward the legacy of quality, innovation, and tremendous work ethic that 
                       produces great products.
                     </p>
