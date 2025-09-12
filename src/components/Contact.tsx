@@ -109,7 +109,7 @@ const Contact = () => {
     {
       icon: <Clock className="h-6 w-6" />,
       title: "Hours",
-      details: "Monday to Friday 7 AM–5 PM",
+      details: "Monday to Friday 8 AM–4:30 PM",
       description: "Saturday & Sunday: Closed"
     }
   ];
