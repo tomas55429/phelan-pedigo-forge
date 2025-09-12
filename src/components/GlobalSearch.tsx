@@ -367,7 +367,7 @@ const GlobalSearch = () => {
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground line-clamp-2 break-words">
                               {result.description}
                             </p>
                             {result.metadata?.category && (
