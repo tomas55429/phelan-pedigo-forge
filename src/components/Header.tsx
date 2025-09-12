@@ -106,7 +106,7 @@ const Header = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && <div className="md:hidden">
+        {isMenuOpen && <div className="lg:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-background border-t border-border">
               {navigation.map(item => item.href.startsWith('#') ? <a key={item.name} href={item.href} className="block px-3 py-2 text-foreground hover:text-primary transition-colors duration-200 font-medium" onClick={() => setIsMenuOpen(false)}>
                     {item.name}
