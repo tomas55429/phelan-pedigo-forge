@@ -69,9 +69,12 @@ const Header = () => {
           {/* Phone Number & Auth Section - Desktop Only */}
           <div className="hidden xl:flex items-center space-x-6">
             {/* Phone Number */}
-            <div className="flex items-center space-x-2 text-primary">
-              <Phone className="h-4 w-4" />
-              <span className="font-semibold text-sm">1-800-328-2358 | (612) 724-3677</span>
+            <div className="flex items-start space-x-2 text-primary">
+              <Phone className="h-4 w-4 mt-0.5" />
+              <div className="flex flex-col text-sm font-semibold leading-tight">
+                <span>1-800-328-2358</span>
+                <span>(612) 724-3677</span>
+              </div>
             </div>
             
             {user ? <div className="flex items-center space-x-2">
@@ -134,9 +137,12 @@ const Header = () => {
                   </Link>
                 </div>}
               
-              <div className="flex items-center space-x-2 px-3 py-2 text-primary border-t border-border">
-                <Phone className="h-4 w-4" />
-                <span className="font-semibold">1-800-328-2358 | (612) 724-3677</span>
+              <div className="flex items-start space-x-2 px-3 py-2 text-primary border-t border-border">
+                <Phone className="h-4 w-4 mt-0.5" />
+                <div className="flex flex-col font-semibold leading-tight">
+                  <span>1-800-328-2358</span>
+                  <span>(612) 724-3677</span>
+                </div>
               </div>
             </div>
           </div>}
