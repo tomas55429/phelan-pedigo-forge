@@ -17,6 +17,7 @@ import CustomSolutionsPage from "./pages/CustomSolutionsPage";
 import ProductImageGalleryPage from "./pages/ProductImageGalleryPage";
 import NotFound from "./pages/NotFound";
 import ScrollToTop from "./components/ScrollToTop";
+import ProductRedirect from "./components/ProductRedirect";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,8 @@ const App = () => (
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/custom-solutions" element={<CustomSolutionsPage />} />
             <Route path="/product-gallery" element={<ProductImageGalleryPage />} />
+            {/* Product redirects - catch old product URL structure */}
+            <Route path="/:slug" element={<ProductRedirect />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
