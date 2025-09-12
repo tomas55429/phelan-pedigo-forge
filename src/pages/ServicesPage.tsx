@@ -12,7 +12,7 @@ const ServicesPage = () => {
         {/* Page Title */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-primary mb-4">Our Services</h1>
-          <p className="text-xl text-muted-foreground">More than 70 Years of Quality Manufacturing Excellence</p>
+          <p className="text-xl text-muted-foreground">More than 75 Years of Quality Manufacturing Excellence</p>
         </div>
         {/* Who We Are Section */}
         <Card className="shadow-lg">
@@ -23,7 +23,7 @@ const ServicesPage = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-lg leading-relaxed">
-              Phelan Manufacturing has helped businesses and manufacturers in greater Minneapolis and the US engineer and build custom parts and equipment for their machines for the past <strong>more than 70 years</strong>. We have engineering and design services including full-service welding, machining and repair that can help your business continue same day production and build for the future.
+              For <strong>more than 75 years</strong>, Phelan Manufacturing has helped businesses and manufacturers in greater Minneapolis and the US engineer and build custom parts and equipment for their machines. We have engineering and design services including full-service welding, machining and repair that can help your business continue same day production and build for the future.
             </p>
             <p className="text-lg leading-relaxed">
               Our business was founded to manufacture hospital related items– primarily medical mechanical hardware. 
@@ -224,7 +224,7 @@ const ServicesPage = () => {
           <CardContent className="text-center py-12">
             <h3 className="text-3xl font-bold text-primary mb-4">Ready to Work With Us?</h3>
             <p className="text-xl text-muted-foreground mb-6">
-              Contact us today to discuss your manufacturing needs and discover how our more than 70 years of experience can help your business.
+              Contact us today to discuss your manufacturing needs and discover how our more than 75 years of experience can help your business.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="/contact" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground px-8 py-3 text-lg font-medium hover:bg-primary/90 transition-colors">
