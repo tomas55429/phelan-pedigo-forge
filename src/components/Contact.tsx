@@ -130,15 +130,17 @@ const Contact = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-12">
           {/* Contact Information */}
           <div className="space-y-6 md:space-y-8">
-            <div>
-              <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">
-                Get in Touch
-              </h3>
-              <p className="text-base md:text-lg text-muted-foreground mb-6 md:mb-8">
-                We're here to answer your questions and help you find the right medical equipment 
-                for your facility. Contact us today to speak with one of our specialists.
-              </p>
-            </div>
+            <Card className="bg-card shadow-card">
+              <CardContent className="p-6">
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4 md:mb-6">
+                  Get in Touch
+                </h3>
+                <p className="text-base md:text-lg text-muted-foreground">
+                  We're here to answer your questions and help you find the right medical equipment 
+                  for your facility. Contact us today to speak with one of our specialists.
+                </p>
+              </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 gap-4 md:gap-6">
               {contactInfo.map((info, index) => (
