@@ -320,7 +320,7 @@ const GlobalSearch = () => {
   };
 
   return (
-    <div ref={searchRef} className="relative max-w-lg mx-auto">
+    <div ref={searchRef} className="relative max-w-2xl mx-auto">
       <form onSubmit={handleSearch} className="relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -335,7 +335,7 @@ const GlobalSearch = () => {
 
       {/* Search Results Dropdown */}
       {showResults && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 min-w-full">
           <Card className="shadow-lg border border-border/50 bg-background/95 backdrop-blur-sm">
             <CardContent className="p-2">
               {isLoading ? (
@@ -351,14 +351,14 @@ const GlobalSearch = () => {
                       <Button
                         key={result.id}
                         variant="ghost"
-                        className="w-full justify-start p-3 h-auto text-left hover:bg-muted/50"
+                        className="w-full justify-start p-3 h-auto text-left hover:bg-muted/50 min-h-fit"
                         onClick={() => handleResultClick(result)}
                       >
                         <div className="flex items-start space-x-3 w-full">
                           <Icon className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
-                              <span className="font-medium text-sm truncate">
+                              <span className="font-medium text-sm">
                                 {result.title}
                               </span>
                               {result.metadata?.badge && (
@@ -367,7 +367,7 @@ const GlobalSearch = () => {
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-xs text-muted-foreground line-clamp-2">
+                            <p className="text-xs text-muted-foreground">
                               {result.description}
                             </p>
                             {result.metadata?.category && (
