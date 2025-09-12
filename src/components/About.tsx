@@ -19,7 +19,7 @@ const About = () => {
     icon: <Globe className="h-8 w-8" />,
     number: "100%",
     label: <span>
-          Made in <span className="text-blue-600">U</span><span className="text-white">S</span><span className="text-blue-500">A</span>
+          Made in <span className="text-blue-600">U</span><span className="text-blue-600">S</span><span className="text-blue-500">A</span>
         </span>,
     description: "American Quality"
   }, {
