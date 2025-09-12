@@ -335,9 +335,9 @@ const GlobalSearch = () => {
 
       {/* Search Results Dropdown */}
       {showResults && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-1 min-w-full">
+        <div className="absolute top-full left-0 right-0 z-50 mt-1 min-w-full w-96">
           <Card className="shadow-lg border border-border/50 bg-background/95 backdrop-blur-sm">
-            <CardContent className="p-2">
+            <CardContent className="p-4 max-w-none">
               {isLoading ? (
                 <div className="p-4 text-center text-muted-foreground">
                   <Search className="h-4 w-4 animate-pulse mx-auto mb-2" />
