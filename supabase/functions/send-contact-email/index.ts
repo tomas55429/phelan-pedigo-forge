@@ -1,7 +1,12 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.5';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const supabase = createClient(
+  Deno.env.get("SUPABASE_URL") ?? "",
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,9 +35,36 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission:", { firstName, lastName, email, subject });
 
+    // Get all admin users
+    const { data: adminProfiles, error: adminError } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('role', 'admin');
+
+    if (adminError) {
+      console.error("Error fetching admin profiles:", adminError);
+      throw new Error("Failed to fetch admin recipients");
+    }
+
+    if (!adminProfiles || adminProfiles.length === 0) {
+      console.error("No admin users found");
+      throw new Error("No admin recipients found");
+    }
+
+    const adminEmails = adminProfiles
+      .map(profile => profile.email)
+      .filter(email => email); // Filter out null/undefined emails
+
+    if (adminEmails.length === 0) {
+      console.error("No valid admin email addresses found");
+      throw new Error("No valid admin email addresses found");
+    }
+
+    console.log(`Sending contact form to ${adminEmails.length} admin(s):`, adminEmails);
+
     const emailResponse = await resend.emails.send({
       from: "Phelan Manufacturing Contact Form <onboarding@resend.dev>",
-      to: ["Richard@PhelanMfgCorp.com"],
+      to: adminEmails,
       subject: `Contact Form: ${subject}`,
       html: `
         <h2>New Contact Form Submission</h2>
