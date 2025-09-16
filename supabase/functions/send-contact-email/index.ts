@@ -63,7 +63,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending contact form to ${adminEmails.length} admin(s):`, adminEmails);
 
     const emailResponse = await resend.emails.send({
-      from: "Phelan Manufacturing Contact Form <onboarding@resend.dev>",
+      from: "Phelan Manufacturing Contact Form <noreply@phelanmfgcorp.com>",
       to: adminEmails,
       subject: `Contact Form: ${subject}`,
       html: `
