@@ -20,6 +20,46 @@
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"></noscript>
     <link rel="icon" href="/lovable-uploads/6f1e269b-425a-431b-943f-9c14a9cab828.png" type="image/png">
+    
+    <!-- Critical CSS inline to prevent render blocking -->
+    <style>
+      :root {
+        --background: 0 0% 100%;
+        --foreground: 214 15% 20%;
+        --primary: 206 70% 45%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 210 20% 96%;
+        --secondary-foreground: 214 15% 20%;
+        --border: 210 20% 90%;
+        --medical-blue: 206 70% 45%;
+        --hospital-white: 0 0% 100%;
+      }
+      .dark {
+        --background: 214 15% 12%;
+        --foreground: 0 0% 100%;
+        --primary: 206 50% 60%;
+        --primary-foreground: 214 15% 12%;
+        --secondary: 214 15% 18%;
+        --secondary-foreground: 0 0% 100%;
+        --border: 214 15% 20%;
+        --medical-blue: 206 50% 60%;
+        --hospital-white: 214 15% 12%;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root { min-height: 100vh; }
+      .bg-background { background-color: hsl(var(--background)) !important; }
+      .text-foreground { color: hsl(var(--foreground)) !important; }
+      .bg-primary { background-color: hsl(var(--primary)) !important; }
+      .text-primary-foreground { color: hsl(var(--primary-foreground)) !important; }
+    </style>
     <meta property="og:type" content="website" />
     <meta property="og:image" content="/lovable-uploads/eca7f504-ed93-45bd-9296-6833457235bf.png" />
 
