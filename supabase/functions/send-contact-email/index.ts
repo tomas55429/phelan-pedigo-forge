@@ -53,18 +53,17 @@ const handler = async (req: Request): Promise<Response> => {
 
     const adminEmails = adminProfiles
       .map(profile => profile.email)
-      .filter(email => email) // Filter out null/undefined emails
-      .filter(email => ['takasawka@gmail.com', 'Richard@phelanmfgcorp.com'].includes(email)); // Temporary: only send to verified emails until domain is verified
+      .filter(email => email); // Filter out null/undefined emails
 
     if (adminEmails.length === 0) {
-      console.error("No verified admin email addresses found. Please verify phelanmfgcorp.com domain in Resend to send to all admins.");
-      throw new Error("No verified admin email addresses found");
+      console.error("No admin email addresses found");
+      throw new Error("No admin email addresses found");
     }
 
     console.log(`Sending contact form to ${adminEmails.length} admin(s):`, adminEmails);
 
     const emailResponse = await resend.emails.send({
-      from: "Phelan Manufacturing Contact Form <onboarding@resend.dev>",
+      from: "Phelan Manufacturing Contact Form <noreply@phelanmfgcorp.com>",
       to: adminEmails,
       subject: `Contact Form: ${subject}`,
       html: `
