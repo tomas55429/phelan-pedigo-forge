@@ -986,6 +986,7 @@ const AdminPage = () => {
         title: "Success",
         description: "Dimension configuration saved successfully"
       });
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       console.error('Failed to save dimension config:', error);
       toast({

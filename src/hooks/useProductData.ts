@@ -443,9 +443,17 @@ export const useProductDetail = (productSlug: string | undefined) => {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'custom_product_images'
+        table: 'categories'
       }, (payload) => {
-        console.log('🔄 Custom product images detail changed:', payload);
+        console.log('🔄 Categories changed:', payload);
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PRODUCT_DETAIL(productSlug) });
+      })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'admin_settings'
+      }, (payload) => {
+        console.log('🔄 Admin settings detail changed:', payload);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PRODUCT_DETAIL(productSlug) });
       })
       .subscribe();
