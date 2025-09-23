@@ -11,13 +11,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Upload, ArrowLeft, Package, FolderOpen, Settings, Image as ImageIcon, GripVertical, X, Camera, MessageSquare, Trash } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, ArrowLeft, Package, FolderOpen, Settings, Image as ImageIcon, GripVertical, X, Camera, MessageSquare, Trash, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { ProductVariantsTableNew } from '@/components/ProductVariantsTableNew';
 import { SizeSetInput } from '@/components/SizeSetInput';
 import { SizeSpecificationInput } from '@/components/SizeSpecificationInput';
+import { useAdminActions } from '@/hooks/useAdminActions';
 interface Category {
   id: string;
   name: string;
@@ -99,12 +100,9 @@ const formatVariantName = (variantName: string) => {
   return variantName || '';
 };
 const AdminPage = () => {
-  const {
-    signOut
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+  const { signOut } = useAuth();
+  const { toast } = useToast();
+  const { invalidateAllProductData } = useAdminActions();
 
   // State for categories
   const [categories, setCategories] = useState<Category[]>([]);
@@ -609,6 +607,7 @@ const AdminPage = () => {
       });
       resetCustomProductForm();
       fetchCustomProducts();
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",
@@ -663,6 +662,7 @@ const AdminPage = () => {
         description: "Custom product deleted successfully"
       });
       fetchCustomProducts();
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",
@@ -732,6 +732,7 @@ const AdminPage = () => {
       });
       resetProductForm();
       fetchProducts();
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",
@@ -765,6 +766,7 @@ const AdminPage = () => {
         description: "Product deleted successfully"
       });
       fetchProducts();
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1064,6 +1066,7 @@ const AdminPage = () => {
         title: "Success",
         description: `${isOptional ? 'Accessory' : 'Feature'} added to ${isProductLevel ? 'product' : formatVariantName(selectedVariant.variant_name)}`
       });
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1181,6 +1184,7 @@ const AdminPage = () => {
         title: "Success",
         description: "Specification added successfully"
       });
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1319,6 +1323,7 @@ const AdminPage = () => {
       }
       resetVariantForm();
       fetchProductDetails(selectedProduct.id);
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",
@@ -1349,6 +1354,7 @@ const AdminPage = () => {
         title: "Success",
         description: "Variant deleted successfully"
       });
+      invalidateAllProductData(); // Invalidate React Query cache
     } catch (error: any) {
       toast({
         title: "Error",

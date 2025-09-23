@@ -6,166 +6,51 @@ import Footer from '@/components/Footer';
 import ProductDetail from '@/components/ProductDetail';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ZoomIn, ZoomOut, RotateCcw, X } from 'lucide-react';
+import { ArrowLeft, ZoomIn, ZoomOut, RotateCcw, X, RefreshCw } from 'lucide-react';
 import { parseProductSlug } from '@/utils/productUtils';
 import { toast } from '@/components/ui/use-toast';
 import type { ProductWithDetails, Category } from '@/types/product';
+import { useProductDetail, useDataRefresh } from '@/hooks/useProductData';
 
 const ProductDetailPage = () => {
   const { productSlug } = useParams<{ productSlug: string }>();
   const navigate = useNavigate();
-  const [productWithDetails, setProductWithDetails] = useState<ProductWithDetails | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: productWithDetails, isLoading, error, refetch } = useProductDetail(productSlug);
+  const { refreshProductDetail } = useDataRefresh();
+  
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
   const [imagePan, setImagePan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
+  // Redirect if no productSlug
   useEffect(() => {
-    const fetchProduct = async () => {
-      if (!productSlug) {
-        navigate('/products');
-        return;
-      }
-
-      console.log('🔍 ProductDetailPage: productSlug =', productSlug);
-      
-      try {
-        let productData;
-        let isCustomProduct = false;
-        
-        // Check if this is a custom product by checking the slug pattern or trying custom products first
-        console.log('🔍 ProductDetailPage: Attempting to fetch as custom product first');
-        
-        // Try fetching from custom_products table using name slug
-        const { data: customData, error: customError } = await supabase
-          .rpc('find_custom_product_by_name_slug', { slug_text: productSlug })
-          .maybeSingle();
-          
-        console.log('🔍 ProductDetailPage: customData =', customData);
-        console.log('🔍 ProductDetailPage: customError =', customError);
-          
-        if (customData && !customError) {
-          isCustomProduct = true;
-          // Convert custom product to regular product format
-          productData = {
-            id: customData.id,
-            name: customData.name,
-            description: customData.description,
-            image_url: customData.main_image_url,
-            category_id: null,
-            featured: false,
-            created_at: customData.created_at,
-            updated_at: customData.updated_at,
-            special_notes: null,
-            model_3d_url: null
-          };
-        } else {
-          console.log('🔍 ProductDetailPage: Fetching regular product with slug =', productSlug);
-          // Fetch from regular products table using name slug
-          const { data: regularData, error: regularError } = await supabase
-            .rpc('find_product_by_name_slug', { slug_text: productSlug })
-            .maybeSingle();
-            
-          console.log('🔍 ProductDetailPage: regularData =', regularData);
-          console.log('🔍 ProductDetailPage: regularError =', regularError);
-            
-          if (!regularError && regularData) {
-            productData = regularData;
-          }
-        }
-
-        console.log('🔍 ProductDetailPage: Final productData =', productData);
-
-        if (!productData) {
-          console.log('🚨 ProductDetailPage: No productData found');
-          toast({
-            title: "Product not found",
-            description: "The product you're looking for could not be found.",
-            variant: "destructive"
-          });
-          navigate('/products');
-          return;
-        }
-
-        // Fetch related data in parallel using name-based lookups
-        const [categoriesResult, variantsResult, featuresResult, specificationsResult, customImagesResult] = await Promise.all([
-          // For custom products, get custom category; for regular products, get from product_categories
-          isCustomProduct ? 
-            supabase.from('categories').select('*').eq('name', 'Custom Products') :
-            supabase.rpc('find_product_categories_by_name_slug', { slug_text: productSlug }),
-          
-          // Only fetch variants for regular products
-          isCustomProduct ? 
-            Promise.resolve({ data: [] }) : 
-            supabase.rpc('find_product_variants_by_name_slug', { slug_text: productSlug }),
-          
-          // Only fetch features for regular products  
-          isCustomProduct ?
-            Promise.resolve({ data: [] }) : 
-            supabase.rpc('find_product_features_by_name_slug', { slug_text: productSlug }),
-          
-          // Only fetch specifications for regular products
-          isCustomProduct ?
-            Promise.resolve({ data: [] }) : 
-            supabase.rpc('find_product_specifications_by_name_slug', { slug_text: productSlug }),
-          
-          // Fetch custom product images if it's a custom product
-          isCustomProduct ?
-            supabase
-              .rpc('find_custom_product_images_by_name_slug', { slug_text: productSlug })
-              .then(result => ({ ...result, data: result.data || [] })) :
-            Promise.resolve({ data: [] })
-        ]);
-
-        // Process categories
-        let categories = [];
-        if (isCustomProduct) {
-          categories = categoriesResult.data || [];
-        } else {
-          // RPC function returns objects with category_name directly
-          categories = categoriesResult.data?.map(pc => ({
-            id: pc.category_id,
-            name: pc.category_name
-          })).filter(Boolean) || [];
-        }
-
-        // Process custom images for custom products
-        let additionalImages = [];
-        if (isCustomProduct && customImagesResult.data) {
-          additionalImages = customImagesResult.data.map((img: any) => ({
-            image_url: img.image_url,
-            description: img.description || 'Additional Image',
-            sort_order: img.sort_order
-          }));
-        }
-
-        const productWithDetails: ProductWithDetails = {
-          product: productData,
-          categories: categories as Category[],
-          variants: variantsResult.data || [],
-          features: featuresResult.data || [],
-          specifications: specificationsResult.data || [],
-          additionalImages
-        };
-
-        setProductWithDetails(productWithDetails);
-      } catch (error) {
-        console.error('Error fetching product:', error);
-        toast({
-          title: "Error loading product",
-          description: "There was an error loading the product details.",
-          variant: "destructive"
-        });
-        navigate('/products');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
+    if (!productSlug) {
+      navigate('/products');
+    }
   }, [productSlug, navigate]);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      console.error('ProductDetailPage error:', error);
+      toast({
+        title: "Error loading product",
+        description: "There was an error loading the product details.",
+        variant: "destructive"
+      });
+      navigate('/products');
+    }
+  }, [error, navigate]);
+
+  // Manual refresh function
+  const handleRefresh = () => {
+    if (productSlug) {
+      refreshProductDetail(productSlug);
+      refetch();
+    }
+  };
 
   // Image zoom and pan handlers
   const handleZoomIn = () => setImageZoom(prev => Math.min(prev * 1.2, 5));
@@ -201,7 +86,7 @@ const ProductDetailPage = () => {
     setIsDragging(false);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen">
         <Header />
@@ -271,14 +156,26 @@ const ProductDetailPage = () => {
       {/* Product Detail Content */}
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/products')}
-            className="mb-6"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Products
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/products')}
+              className="self-start"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Products
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh Data
+            </Button>
+          </div>
         </div>
 
         <ProductDetail 

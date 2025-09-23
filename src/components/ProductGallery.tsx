@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw, ExternalLink } from 'lucide-react';
+import { Search, Filter, Eye, FileText, Star, Grid3X3, List, Phone, Loader2, ChevronDown, X, ZoomIn, ZoomOut, RotateCcw, ExternalLink, RefreshCw } from 'lucide-react';
+import { useProducts, useDataRefresh } from '@/hooks/useProductData';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ProductVariantsTableNew } from './ProductVariantsTableNew';
@@ -43,13 +44,13 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
   initialSearchTerm
 }) => {
   const navigate = useNavigate();
+  const { data: productsData, isLoading, error, refetch } = useProducts();
+  const { refreshAllData } = useDataRefresh();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
-  const [productsWithDetails, setProductsWithDetails] = useState<ProductWithDetails[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<ProductWithDetails | null>(null);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [imageZoom, setImageZoom] = useState(1);
@@ -73,155 +74,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     return variant.variant_name || '';
   };
 
-  // TEST: Direct debugging - check if custom product images are being fetched
-  useEffect(() => {
-    const testFetch = async () => {
-      console.log('🧪 TEST: Fetching custom product images directly...');
-      const result = await supabase.from('custom_product_images').select('*');
-      console.log('🧪 TEST: Custom product images result:', result);
-    };
-    testFetch();
-  }, []);
+  // Get data from React Query
+  const productsWithDetails = productsData?.productsWithDetails || [];
+  const categories = productsData?.categories || [];
+  const loading = isLoading;
 
-  // Fetch products and related data from Supabase
-  useEffect(() => {
-    console.log('ProductGallery: Starting data fetch...');
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-
-        // Fetch all data in parallel including custom products
-        const [productsRes, categoriesRes, variantsRes, featuresRes, specificationsRes, productCategoriesRes, customProductsRes, customProductImagesRes, sizeSetsRes] = await Promise.all([supabase.from('products').select('*').order('name'), supabase.from('categories').select('*').order('name'), supabase.from('product_variants').select('*'), supabase.from('product_features').select('*'), supabase.from('product_specifications').select('*'), supabase.from('product_categories').select('*'), supabase.from('custom_products').select('*').order('name'), supabase.from('custom_product_images').select('*').order('sort_order'), supabase.from('product_size_sets').select('*').order('set_index')]);
-        if (productsRes.error) throw productsRes.error;
-        if (categoriesRes.error) throw categoriesRes.error;
-        if (variantsRes.error) throw variantsRes.error;
-        if (featuresRes.error) throw featuresRes.error;
-        if (specificationsRes.error) throw specificationsRes.error;
-        if (productCategoriesRes.error) throw productCategoriesRes.error;
-        if (customProductsRes.error) throw customProductsRes.error;
-        if (customProductImagesRes.error) throw customProductImagesRes.error;
-        if (sizeSetsRes.error) throw sizeSetsRes.error;
-        const products = productsRes.data || [];
-        const categoriesData = categoriesRes.data || [];
-        const variants = variantsRes.data || [];
-        const features = featuresRes.data || [];
-        const specifications = specificationsRes.data || [];
-        const productCategories = productCategoriesRes.data || [];
-        const customProducts = customProductsRes.data || [];
-        const customProductImages = customProductImagesRes.data || [];
-        const sizeSets = sizeSetsRes.data || [];
-        console.log('ProductGallery: Fetched data:', {
-          products: products.length,
-          customProducts: customProducts.length,
-          customProductImages: customProductImages.length,
-          customProductImagesData: customProductImages
-        });
-
-        // Find "Custom Products" category
-        let customCategory = categoriesData.find(cat => cat.name === 'Custom Products');
-
-        // Convert custom products to regular products format and add to products array
-        const customProductsAsProducts = customProducts.map(customProduct => ({
-          id: `custom-${customProduct.id}`,
-          name: customProduct.name,
-          description: customProduct.description,
-          image_url: customProduct.main_image_url,
-          category_id: customCategory?.id || null,
-          featured: false,
-          created_at: customProduct.created_at,
-          updated_at: customProduct.updated_at,
-          special_notes: null,
-          model_3d_url: null
-        }));
-        console.log('🚀 BEFORE MERGE - Custom products:', customProducts.length);
-        console.log('🚀 BEFORE MERGE - Regular products:', products.length);
-        console.log('🚀 BEFORE MERGE - Custom product images:', customProductImages.length);
-        console.log('🚀 CUSTOM PRODUCT IMAGES DATA:', customProductImages);
-        const allProducts = [...products, ...customProductsAsProducts];
-        console.log('🚀 AFTER MERGE - All products:', allProducts.length);
-        console.log('🚀 AFTER MERGE - Products with custom- prefix:', allProducts.filter(p => p.id.toString().startsWith('custom-')).length);
-
-        // Group data by product
-        const productsWithDetailsData: ProductWithDetails[] = allProducts.map(product => {
-          // Determine if this is a custom product and extract the custom product ID
-          const isPrefixedCustom = product.id.toString().startsWith('custom-');
-          const customProductIdFromPrefix = isPrefixedCustom ? product.id.toString().replace('custom-', '') : null;
-          const customProductIdFromDescription = product.description ? product.description.match(/\[Custom Product ID:\s*([^\]]+)\]/i)?.[1] || null : null;
-          const customProductId = customProductIdFromPrefix || customProductIdFromDescription;
-
-          // Collect additional images if this is (or references) a custom product
-          let additionalImages: any[] = [];
-          if (customProductId) {
-            // Try matching by custom product ID first
-            additionalImages = customProductImages.filter(img => String(img.custom_product_id).trim() === String(customProductId).trim()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(img => ({
-              id: img.id,
-              image_url: img.image_url,
-              description: img.description || 'Additional Image',
-              sort_order: img.sort_order
-            }));
-          }
-
-          // Fallback: Try matching by product name if no images found and this looks like a custom product
-          if (additionalImages.length === 0 && (isPrefixedCustom || product.name.toLowerCase().includes('custom'))) {
-            const matchingCustomProduct = customProducts.find(cp => cp.name.toLowerCase().replace(/[^a-z0-9]/g, '') === product.name.toLowerCase().replace(/[^a-z0-9]/g, ''));
-            if (matchingCustomProduct) {
-              additionalImages = customProductImages.filter(img => String(img.custom_product_id).trim() === String(matchingCustomProduct.id).trim()).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0)).map(img => ({
-                id: img.id,
-                image_url: img.image_url,
-                description: img.description || 'Additional Image',
-                sort_order: img.sort_order
-              }));
-            }
-          }
-
-          // Build all images list (main + additional)
-          const allImageData = [{
-            url: product.image_url || '',
-            description: 'Main Image'
-          }, ...additionalImages.map(img => ({
-            url: img.image_url,
-            description: img.description || 'Additional Image'
-          }))].filter(img => img.url);
-          if (isPrefixedCustom || customProductIdFromDescription) {
-            // Ensure custom category for custom items
-            const customCategoryArray = customCategory ? [customCategory] : [];
-            return {
-              product,
-              categories: isPrefixedCustom ? customCategoryArray : categoriesData.filter(cat => cat.id === product.category_id),
-              variants: [],
-              features: [],
-              specifications: [],
-              additionalImages,
-              allImages: allImageData.length,
-              allImagesData: allImageData
-            };
-          }
-
-          // Regular products - but still check for custom images
-          const productCategoryIds = productCategories.filter(pc => pc.product_id === product.id).map(pc => pc.category_id);
-          const productCategoriesData = categoriesData.filter(cat => productCategoryIds.includes(cat.id));
-          return {
-            product,
-            categories: productCategoriesData,
-            variants: variants.filter(variant => variant.product_id === product.id),
-            features: features.filter(feature => feature.product_id === product.id),
-            specifications: specifications.filter(spec => spec.product_id === product.id),
-            additionalImages,
-            // Use the processed additional images instead of empty array
-            allImages: allImageData.length,
-            allImagesData: allImageData
-          };
-        });
-        setProductsWithDetails(productsWithDetailsData);
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
+  // Show error state
+  if (error) {
+    console.error('ProductGallery error:', error);
+  }
 
   // Set initial search term from props
   useEffect(() => {
@@ -279,6 +140,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     setImageZoom(prev => Math.min(Math.max(prev * delta, 0.5), 5));
   };
   const filteredProducts = useMemo(() => {
+    if (!productsWithDetails.length) return [];
+    
     return productsWithDetails.filter(({
       product,
       categories,
@@ -321,6 +184,12 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       return matchesSearch && matchesCategory && matchesFeatured;
     });
   }, [searchTerm, selectedCategory, selectedCategoryId, showFeaturedOnly, productsWithDetails, userSelectedCategory]);
+
+  // Manual refresh function
+  const handleRefresh = () => {
+    refreshAllData();
+    refetch();
+  };
   const ProductCard = ({
     productWithDetails
   }: {
@@ -879,6 +748,18 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
                     {categories.map(category => <option key={category.id} value={category.name}>{category.name}</option>)}
                   </select>
                 </div>
+
+                {/* Refresh Button */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh}
+                  disabled={loading}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Refresh</span>
+                </Button>
 
                 {/* Featured Toggle */}
                 <Button variant={showFeaturedOnly ? "default" : "outline"} size="sm" onClick={() => setShowFeaturedOnly(!showFeaturedOnly)} className="text-xs sm:text-sm">
