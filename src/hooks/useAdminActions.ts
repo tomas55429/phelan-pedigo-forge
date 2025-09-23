@@ -191,6 +191,17 @@ export const useAdminActions = () => {
     return result;
   };
 
+  const updateAdminSettings = async (settingKey: string, settingValue: any) => {
+    const result = await supabase
+      .from('admin_settings')
+      .update({ setting_value: settingValue, updated_at: new Date().toISOString() })
+      .eq('setting_key', settingKey);
+    if (!result.error) {
+      invalidateAllProductData();
+    }
+    return result;
+  };
+
   return {
     invalidateAllProductData,
     invalidateProductDetail,
@@ -213,5 +224,6 @@ export const useAdminActions = () => {
     createCustomProductImage,
     updateCustomProductImage,
     deleteCustomProductImage,
+    updateAdminSettings,
   };
 };

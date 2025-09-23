@@ -102,7 +102,7 @@ const formatVariantName = (variantName: string) => {
 const AdminPage = () => {
   const { signOut } = useAuth();
   const { toast } = useToast();
-  const { invalidateAllProductData } = useAdminActions();
+  const { invalidateAllProductData, updateAdminSettings } = useAdminActions();
 
   // State for categories
   const [categories, setCategories] = useState<Category[]>([]);

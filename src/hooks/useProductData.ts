@@ -247,6 +247,14 @@ export const useProducts = () => {
         console.log('🔄 Categories changed:', payload);
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PRODUCTS });
       })
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'admin_settings'
+      }, (payload) => {
+        console.log('🔄 Admin settings changed:', payload);
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.PRODUCTS });
+      })
       .subscribe((status) => {
         console.log('📡 Real-time subscription status:', status);
         if (status === 'SUBSCRIBED') {
