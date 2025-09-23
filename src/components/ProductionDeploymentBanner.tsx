@@ -44,11 +44,11 @@ const ProductionDeploymentBanner: React.FC<ProductionDeploymentBannerProps> = ({
             className="gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            Refresh Data
           </Button>
           
           <div className="text-xs text-muted-foreground">
-            Last updated: {new Date().toLocaleTimeString()}
+            Site: {window.location.hostname}
           </div>
         </div>
 

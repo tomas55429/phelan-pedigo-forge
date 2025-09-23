@@ -15,7 +15,7 @@ import { ProductVariantsTableNew } from './ProductVariantsTableNew';
 import VariantDetail from './VariantDetail';
 import Product3DViewer from './Product3DViewer';
 import { generateProductUrl } from '@/utils/productUtils';
-import { forceDataRefresh, isProductionSite } from '@/utils/cacheUtils';
+import { forceDataRefresh, isProductionSite, isDevelopmentSite } from '@/utils/cacheUtils';
 import { toast } from '@/components/ui/use-toast';
 type Product = Tables<'products'>;
 type ProductVariant = Tables<'product_variants'>;
@@ -189,7 +189,10 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
   // Manual refresh function with enhanced cache management
   const handleRefresh = async () => {
-    console.log('🔄 Refreshing product data...');
+    const currentSite = window.location.hostname;
+    console.log('🔄 Refreshing product data on:', currentSite);
+    console.log('🔄 Is production site:', isProductionSite());
+    console.log('🔄 Is development site:', isDevelopmentSite());
     
     // Show production-specific messaging
     if (isProductionSite()) {
@@ -202,6 +205,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
     try {
       // Force refresh of key data tables for production
       if (isProductionSite()) {
+        console.log('🔄 Force refreshing production data tables...');
         await Promise.all([
           forceDataRefresh('products'),
           forceDataRefresh('admin_settings'),
@@ -210,20 +214,21 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
       }
       
       // Trigger React Query refresh
+      console.log('🔄 Triggering React Query refresh...');
       refreshAllData();
       refetch();
       
       toast({
         title: "Data Refreshed",
         description: isProductionSite() 
-          ? "Production data synchronized successfully" 
-          : "Product data refreshed successfully",
+          ? `Production data synchronized successfully (${currentSite})` 
+          : `Product data refreshed successfully (${currentSite})`,
       });
     } catch (error) {
       console.error('Failed to refresh data:', error);
       toast({
         title: "Refresh Failed",
-        description: "Failed to refresh product data. Please try again.",
+        description: `Failed to refresh product data on ${currentSite}. Please try again.`,
         variant: "destructive",
       });
     }
