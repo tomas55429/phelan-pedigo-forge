@@ -63,6 +63,7 @@ interface ProductVariantsTableProps {
     enabled: boolean;
     visible: boolean;
   }[];
+  forceRefresh?: boolean;
 }
 
 interface SortableRowProps {
@@ -130,7 +131,8 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   specifications,
   isAdmin = false,
   onSpecificationOrderChange,
-  dimensionConfig
+  dimensionConfig,
+  forceRefresh = false
 }) => {
   const { isAdmin: userIsAdmin } = useAuth();
   const effectiveIsAdmin = isAdmin || userIsAdmin;

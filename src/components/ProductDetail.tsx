@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText, ZoomIn, ZoomOut, RotateCcw, X, Share, ExternalLink } from 'lucide-react';
+import { FileText, ZoomIn, ZoomOut, RotateCcw, X, Share, ExternalLink, RefreshCw } from 'lucide-react';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import Product3DViewer from './Product3DViewer';
 import VariantDetail from './VariantDetail';
 import { ProductVariantsTableNew } from './ProductVariantsTableNew';
 import { generateProductUrl } from '@/utils/productUtils';
 import { toast } from '@/components/ui/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 import type { ProductWithDetails, ProductVariant } from '@/types/product';
 
 interface ProductDetailProps {
@@ -16,6 +17,7 @@ interface ProductDetailProps {
   onImageEnlarge?: (imageUrl: string) => void;
   showShareButton?: boolean;
   className?: string;
+  productSlug?: string;
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({
@@ -23,9 +25,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   onClose,
   onImageEnlarge,
   showShareButton = true,
-  className = ""
+  className = "",
+  productSlug
 }) => {
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
   const formatVariantName = (variant: ProductVariant): string => {
     const parts = [];
@@ -67,6 +72,35 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   const openInNewPage = () => {
     const url = generateProductUrl(productWithDetails.product.name);
     window.open(url, '_blank');
+  };
+
+  const handleRefresh = async () => {
+    if (!productSlug) return;
+    
+    setIsRefreshing(true);
+    try {
+      // Invalidate all related caches to force fresh data
+      await queryClient.invalidateQueries({ queryKey: ['product-detail', productSlug] });
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      await queryClient.invalidateQueries({ queryKey: ['admin-settings'] });
+      
+      // Force refetch
+      await queryClient.refetchQueries({ queryKey: ['product-detail', productSlug] });
+      
+      toast({
+        title: "Data Refreshed",
+        description: "Product data has been refreshed from the server",
+      });
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh product data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
@@ -293,11 +327,12 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         <div className="mt-12">
           <h2 className="text-xl font-semibold mb-4">Technical Specifications</h2>
           <div className="w-full">
-            <ProductVariantsTableNew 
-              productId={productWithDetails.product.id} 
-              variants={productWithDetails.variants} 
-              specifications={productWithDetails.specifications} 
-            />
+          <ProductVariantsTableNew
+            productId={productWithDetails.product.id}
+            variants={productWithDetails.variants}
+            specifications={productWithDetails.specifications}
+            forceRefresh={isRefreshing}
+          />
           </div>
         </div>
       )}

@@ -182,6 +182,7 @@ const ProductDetailPage = () => {
           productWithDetails={productWithDetails}
           onImageEnlarge={setEnlargedImage}
           showShareButton={false}
+          productSlug={productSlug}
         />
       </div>
 
