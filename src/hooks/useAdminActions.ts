@@ -192,14 +192,31 @@ export const useAdminActions = () => {
   };
 
   const updateAdminSettings = async (settingKey: string, settingValue: any) => {
-    const result = await supabase
-      .from('admin_settings')
-      .update({ setting_value: settingValue, updated_at: new Date().toISOString() })
-      .eq('setting_key', settingKey);
-    if (!result.error) {
-      invalidateAllProductData();
+    // Check if this is a dimension config setting
+    if (settingKey.startsWith('product_dimensions_')) {
+      // Use the new public_product_configs table for dimension settings
+      const result = await supabase
+        .from('public_product_configs')
+        .upsert({ 
+          config_key: settingKey, 
+          config_value: settingValue, 
+          updated_at: new Date().toISOString() 
+        }, { onConflict: 'config_key' });
+      if (!result.error) {
+        invalidateAllProductData();
+      }
+      return result;
+    } else {
+      // Use admin_settings for other settings
+      const result = await supabase
+        .from('admin_settings')
+        .update({ setting_value: settingValue, updated_at: new Date().toISOString() })
+        .eq('setting_key', settingKey);
+      if (!result.error) {
+        invalidateAllProductData();
+      }
+      return result;
     }
-    return result;
   };
 
   return {

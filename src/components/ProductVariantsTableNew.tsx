@@ -162,9 +162,9 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
   const loadDimensionConfig = async () => {
     try {
       const { data, error } = await supabase
-        .from('admin_settings')
-        .select('setting_value')
-        .eq('setting_key', `product_dimensions_${productId}`)
+        .from('public_product_configs')
+        .select('config_value')
+        .eq('config_key', `product_dimensions_${productId}`)
         .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
@@ -172,8 +172,8 @@ export const ProductVariantsTableNew: React.FC<ProductVariantsTableProps> = ({
         return;
       }
 
-      if (data?.setting_value) {
-        const dimensions = data.setting_value as {
+      if (data?.config_value) {
+        const dimensions = data.config_value as {
           key: string;
           label: string;
           enabled: boolean;

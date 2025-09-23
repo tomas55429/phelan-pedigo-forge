@@ -896,19 +896,19 @@ const AdminPage = () => {
   const loadProductDimensionConfig = async (productId: string) => {
     try {
       const { data, error } = await supabase
-        .from('admin_settings')
-        .select('setting_value')
-        .eq('setting_key', `product_dimensions_${productId}`)
+        .from('public_product_configs')
+        .select('config_value')
+        .eq('config_key', `product_dimensions_${productId}`)
         .single();
 
       if (error && error.code !== 'PGRST116') { // PGRST116 = not found, which is okay
         throw error;
       }
 
-      if (data?.setting_value) {
-        console.log(`Loading dimension config for product ${productId}:`, data.setting_value);
+      if (data?.config_value) {
+        console.log(`Loading dimension config for product ${productId}:`, data.config_value);
         // Type cast the JSON value to our expected format
-        const dimensions = data.setting_value as { key: string; label: string; enabled: boolean; visible: boolean; }[];
+        const dimensions = data.config_value as { key: string; label: string; enabled: boolean; visible: boolean; }[];
         setProductDimensions(dimensions);
       } else {
         // Reset to default dimensions if no config found
@@ -944,42 +944,18 @@ const AdminPage = () => {
     try {
       console.log(`Saving dimension config for product ${productId}:`, dimensions);
       
-      const settingKey = `product_dimensions_${productId}`;
+      const configKey = `product_dimensions_${productId}`;
       
-      // First try to update existing record
-      const { data: existingData, error: selectError } = await supabase
-        .from('admin_settings')
-        .select('id')
-        .eq('setting_key', settingKey)
-        .single();
-
-      if (selectError && selectError.code !== 'PGRST116') {
-        // Error other than "not found"
-        throw selectError;
-      }
-
-      if (existingData) {
-        // Update existing record
-        const { error: updateError } = await supabase
-          .from('admin_settings')
-          .update({
-            setting_value: dimensions,
-            updated_at: new Date().toISOString()
-          })
-          .eq('setting_key', settingKey);
-          
-        if (updateError) throw updateError;
-      } else {
-        // Insert new record
-        const { error: insertError } = await supabase
-          .from('admin_settings')
-          .insert({
-            setting_key: settingKey,
-            setting_value: dimensions
-          });
-          
-        if (insertError) throw insertError;
-      }
+      // Use upsert to insert or update the config in public_product_configs
+      const { error } = await supabase
+        .from('public_product_configs')
+        .upsert({
+          config_key: configKey,
+          config_value: dimensions,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'config_key' });
+      
+      if (error) throw error;
 
       console.log('Dimension configuration saved successfully');
       toast({
