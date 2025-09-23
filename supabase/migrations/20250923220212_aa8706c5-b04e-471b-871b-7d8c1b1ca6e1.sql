@@ -1,0 +1,19 @@
+-- Enable realtime for product-related tables
+ALTER TABLE public.products REPLICA IDENTITY FULL;
+ALTER TABLE public.product_variants REPLICA IDENTITY FULL;
+ALTER TABLE public.product_specifications REPLICA IDENTITY FULL;
+ALTER TABLE public.product_features REPLICA IDENTITY FULL;
+ALTER TABLE public.product_size_sets REPLICA IDENTITY FULL;
+ALTER TABLE public.custom_products REPLICA IDENTITY FULL;
+ALTER TABLE public.custom_product_images REPLICA IDENTITY FULL;
+ALTER TABLE public.categories REPLICA IDENTITY FULL;
+
+-- Add tables to realtime publication
+ALTER PUBLICATION supabase_realtime ADD TABLE public.products;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.product_variants;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.product_specifications;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.product_features;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.product_size_sets;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.custom_products;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.custom_product_images;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.categories;
