@@ -143,10 +143,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       {!shouldLoad && (
         <div 
           ref={imgRef}
-          className={cn(
-            "bg-muted/50 flex items-center justify-center",
-            className
-          )}
+          className="bg-muted/50 flex items-center justify-center w-full min-h-[200px]"
         >
           <div className="animate-pulse w-8 h-8 bg-muted-foreground/20 rounded-full" />
         </div>
