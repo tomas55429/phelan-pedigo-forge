@@ -22,24 +22,21 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   src,
   alt,
   className,
-  sizes = "(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw",
+  sizes,
   priority = false,
   onLoad,
   onError,
   loading = 'lazy',
   decoding = 'async',
   placeholder,
-  quality = 85,
-  highQuality = false,
   onClick,
   useIntersectionObserver = true
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [shouldLoad, setShouldLoad] = useState(priority || !useIntersectionObserver);
-  const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for lazy loading
   useEffect(() => {
     if (!useIntersectionObserver || priority || shouldLoad) return;
 
@@ -52,11 +49,11 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           }
         });
       },
-      { rootMargin: '50px' }
+      { rootMargin: '200px' }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     return () => observer.disconnect();
@@ -72,47 +69,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     onError?.();
   };
 
-  // Check if browser supports WebP
-  const supportsWebP = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-  };
-
-  // Generate responsive image URLs with optimization
-  const generateSrcSet = (baseSrc: string) => {
-    if (baseSrc.includes('supabase')) {
-      const baseQuality = highQuality ? Math.min(quality + 10, 95) : (priority ? Math.min(quality + 5, 95) : quality);
-      const format = supportsWebP() ? 'webp' : 'jpeg';
-      const webpBonus = format === 'webp' ? 5 : 0;
-      
-      return [
-        `${baseSrc}?width=400&quality=${Math.min(baseQuality + webpBonus, 95)}&format=${format} 400w`,
-        `${baseSrc}?width=800&quality=${Math.min(baseQuality + webpBonus, 95)}&format=${format} 800w`,
-        `${baseSrc}?width=1200&quality=${Math.min(baseQuality + 5 + webpBonus, 95)}&format=${format} 1200w`,
-        `${baseSrc}?width=1600&quality=${Math.min(baseQuality + 5 + webpBonus, 95)}&format=${format} 1600w`
-      ].join(', ');
-    }
-    
-    return undefined;
-  };
-
-  // Generate optimized src URL
-  const getOptimizedSrc = (baseSrc: string) => {
-    if (baseSrc.includes('supabase')) {
-      const baseQuality = highQuality ? Math.min(quality + 10, 95) : (priority ? Math.min(quality + 5, 95) : quality);
-      const format = supportsWebP() ? 'webp' : 'jpeg';
-      const webpBonus = format === 'webp' ? 5 : 0;
-      return `${baseSrc}?width=800&quality=${Math.min(baseQuality + webpBonus, 95)}&format=${format}`;
-    }
-    return baseSrc;
-  };
-
-  const srcSet = shouldLoad ? generateSrcSet(src) : undefined;
-  const optimizedSrc = shouldLoad ? getOptimizedSrc(src) : undefined;
-
-  if (hasError && placeholder) {
+  if (hasError) {
     return (
       <div 
         className={cn(
@@ -126,33 +83,19 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   }
 
   return (
-    <div className={cn("relative overflow-hidden", className)} onClick={onClick}>
-      {/* Loading placeholder with skeleton animation */}
-      {!isLoaded && shouldLoad && (
-        <div 
-          className={cn(
-            "absolute inset-0 bg-gradient-to-r from-muted via-muted/70 to-muted animate-pulse",
-            "before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite]",
-            "before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent",
-            className
-          )}
-        />
-      )}
-      
-      {/* Intersection observer target */}
-      {!shouldLoad && (
-        <div 
-          ref={imgRef}
-          className="bg-muted/50 flex items-center justify-center w-full min-h-[200px]"
-        >
-          <div className="animate-pulse w-8 h-8 bg-muted-foreground/20 rounded-full" />
-        </div>
+    <div 
+      ref={containerRef}
+      className={cn("relative overflow-hidden", className)} 
+      onClick={onClick}
+    >
+      {/* Loading skeleton */}
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
       
       {shouldLoad && (
         <img
-          src={optimizedSrc}
-          srcSet={srcSet}
+          src={src}
           alt={alt}
           sizes={sizes}
           loading={priority ? 'eager' : loading}
@@ -160,8 +103,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           onLoad={handleLoad}
           onError={handleError}
           className={cn(
-            "transition-all duration-500",
-            isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95",
+            "w-full h-full transition-opacity duration-300",
+            isLoaded ? "opacity-100" : "opacity-0",
             onClick && "cursor-pointer hover:opacity-90",
             className
           )}
