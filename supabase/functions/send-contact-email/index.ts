@@ -35,11 +35,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Received contact form submission:", { firstName, lastName, email, subject });
 
-    // Get all admin users
+    // Get all admin users (excluding invalid addresses)
     const { data: adminProfiles, error: adminError } = await supabase
       .from('profiles')
       .select('email')
-      .eq('role', 'admin');
+      .eq('role', 'admin')
+      .neq('email', 'admin@phelanmfgcorp.com');
 
     if (adminError) {
       console.error("Error fetching admin profiles:", adminError);
@@ -53,7 +54,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     const adminEmails = adminProfiles
       .map(profile => profile.email)
-      .filter(email => email); // Filter out null/undefined emails
+      .filter(email => email && email !== 'admin@phelanmfgcorp.com');
+
 
     if (adminEmails.length === 0) {
       console.error("No admin email addresses found");
